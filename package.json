@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git://github.com/easyblog/easyblog.github.io.git"
   },
+  "scripts": {
+    "start": "rm -rf ./assets && ./node_modules/.bin/gulp --require coffee-script/register"
+  },
   "keywords": [
     "jekyll",
     "github",
@@ -19,5 +22,13 @@
   "bugs": {
     "url": "https://github.com/easyblog/easyblog.github.io/issues"
   },
-  "homepage": "https://github.com/easyblog/easyblog.github.io"
+  "homepage": "https://github.com/easyblog/easyblog.github.io",
+  "devDependencies": {
+    "gulp": "^3.5.6",
+    "gulp-coffee": "^1.4.1",
+    "gulp-plumber": "^0.5.6",
+    "gulp-less": "^1.2.3",
+    "gulp-concat": "^2.1.7",
+    "coffee-script": "^1.7.1"
+  }
 }
