@@ -1,0 +1,23 @@
+{
+  "name": "easyblog",
+  "version": "0.0.0",
+  "description": "Post your article to github pages with ease",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/easyblog/easyblog.github.io.git"
+  },
+  "keywords": [
+    "jekyll",
+    "github",
+    "github-pages",
+    "blog",
+    "medium"
+  ],
+  "author": "Shawn Zhou <hyspace@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/easyblog/easyblog.github.io/issues"
+  },
+  "homepage": "https://github.com/easyblog/easyblog.github.io"
+}
