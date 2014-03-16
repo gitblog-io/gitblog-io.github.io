@@ -5772,3 +5772,16 @@ button.close {
     display: none !important;
   }
 }
+.progress-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+}
+.progress-layer .progress {
+  width: 200px;
+}

@@ -23,6 +23,7 @@
     "angular": "~1.2.14",
     "angular-route": "~1.2.14",
     "octokit": "~0.9.18",
-    "js-yaml": "~3.0.2"
+    "js-yaml": "~3.0.2",
+    "angularLocalStorage": "~0.1.7"
   }
 }

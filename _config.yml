@@ -1,3 +1,4 @@
 name: Easyblog
 markdown: redcarpet
 pygments: false
+exclude: ['_src', 'bower_components', 'node_modules', '*.json', '*.coffee', 'LICENSE', 'README.md']
