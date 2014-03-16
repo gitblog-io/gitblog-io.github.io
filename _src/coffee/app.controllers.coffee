@@ -52,7 +52,6 @@ angular.module "easyblog"
   ($scope, storage)->
     token = storage.get 'access_token'
     if token?
-      debugger
       $scope.$root.loading = false
-      console.log "auth ok"
+      window.alert "auth ok"
 ]
