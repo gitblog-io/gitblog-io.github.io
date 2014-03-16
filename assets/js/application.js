@@ -32061,9 +32061,8 @@ angular.module("easyblog").controller("AuthController", [
     var token;
     token = storage.get('access_token');
     if (token != null) {
-      debugger;
       $scope.$root.loading = false;
-      return console.log("auth ok");
+      return window.alert("auth ok");
     }
   }
 ]);
