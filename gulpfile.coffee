@@ -10,8 +10,12 @@ BOWER_PATH = "bower_components/"
 SRC_PATH = "_src/"
 DEST_PATH = "assets/"
 
+LESS_FILES = [
+  "#{SRC_PATH}/less/style.less"
+]
+
 gulp.task "css", ->
-  gulp.src "#{SRC_PATH}/less/style.less"
+  gulp.src LESS_FILES
     .pipe plumber()
     .pipe less
       paths: [
@@ -26,11 +30,13 @@ COFFEE_FILES = [
 ]
 
 JS_FILES = [
+  "#{BOWER_PATH}/lodash/dist/lodash.underscore.js"
   "#{BOWER_PATH}/jquery/dist/jquery.js"
   "#{BOWER_PATH}/angular/angular.js"
   "#{BOWER_PATH}/angular-route/angular-route.js"
   "#{BOWER_PATH}/angular-cookies/angular-cookies.js"
   "#{BOWER_PATH}/angularLocalStorage/src/angularLocalStorage.js"
+  "#{BOWER_PATH}/octokit/octokit.js"
 ]
 
 gulp.task "js", ->
@@ -50,4 +56,8 @@ gulp.task "js", ->
     .pipe concat "application.js"
     .pipe gulp.dest("#{DEST_PATH}/js")
 
-gulp.task "default", ["css", "js"]
+gulp.task "watch", ["css", "js"], ->
+  gulp.watch COFFEE_FILES, ["js"]
+  gulp.watch LESS_FILES, ["css"]
+
+gulp.task "default", ["css", "js", "watch"]

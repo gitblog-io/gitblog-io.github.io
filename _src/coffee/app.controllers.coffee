@@ -15,8 +15,8 @@ angular.module "easyblog"
 
     localState = sessionStorage.getItem('state')
 
-    $scope.loading = true
-    $scope.progressText = 'Authenticating...'
+    $scope.$root.loading = true
+    $scope.$root.progressText = 'Authenticating...'
 
     if error?
       console.error errorDescription
@@ -26,7 +26,7 @@ angular.module "easyblog"
         $http.get "https://easyblog-oauth.herokuapp.com/authenticate/" + code
           .success (data)->
             if data.token?
-              storage.set 'access_token', data.token
+              $scope.$root.token = data.token
               $location
                 .search('code', null)
                 .search('state', null)
@@ -48,10 +48,54 @@ angular.module "easyblog"
 
 .controller "IndexController", [
   "$scope"
-  "storage"
-  ($scope, storage)->
-    token = storage.get 'access_token'
-    if token?
-      $scope.$root.loading = false
-      window.alert "auth ok"
+  "$location"
+  ($scope, $location)->
+    if $scope.token != ""
+      # $scope.$root.loading = false
+      if $scope.username != "" and $scope.reponame != ""
+        $location.path( $scope.username + '/' + $scope.reponame)
+
+      else
+        gh = new Octokit( token:$scope.token )
+
+        user = gh.getUser()
+
+        names = []
+
+        repoDefer = user.getRepos()
+        .then (repos)->
+          console.log repos
+
+          repos
+
+        , (err)->
+          console.error err
+
+        userDefer = user.getInfo()
+        .then (info)->
+          console.log info
+          # $scope.$root.username = info.login
+          names.push info.login
+
+          info
+        , (err)->
+          console.error err
+
+        orgDefer = user.getOrgs()
+        .then (orgs)->
+          console.log orgs
+          for org in orgs
+            names.push
+
+          orgs
+        , (err)->
+          console.error err
+
+        $.when.apply window, [repoDefer, userDefer, orgDefer]
+        .then (sth)->
+          console.log arguments
+        , (err)->
+          console.error arguments
+
+
 ]
