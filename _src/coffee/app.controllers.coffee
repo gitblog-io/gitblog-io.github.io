@@ -62,40 +62,39 @@ angular.module "easyblog"
 
         names = []
 
-        repoDefer = user.getRepos()
-        .then (repos)->
-          console.log repos
-
-          repos
-
-        , (err)->
-          console.error err
-
+        $scope.userRepos = {}
         userDefer = user.getInfo()
         .then (info)->
           console.log info
           # $scope.$root.username = info.login
-          names.push info.login
-
-          info
+          $scope.userRepos.username= info.login
+          user.getRepos()
+        , (err)->
+          console.error err
+        .then (repos)->
+          $scope.userRepos.repos = repos
         , (err)->
           console.error err
 
+        $scope.orgRepos = []
         orgDefer = user.getOrgs()
         .then (orgs)->
-          console.log orgs
-          for org in orgs
-            names.push
-
-          orgs
+          $scope.orgs = []
+          for org, index in orgs
+            $scope.orgRepos.push
+              username: org.login
+            orgUser = gh.getUser(org.login)
+            orgUser.getRepos()
+            .then ((index)->
+              (repos)->
+                $scope.orgRepos[index].repos = repos
+            )(index)
+            , (err)->
+              console.error err
+          return
         , (err)->
           console.error err
 
-        $.when.apply window, [repoDefer, userDefer, orgDefer]
-        .then (sth)->
-          console.log arguments
-        , (err)->
-          console.error arguments
-
+    return
 
 ]
