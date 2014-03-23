@@ -10,10 +10,6 @@ angular.module "easyblog", [
   ($routeProvider, $locationProvider)->
     $locationProvider.hashPrefix('!')
     $routeProvider
-      .when '/auth',
-        templateUrl: 'templates/auth.html'
-        controller: 'AuthController'
-        reloadOnSearch: false
       .when '/:user/:repo/:filepath',
         templateUrl: 'templates/editor.html'
         controller: 'EditorController'

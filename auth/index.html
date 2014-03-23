@@ -1,2 +1,51 @@
 <!DOCTYPE html>
-<html><body><script>window.location.replace('/app/#!/auth' + window.location.search);</script></body></html>
+<html><body><script>
+(function(){
+  var code, error, remoteState, localState;
+  code = getURLParameter('code');
+  error = getURLParameter('error');
+  remoteState = getURLParameter('state');
+  if(error != null){
+    logerror(getURLParameter('errorDescription'));
+    return;
+  }
+  if(remoteState == null){
+    logerror("No state provided");
+    return;
+  }else{
+    localState = sessionStorage.getItem("state");
+    if(localState !== remoteState){
+      logerror("State mismatch");
+      return;
+    }
+  }
+  if(code != null){
+    xhr = new XMLHttpRequest;
+    xhr.open("GET", "https://easyblog-oauth.herokuapp.com/authenticate/"+code, true);
+    xhr.onreadystatechange = function(){
+      if(xhr.readyState === 4){
+        if(xhr.status === 200 ){
+          try{
+            done(JSON.parse(xhr.responseText));
+          }catch(e){
+            logerror("JSON parser error.");
+          }
+        }else{
+          logerror("Http" + xhr.status);
+        }
+      }
+    }
+    xhr.send(null);
+  }
+  function done(data){
+    localStorage.setItem('token', data.token);
+    window.location.replace('/app/');
+  }
+  function logerror(str){
+    console.error(str);
+  }
+  function getURLParameter(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+  }
+})()
+</script></body></html>
