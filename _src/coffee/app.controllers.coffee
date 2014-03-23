@@ -85,10 +85,10 @@ angular.module "easyblog"
               username: org.login
             orgUser = gh.getUser(org.login)
             orgUser.getRepos()
-            .then ((index)->
+            .then ((index, username)->
               (repos)->
                 $scope.orgRepos[index].repos = repos
-            )(index)
+            )(index, org.login)
             , (err)->
               console.error err
           return
