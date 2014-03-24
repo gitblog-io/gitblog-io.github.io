@@ -106,6 +106,8 @@ angular.module "easyblog"
               if file.type != 'blob' then continue
               if res = file.path.match postReg
                 posts.push
+                  user:username
+                  repo:reponame
                   type:res[1]
                   date:new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10))
                   urlTitle:res[5]

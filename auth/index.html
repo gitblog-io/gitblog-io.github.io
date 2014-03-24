@@ -1,5 +1,15 @@
-<!DOCTYPE html>
-<html><body><script>
+---
+layout: default
+---
+<div class="container">
+  <div class="progress-layer" progress ng-if="loading">
+    <div class="progress progress-striped active">
+      <div class="progress-bar" role="progressbar" style="width: 100%"></div>
+    </div>
+    <div class="h3">Authenticating...</div>
+  </div>
+</div>
+<script>
 (function(){
   var code, error, remoteState, localState;
   code = getURLParameter('code');
@@ -48,4 +58,4 @@
     return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
   }
 })()
-</script></body></html>
+</script>

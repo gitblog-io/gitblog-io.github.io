@@ -47,7 +47,7 @@ angular.module "templates/list.html", []
         """
         <div class="page-header" ng-repeat="post in blogList | orderBy : post.date : reverse">
           <h5>
-            <a ng-href="#!/{{username}}/{{reponame}}/{{post.info.sha}}">{{post.urlTitle}}</a>
+            <a ng-href="#!/{{post.user}}/{{post.repo}}/{{post.info.sha}}">{{post.urlTitle}}</a>
             <small ng-if="post.type=='_drafts'">(draft)</small>
           </h5>
           <time>{{post.date | date : 'MM/dd/yyyy'}}</time>

@@ -38348,6 +38348,8 @@ angular.module("easyblog").controller("BlogListController", [
               }
               if (res = file.path.match(postReg)) {
                 posts.push({
+                  user: username,
+                  repo: reponame,
                   type: res[1],
                   date: new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10)),
                   urlTitle: res[5],
@@ -38445,7 +38447,7 @@ angular.module("templates/editor.html", []).run([
 
 angular.module("templates/list.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/list.html", "<div class=\"page-header\" ng-repeat=\"post in blogList | orderBy : post.date : reverse\">\n  <h5>\n    <a ng-href=\"#!/{{username}}/{{reponame}}/{{post.info.sha}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h5>\n  <time>{{post.date | date : 'MM/dd/yyyy'}}</time>\n</div>");
+    return $templateCache.put("templates/list.html", "<div class=\"page-header\" ng-repeat=\"post in blogList | orderBy : post.date : reverse\">\n  <h5>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.sha}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h5>\n  <time>{{post.date | date : 'MM/dd/yyyy'}}</time>\n</div>");
   }
 ]);
 
