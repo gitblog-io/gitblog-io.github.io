@@ -1,61 +1,141 @@
 angular.module "easyblog"
 
-.controller "IndexController", [
+.controller "BlogListController", [
   "$scope"
   "$location"
-  ($scope, $location)->
-    if $scope.token != ""
-      # $scope.$root.loading = false
-      if $scope.username != "" and $scope.reponame != ""
-        $location.path( $scope.username + '/' + $scope.reponame)
+  "$filter"
+  "$q"
+  ($scope, $location, $filter, $q)->
+    jekyllFilter = $filter("jekyll")
 
-      else
-        gh = new Octokit( token:$scope.token )
+    gh = $scope.$root._gh
 
-        user = gh.getUser()
+    user = gh.getUser()
 
-        names = []
+    $scope.repos = []
 
-        $scope.userRepos = {}
-        userDefer = user.getInfo()
-        .then (info)->
-          console.log info
-          # $scope.$root.username = info.login
-          $scope.userRepos.username= info.login
-          user.getRepos()
-        , (err)->
-          console.error err
-        .then (repos)->
-          $scope.userRepos.repos = repos
-        , (err)->
-          console.error err
+    userDefer = $q.defer()
+    user.getInfo()
+    .then (info)->
+      $scope.username = info.login
+      user.getRepos()
+    , (err)->
+      console.error err
+    .then (repos)->
+      repos = jekyllFilter(repos)
+      for repo in repos
+        repo._repo = gh.getRepo(repo.owner.login, repo.name)
+      $scope.$apply ->
+        $scope.repos = $scope.repos.concat repos
+        $scope.$root.loading = false
+      userDefer.resolve()
+    , (err)->
+      console.error err
 
-        $scope.orgRepos = []
-        orgDefer = user.getOrgs()
-        .then (orgs)->
-          $scope.orgs = []
-          for org, index in orgs
-            $scope.orgRepos.push
-              username: org.login
-            orgUser = gh.getUser(org.login)
-            orgUser.getRepos()
-            .then ((index, username)->
-              (repos)->
-                $scope.orgRepos[index].repos = repos
-            )(index, org.login)
-            , (err)->
-              console.error err
-          return
-        , (err)->
-          console.error err
+    orgDefer = $q.defer()
+    user.getOrgs()
+    .then (orgs)->
+      promises = []
+      for org, index in orgs
+        orgUser = gh.getUser(org.login)
+        promise = orgUser.getRepos()
+        promises.push promise
+      $.when.apply @, promises
+    , (err)->
+      console.error err
+    .then (resArrays...)->
+      $scope.$apply ->
+        for res in resArrays
+          repos = jekyllFilter(res[0])
+          for repo in repos
+            repo._repo = gh.getRepo(repo.owner.login, repo.name)
+          $scope.repos = $scope.repos.concat repos
+        $scope.$root.loading = false
+      orgDefer.resolve()
+    , (err)->
+      console.error err
 
-        $.when.apply window, [repoDefer, userDefer, orgDefer]
-        .then (sth)->
-          console.log arguments
-        , (err)->
-          console.error arguments
-    else
-      window.location.replace('/');
+    $scope.blogListReady = $q.all [userDefer.promise, orgDefer.promise]
+    $scope.blogListReady
+    .then ->
+      $scope.getRepo = (username, reponame)->
+        for repo in $scope.repos
+          if repo.owner.login == username and repo.name == reponame
+            return repo
+        return null
+    , (err)->
+      console.error arguments
+
+    # $scope.checkUsername = (username)->
+    #   if $scope.$root.loading then return null
+    #   if _.some $scope.userRepo.repos, (repo.)->
+    #     if repo.
+    #     return true
+    #   else
+    #     if _.some $scope.orgRepos, (orgRepo)->
+    #       if orgRepo.user.login == username
+    #         return true
+    #       else
+    #         return false
 
     return
+]
+
+.controller "IndexController", [->
+  console.log "index"
+]
+
+.controller "ListController", [
+  "$scope"
+  "$routeParams"
+  ($scope, $routeParams)->
+    username = $routeParams.user
+    reponame = $routeParams.repo
+    if username? and reponame?
+      $scope.blogListReady.then ->
+        if repo = $scope.getRepo(username, reponame)
+          _repo = repo._repo
+          _repo.git.getTree('master', recursive:true)
+          .then (tree)->
+            posts = []
+            configFileExists = false
+
+            postReg = /^(_posts|_drafts)\/(?:[\w\.-]\/)*(\d{4})-(\d{2})-(\d{2})-([\w\.-]+?)\.md$/
+            configFileReg = /^_config.yml$/
+            for file in tree
+              if file.type != 'blob' then continue
+              if res = file.path.match postReg
+                posts.push
+                  type:res[1]
+                  date:new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10))
+                  urlTitle:res[5]
+                  info:file
+              else if configFileReg.test file.path
+                configFileExists = true
+
+            if configFileExists
+              $scope.$apply ->
+                $scope.reponame = reponame
+                $scope.blogList = posts
+
+    console.log "list"
+]
+
+.controller "EditorController", [
+  "$scope"
+  "$routeParams"
+  ($scope, $routeParams)->
+    username = $routeParams.user
+    reponame = $routeParams.repo
+    sha = $routeParams.sha
+    if username? and reponame? and sha?
+      $scope.blogListReady.then ->
+        if repo = $scope.getRepo(username, reponame)
+          _repo = repo._repo
+          _repo.git.getBlob(sha)
+          .then (file)->
+            $scope.$apply ->
+              $scope.file = file
+
+    console.log "edit"
 ]

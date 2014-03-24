@@ -8,27 +8,7 @@ layout: default
     </div>
     <div class="h3">{{progressText}}</div>
   </div>
+  <aside blog-list></aside>
   <div ng-view></div>
 </div>
 <script src="/assets/js/application.js"></script>
-<!--<script>
-  var code, stateLocal, stateRemote, res = window.location.href.match(/\?code=(\w+)&state=(\w+)/i)
-  if (stateLocal = sessionStorage.getItem('state')){
-    if (res){
-      var code = res[1]
-      var stateRemote = res[2]
-      if (stateLocal === stateRemote){
-        $.getJSON('http://easyblog-oauth.herokuapp.com/authenticate/'+code, function(data) {
-          $('#res').text(data.token)
-        });
-      }else{
-        $('#res').text('state not match')
-      }
-    }else{
-      $('#res').text('error getting code')
-    }
-    sessionStorage.removeItem('state')
-  }else{
-    $('#res').text('no state')
-  }
-</script>-->
