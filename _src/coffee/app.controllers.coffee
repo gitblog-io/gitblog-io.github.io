@@ -123,7 +123,7 @@ angular.module "easyblog"
     console.log "list"
 ]
 
-.controller "EditorController", [
+.controller "PostController", [
   "$scope"
   "$routeParams"
   ($scope, $routeParams)->
@@ -135,9 +135,9 @@ angular.module "easyblog"
         if repo = $scope.getRepo(username, reponame)
           _repo = repo._repo
           _repo.git.getBlob(sha)
-          .then (file)->
+          .then (post)->
             $scope.$apply ->
-              $scope.file = file
+              $scope.post = post
 
     console.log "edit"
 ]

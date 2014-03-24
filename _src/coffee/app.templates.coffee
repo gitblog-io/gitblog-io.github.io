@@ -3,6 +3,7 @@ angular.module "easyblog.templates", [
   'templates/list.html'
   'templates/index.html'
   'templates/blog-list.html'
+  'templates/post.html'
 ]
 
 angular.module "templates/blog-list.html", []
@@ -28,13 +29,34 @@ angular.module "templates/blog-list.html", []
       )
   ]
 
+angular.module "templates/post.html", []
+  .run [
+    "$templateCache"
+    ($templateCache) ->
+      $templateCache.put( "templates/post.html",
+        """
+        <article post ng-model="post" ng-if="post"></article>
+        """
+      )
+  ]
+
 angular.module "templates/editor.html", []
   .run [
     "$templateCache"
     ($templateCache) ->
       $templateCache.put( "templates/editor.html",
         """
-        <textarea class="form-control" rows="25">{{file}}</textarea>
+        <form>
+          <div class="form-group">
+            <input class="form-control input-lg post-title" placeholder="Title" ng-model="frontMatter.title"/>
+            <input class="form-control post-tagline" placeholder="Tagline" ng-model="frontMatter.tagline"/>
+          </div>
+          <br><br>
+          <div class="form-group">
+            <textarea class="form-control" placeholder="Story..." ng-model="content"></textarea>
+            <div class="placeholder" editor ng-model="content" placeholder="Story..."></div>
+          </div>
+        </form>
         """
       )
   ]

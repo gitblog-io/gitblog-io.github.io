@@ -1,0 +1,24 @@
+.placeholder{
+  &::before{
+    content: attr(placeholder);
+    position: absolute;
+    left: 0;
+    top:0;
+    z-index: 99;
+    color: @gray-light;
+    line-height: 21px;
+    font-size: 16px;
+    padding: 0 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  }
+}
+.post-title{
+  font-weight: bold;
+  height: 66px;
+  font-size: 33px;
+}
+.post-tagline{
+  color: @gray;
+  font-size: 22px;
+  height: 45px;
+}

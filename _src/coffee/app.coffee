@@ -11,8 +11,8 @@ angular.module "easyblog", [
     $locationProvider.hashPrefix('!')
     $routeProvider
       .when '/:user/:repo/:sha',
-        templateUrl: 'templates/editor.html'
-        controller: 'EditorController'
+        templateUrl: 'templates/post.html'
+        controller: 'PostController'
       .when '/:user/:repo',
         templateUrl: 'templates/list.html'
         controller: 'ListController'

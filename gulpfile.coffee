@@ -37,6 +37,10 @@ JS_FILES = [
   "#{BOWER_PATH}/angular-cookies/angular-cookies.js"
   "#{BOWER_PATH}/angularLocalStorage/src/angularLocalStorage.js"
   "#{BOWER_PATH}/octokit/octokit.js"
+  "#{BOWER_PATH}/js-yaml/js-yaml.js"
+  "#{BOWER_PATH}/ace-builds/src-noconflict/ace.js"
+  "#{SRC_PATH}/js/mode-markdown-custom.js"
+  "#{BOWER_PATH}/ace-builds/src-noconflict/theme-tomorrow.js"
 ]
 
 gulp.task "js", ->
@@ -58,6 +62,6 @@ gulp.task "js", ->
 
 gulp.task "watch", ["css", "js"], ->
   gulp.watch COFFEE_FILES, ["js"]
-  gulp.watch LESS_FILES, ["css"]
+  gulp.watch "#{SRC_PATH}/less/*.less", ["css"]
 
 gulp.task "default", ["css", "js", "watch"]
