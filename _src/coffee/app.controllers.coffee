@@ -1,86 +1,5 @@
 angular.module "easyblog"
 
-.controller "BlogListController", [
-  "$scope"
-  "$location"
-  "$filter"
-  "$q"
-  ($scope, $location, $filter, $q)->
-    jekyllFilter = $filter("jekyll")
-
-    gh = $scope.$root._gh
-
-    user = gh.getUser()
-
-    $scope.repos = []
-
-    userDefer = $q.defer()
-    user.getInfo()
-    .then (info)->
-      $scope.username = info.login
-      user.getRepos()
-    , (err)->
-      console.error err
-    .then (repos)->
-      repos = jekyllFilter(repos)
-      for repo in repos
-        repo._repo = gh.getRepo(repo.owner.login, repo.name)
-      $scope.$apply ->
-        $scope.repos = $scope.repos.concat repos
-        $scope.$root.loading = false
-      userDefer.resolve()
-    , (err)->
-      console.error err
-
-    orgDefer = $q.defer()
-    user.getOrgs()
-    .then (orgs)->
-      promises = []
-      for org, index in orgs
-        orgUser = gh.getUser(org.login)
-        promise = orgUser.getRepos()
-        promises.push promise
-      $.when.apply @, promises
-    , (err)->
-      console.error err
-    .then (resArrays...)->
-      $scope.$apply ->
-        for res in resArrays
-          repos = jekyllFilter(res[0])
-          for repo in repos
-            repo._repo = gh.getRepo(repo.owner.login, repo.name)
-          $scope.repos = $scope.repos.concat repos
-        $scope.$root.loading = false
-      orgDefer.resolve()
-    , (err)->
-      console.error err
-
-    $scope.blogListReady = $q.all [userDefer.promise, orgDefer.promise]
-    $scope.blogListReady
-    .then ->
-      $scope.getRepo = (username, reponame)->
-        for repo in $scope.repos
-          if repo.owner.login == username and repo.name == reponame
-            return repo
-        return null
-    , (err)->
-      console.error arguments
-
-    # $scope.checkUsername = (username)->
-    #   if $scope.$root.loading then return null
-    #   if _.some $scope.userRepo.repos, (repo.)->
-    #     if repo.
-    #     return true
-    #   else
-    #     if _.some $scope.orgRepos, (orgRepo)->
-    #       if orgRepo.user.login == username
-    #         return true
-    #       else
-    #         return false
-
-    return
-]
-
 .controller "IndexController", [->
   console.log "index"
 ]
@@ -97,6 +16,8 @@ angular.module "easyblog"
           _repo = repo._repo
           _repo.git.getTree('master', recursive:true)
           .then (tree)->
+            $scope.saveCache()
+
             posts = []
             configFileExists = false
 
@@ -140,6 +61,8 @@ angular.module "easyblog"
           show = ->
             _repo.git.getBlob(sha)
             .then (post)->
+              $scope.saveCache()
+
               $scope.$apply ->
                 $scope.post = post
             , (err)->
@@ -151,6 +74,8 @@ angular.module "easyblog"
           searchAndShow = ->
             _repo.git.getTree('master', recursive:true)
             .then (tree)->
+              $scope.saveCache()
+
               blob = _.findWhere tree,
                 path: path
               if blob?
