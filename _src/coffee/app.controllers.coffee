@@ -100,7 +100,7 @@ angular.module "easyblog"
             posts = []
             configFileExists = false
 
-            postReg = /^(_posts|_drafts)\/(?:[\w\.-]\/)*(\d{4})-(\d{2})-(\d{2})-([\w\.-]+?)\.md$/
+            postReg = /^(_posts|_drafts)\/(?:[\w\.-]\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/
             configFileReg = /^_config.yml$/
             for file in tree
               if file.type != 'blob' then continue
@@ -126,18 +126,46 @@ angular.module "easyblog"
 .controller "PostController", [
   "$scope"
   "$routeParams"
-  ($scope, $routeParams)->
+  "$location"
+  ($scope, $routeParams, $location)->
     username = $routeParams.user
     reponame = $routeParams.repo
+    path = $routeParams.path
     sha = $routeParams.sha
-    if username? and reponame? and sha?
+    if username? and reponame? and path?
       $scope.blogListReady.then ->
         if repo = $scope.getRepo(username, reponame)
           _repo = repo._repo
-          _repo.git.getBlob(sha)
-          .then (post)->
-            $scope.$apply ->
-              $scope.post = post
+
+          show = ->
+            _repo.git.getBlob(sha)
+            .then (post)->
+              $scope.$apply ->
+                $scope.post = post
+            , (err)->
+              if err.status == 404
+                searchAndShow()
+              else
+                console.error err.error
+
+          searchAndShow = ->
+            _repo.git.getTree('master', recursive:true)
+            .then (tree)->
+              blob = _.findWhere tree,
+                path: path
+              if blob?
+                sha = blob.sha
+                $location.search('sha', sha)
+                show()
+              else
+                console.error "file path not found"
+
+          unless sha?
+            searchAndShow()
+          else
+            show()
+
+
 
     console.log "edit"
 ]

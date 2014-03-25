@@ -1,0 +1,31 @@
+#menu-sidebar{
+  padding: 15px 20px;
+  footer{
+    color: @gray-light;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    bottom: 15px;
+    font-size: round(@font-size-base * 0.6);
+    text-align: center;
+    >a>i{
+      vertical-align: text-top;
+    }
+  }
+}
+.menu{
+  .list-unstyled;
+  > li > a{
+    display: block;
+    font-size: @font-size-base;
+    line-height: 40px;
+    > i{
+      width: @font-size-large;
+      font-size: @font-size-large;
+      margin-right: 10px;
+      display: inline-block;
+      text-align: center;
+      vertical-align: text-bottom;
+    }
+  }
+}

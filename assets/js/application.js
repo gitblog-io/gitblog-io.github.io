@@ -62180,12 +62180,29 @@ var dom = require("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);
 });
 
+$("<div id=\"mask\" data-toggle-menu></div>").appendTo($("#main"));
+
+$('[data-toggle-menu]').on('click', function() {
+  $(document.body).toggleClass('menu-open');
+});
+
+$(document.body).on("click", "a", function(e) {
+  var dest, el, target;
+  el = $(e.target).closest('a');
+  target = el.attr("target");
+  dest = el.attr("href");
+  if ((!target || target.toLowerCase() !== "_blank") && (dest != null)) {
+    $(document.body).removeClass();
+  }
+});
+
 angular.module("easyblog", ['ngRoute', 'angularLocalStorage', 'easyblog.templates']).config([
   '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $locationProvider.hashPrefix('!');
-    $routeProvider.when('/:user/:repo/:sha', {
+    $routeProvider.when('/:user/:repo/:path*', {
       templateUrl: 'templates/post.html',
-      controller: 'PostController'
+      controller: 'PostController',
+      reloadOnSearch: false
     }).when('/:user/:repo', {
       templateUrl: 'templates/list.html',
       controller: 'ListController'
@@ -62314,7 +62331,7 @@ angular.module("easyblog").controller("BlogListController", [
             var configFileExists, configFileReg, file, postReg, posts, res, _i, _len;
             posts = [];
             configFileExists = false;
-            postReg = /^(_posts|_drafts)\/(?:[\w\.-]\/)*(\d{4})-(\d{2})-(\d{2})-([\w\.-]+?)\.md$/;
+            postReg = /^(_posts|_drafts)\/(?:[\w\.-]\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
             configFileReg = /^_config.yml$/;
             for (_i = 0, _len = tree.length; _i < _len; _i++) {
               file = tree[_i];
@@ -62347,21 +62364,52 @@ angular.module("easyblog").controller("BlogListController", [
     return console.log("list");
   }
 ]).controller("PostController", [
-  "$scope", "$routeParams", function($scope, $routeParams) {
-    var reponame, sha, username;
+  "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
+    var path, reponame, sha, username;
     username = $routeParams.user;
     reponame = $routeParams.repo;
+    path = $routeParams.path;
     sha = $routeParams.sha;
-    if ((username != null) && (reponame != null) && (sha != null)) {
+    if ((username != null) && (reponame != null) && (path != null)) {
       $scope.blogListReady.then(function() {
-        var repo, _repo;
+        var repo, searchAndShow, show, _repo;
         if (repo = $scope.getRepo(username, reponame)) {
           _repo = repo._repo;
-          return _repo.git.getBlob(sha).then(function(post) {
-            return $scope.$apply(function() {
-              return $scope.post = post;
+          show = function() {
+            return _repo.git.getBlob(sha).then(function(post) {
+              return $scope.$apply(function() {
+                return $scope.post = post;
+              });
+            }, function(err) {
+              if (err.status === 404) {
+                return searchAndShow();
+              } else {
+                return console.error(err.error);
+              }
             });
-          });
+          };
+          searchAndShow = function() {
+            return _repo.git.getTree('master', {
+              recursive: true
+            }).then(function(tree) {
+              var blob;
+              blob = _.findWhere(tree, {
+                path: path
+              });
+              if (blob != null) {
+                sha = blob.sha;
+                $location.search('sha', sha);
+                return show();
+              } else {
+                return console.error("file path not found");
+              }
+            });
+          };
+          if (sha == null) {
+            return searchAndShow();
+          } else {
+            return show();
+          }
         }
       });
     }
@@ -62594,7 +62642,7 @@ angular.module("easyblog.templates", ['templates/editor.html', 'templates/list.h
 
 angular.module("templates/blog-list.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/blog-list.html", "<div class=\"media\" ng-repeat=\"repo in repos\">\n  <a class=\"pull-left\" ng-href=\"{{repo.owner.html_url}}\" target=\"_blank\">\n    <img class=\"media-object\" ng-src=\"{{repo.owner.avatar_url}}\" style=\"width: 64px; height: 64px;\">\n  </a>\n  <div class=\"media-body\">\n    <a ng-href=\"#!/{{repo.full_name}}\"><h4 class=\"media-heading\">{{repo.owner.login}}</h4></a>\n    <p class=\"text-muted\">\n      <a href=\"{{repo.html_url}}\" target=\"_blank\">{{repo.name}}</a>\n      Last updated at <time>{{repo.updated_at}}</time>\n    </p>\n    <p class=\"text-muted\">{{repo.description}}</p>\n  </div>\n</div>");
+    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" style=\"width: 18px; height: 18px; vertical-align: text-bottom\">\n    {{repo.owner.login}}\n  </a>\n  <!--<div class=\"body\">\n    <p class=\"text-muted\">\n      <a href=\"{{repo.html_url}}\" target=\"_blank\">{{repo.name}}</a>\n      Last updated at <time>{{repo.updated_at}}</time>\n    </p>\n    <p class=\"text-muted\">{{repo.description}}</p>\n  </div>-->\n</li>");
   }
 ]);
 
@@ -62612,7 +62660,7 @@ angular.module("templates/editor.html", []).run([
 
 angular.module("templates/list.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/list.html", "<div class=\"page-header\" ng-repeat=\"post in blogList | orderBy : post.date : reverse\">\n  <h5>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.sha}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h5>\n  <time>{{post.date | date : 'MM/dd/yyyy'}}</time>\n</div>");
+    return $templateCache.put("templates/list.html", "<div class=\"page-header\" ng-repeat=\"post in blogList | orderBy : post.date : reverse\">\n  <h5>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}?sha={{post.info.sha}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h5>\n  <time>{{post.date | date : 'MM/dd/yyyy'}}</time>\n</div>");
   }
 ]);
 

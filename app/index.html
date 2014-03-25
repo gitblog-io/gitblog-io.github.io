@@ -1,14 +1,30 @@
 ---
-layout: default
+layout: app
 ---
-<div class="container" ng-app="easyblog">
-  <div class="progress-layer" progress ng-if="loading">
-    <div class="progress progress-striped active">
-      <div class="progress-bar" role="progressbar" style="width: 100%"></div>
-    </div>
-    <div class="h3">{{progressText}}</div>
+<div class="progress-layer" progress ng-if="loading">
+  <div class="progress progress-striped active">
+    <div class="progress-bar" role="progressbar" style="width: 100%"></div>
   </div>
-  <aside blog-list></aside>
-  <div ng-view></div>
+  <div class="h3">{{progressText}}</div>
 </div>
+<div id="main-warp">
+  <div id="main">
+    <div ng-view></div>
+  </div>
+</div>
+<header id="header">
+  <button id="btn-open-menu" data-toggle-menu>_</button>
+</header>
+<aside id="menu-sidebar">
+  <nav>
+    <ul class="menu">
+      <li><a href="/"><i class="icon-home"></i>Home</a></li>
+      <li><a href="/about.html"><i class="icon-info-sign"></i>About</a></li>
+    </ul>
+    <ul class="menu" blog-list></ul>
+  </nav>
+  <footer>
+    &copy; {{ site.time | date: '%Y' }} <a target="_blank" href="https://github.com/hyspace">{{ site.author.name }} <i class="icon-cat"></i></a>
+  </footer>
+</aside>
 <script src="/assets/js/application.js"></script>

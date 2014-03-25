@@ -1,3 +1,19 @@
+$("<div id=\"mask\" data-toggle-menu></div>").appendTo($("#main"))
+
+$('[data-toggle-menu]')
+.on 'click', ->
+  $(document.body).toggleClass 'menu-open'
+  return
+
+$(document.body)
+.on "click", "a", (e)->
+  el = $(e.target).closest('a')
+  target = el.attr "target"
+  dest = el.attr "href"
+  if (!target or target.toLowerCase() != "_blank") and dest?
+    $(document.body).removeClass()
+  return
+
 angular.module "easyblog", [
   'ngRoute'
   'angularLocalStorage'
@@ -10,9 +26,10 @@ angular.module "easyblog", [
   ($routeProvider, $locationProvider)->
     $locationProvider.hashPrefix('!')
     $routeProvider
-      .when '/:user/:repo/:sha',
+      .when '/:user/:repo/:path*',
         templateUrl: 'templates/post.html'
         controller: 'PostController'
+        reloadOnSearch: false
       .when '/:user/:repo',
         templateUrl: 'templates/list.html'
         controller: 'ListController'

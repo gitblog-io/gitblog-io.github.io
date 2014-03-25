@@ -1,0 +1,28 @@
+@menu-size:48px;
+
+#btn-open-menu{
+  .domready &{
+    .transition(~"opacity .15s ease-in-out, color .15s ease-in-out");
+  }
+  border: none;
+  padding: 0;
+  outline:none;
+  display: block;
+  text-align: center;
+  font-size: @menu-size;
+  .icon();
+  .size(@menu-size*2, @menu-size*2);
+  margin-left: -@menu-size/2;
+  .rotate(90deg);
+  background: transparent;
+  opacity: 0.3;
+  // -webkit-font-smoothing: none;
+  // -moz-osx-font-smoothing: none;
+  &:hover{
+    opacity: 1;
+  }
+  .menu-open &{
+    opacity: 0;
+    visibility: hidden;
+  }
+}
