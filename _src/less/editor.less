@@ -12,11 +12,18 @@
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
   }
 }
-.post-title{
+[custom-input]{
   outline: none;
+  padding-left: 4px;
+  padding-right: 4px;
+  &:empty:not(:focus)::before{
+    content: attr(data-placeholder);
+    color: @gray-light;
+  }
+}
+.post-title{
   font-weight: 700;
 }
 .post-tagline{
-  outline: none;
   font-weight: 200;
 }

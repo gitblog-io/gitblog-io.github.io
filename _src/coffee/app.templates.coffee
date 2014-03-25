@@ -47,11 +47,11 @@ angular.module "templates/editor.html", []
       $templateCache.put( "templates/editor.html",
         """
         <form>
-          <div class="page-header">
+          <header class="page-header">
             <h1 custom-input class="post-title" data-placeholder="Title" ng-model="frontMatter.title"></h1>
-            <h2 custom-input class="post-tagline" data-placeholder="Tagline" ng-model="frontMatter.tagline"></h2>
-          </div>
-          <br><br>
+            <h3 custom-input class="post-tagline" data-placeholder="Tagline" ng-model="frontMatter.tagline"></h3>
+          </header>
+          <br>
           <div class="page-content">
             <textarea class="form-control" placeholder="Story..." ng-model="post"></textarea>
             <div class="placeholder" editor ng-model="content" data-placeholder="Story..."></div>

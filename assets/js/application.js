@@ -62725,7 +62725,7 @@ angular.module("templates/post.html", []).run([
 
 angular.module("templates/editor.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/editor.html", "<form>\n  <div class=\"page-header\">\n    <h1 custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h2 custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h2>\n  </div>\n  <br><br>\n  <div class=\"page-content\">\n    <textarea class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Story...\"></div>\n  </div>\n</form>");
+    return $templateCache.put("templates/editor.html", "<form>\n  <header class=\"page-header\">\n    <h1 custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <textarea class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Story...\"></div>\n  </div>\n</form>");
   }
 ]);
 
