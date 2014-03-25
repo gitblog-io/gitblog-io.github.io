@@ -1,4 +1,4 @@
-$("<div id=\"mask\" data-toggle-menu></div>").appendTo($("#main"))
+$("<div id=\"mask\" data-toggle-menu></div>").appendTo($(document.body))
 
 $('[data-toggle-menu]')
 .on 'click', ->

@@ -62213,7 +62213,7 @@ if (typeof exports !== "undefined" && exports !== null) {
 
 var __slice = [].slice;
 
-$("<div id=\"mask\" data-toggle-menu></div>").appendTo($("#main"));
+$("<div id=\"mask\" data-toggle-menu></div>").appendTo($(document.body));
 
 $('[data-toggle-menu]').on('click', function() {
   $(document.body).toggleClass('menu-open');

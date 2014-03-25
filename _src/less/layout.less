@@ -5,7 +5,7 @@
 @screen-small: (@article-width + @padding * 2);
 @screen-medium: (@screen-small + @menubar-width * 2);
 
-#main-warp {
+body {
   overflow: hidden;
 }
 
@@ -14,15 +14,14 @@
   padding-top: 1px;
   margin-top: -1px;
   .translate3d(0, 0, 0);
-  position: relative;
-  z-index: 1;
   .transition-transform(.15s ease-in-out);
   .menu-open &{
     .translate3d(@menubar-width, 0, 0);
   }
   @media (min-width: @screen-medium){
+    .transform-none();
     .menu-open &{
-      .translate3d(0, 0, 0);
+      .transform-none();
     }
   }
 }
@@ -64,7 +63,7 @@
   bottom: 0;
   top: 0;
   right: 0;
-  z-index: 10;
+  z-index: 2;
 }
 
 #header{

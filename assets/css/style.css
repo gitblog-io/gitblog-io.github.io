@@ -1286,7 +1286,7 @@ button.close {
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: none;
 }
-#main-warp {
+body {
   overflow: hidden;
 }
 #main {
@@ -1295,8 +1295,6 @@ button.close {
   margin-top: -1px;
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
-  position: relative;
-  z-index: 1;
   -webkit-transition: -webkit-transform 0.15s ease-in-out;
   -moz-transition: -moz-transform 0.15s ease-in-out;
   -o-transition: -o-transform 0.15s ease-in-out;
@@ -1307,9 +1305,15 @@ button.close {
   transform: translate3d(150px, 0, 0);
 }
 @media (min-width: 1090px) {
+  #main {
+    -webkit-transform: none;
+    -ms-transform: none;
+    transform: none;
+  }
   .menu-open #main {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
+    -webkit-transform: none;
+    -ms-transform: none;
+    transform: none;
   }
 }
 [ng-view] {
@@ -1352,7 +1356,7 @@ button.close {
   bottom: 0;
   top: 0;
   right: 0;
-  z-index: 10;
+  z-index: 2;
 }
 .menu-open #mask {
   display: block;
