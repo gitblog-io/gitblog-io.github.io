@@ -1,12 +1,20 @@
 #menu-sidebar{
   padding: 15px 20px;
+  background-color: @gray-dark;
+  a {
+    color: @gray-light;
+    &:hover{
+      color: @gray-lighter;
+      text-decoration: none;
+    }
+  }
   footer{
     color: @gray-light;
     position: absolute;
     left: 0;
     width: 100%;
     bottom: 15px;
-    font-size: round(@font-size-base * 0.6);
+    font-size: round(@font-size-base * 0.8);
     text-align: center;
     >a>i{
       vertical-align: text-top;
@@ -28,4 +36,10 @@
       vertical-align: text-bottom;
     }
   }
+}
+.avatar{
+  width: 18px;
+  height: 18px;
+  vertical-align: text-bottom;
+  border-radius: 2px;
 }

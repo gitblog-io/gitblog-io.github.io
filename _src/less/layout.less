@@ -1,28 +1,22 @@
-@article-width: 640px;
+@article-width: 750px;
 @padding: 20px;
-@sidebar-width: 300px;
 @menubar-width: 150px;
 
 @screen-small: (@article-width + @padding * 2);
-@screen-medium: (@screen-small + @sidebar-width * 2);
+@screen-medium: (@screen-small + @menubar-width * 2);
 
 #main-warp {
   overflow: hidden;
 }
 
-
 #main{
+  background-color: @body-bg;
   padding-top: 1px;
   margin-top: -1px;
   .translate3d(0, 0, 0);
   position: relative;
   z-index: 1;
   .transition-transform(.15s ease-in-out);
-  @media (max-width: (@screen-medium - 1)){
-    .comment-open &{
-      .translate3d(-(@sidebar-width / 2), 0, 0);
-    }
-  }
   .menu-open &{
     .translate3d(@menubar-width, 0, 0);
   }

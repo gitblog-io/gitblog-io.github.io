@@ -14,7 +14,7 @@ angular.module "templates/blog-list.html", []
         """
         <li ng-repeat="repo in repos">
           <a ng-href="#!/{{repo.full_name}}">
-            <img ng-src="{{repo.owner.avatar_url}}" style="width: 18px; height: 18px; vertical-align: text-bottom">
+            <img ng-src="{{repo.owner.avatar_url}}" class="avatar">
             {{repo.owner.login}}
           </a>
           <!--<div class="body">
@@ -47,14 +47,14 @@ angular.module "templates/editor.html", []
       $templateCache.put( "templates/editor.html",
         """
         <form>
-          <div class="form-group">
-            <input class="form-control input-lg post-title" placeholder="Title" ng-model="frontMatter.title"/>
-            <input class="form-control post-tagline" placeholder="Tagline" ng-model="frontMatter.tagline"/>
+          <div class="page-header">
+            <h1 custom-input class="post-title" data-placeholder="Title" ng-model="frontMatter.title"></h1>
+            <h2 custom-input class="post-tagline" data-placeholder="Tagline" ng-model="frontMatter.tagline"></h2>
           </div>
           <br><br>
-          <div class="form-group">
-            <textarea class="form-control" placeholder="Story..." ng-model="content"></textarea>
-            <div class="placeholder" editor ng-model="content" placeholder="Story..."></div>
+          <div class="page-content">
+            <textarea class="form-control" placeholder="Story..." ng-model="post"></textarea>
+            <div class="placeholder" editor ng-model="content" data-placeholder="Story..."></div>
           </div>
         </form>
         """

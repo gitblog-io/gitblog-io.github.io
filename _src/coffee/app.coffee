@@ -48,6 +48,10 @@ angular.module "easyblog", [
   "$filter"
   "$q"
   ($scope, storage, $location, $filter, $q)->
+    $(document.documentElement)
+    .removeClass("nojs")
+    .addClass("domready")
+
     $scope.loading = true
     $scope.progressText = 'Loading...'
 
@@ -68,10 +72,10 @@ angular.module "easyblog", [
 
       $scope._gh = gh = new Octokit( token:$scope.token )
 
-      if $scope.cache? then gh.loadCache($scope.cache)
+      if $scope.cache? then gh.setCache($scope.cache)
 
       $scope.saveCache = ->
-        $scope.cache = $scope._gh.dumpCache()
+        $scope.cache = $scope._gh.getCache()
       $scope.clearCache = ->
         $scope.cache = null
 

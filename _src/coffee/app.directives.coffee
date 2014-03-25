@@ -65,7 +65,6 @@ angular.module "easyblog"
     textarea.hide()
 
     editor = window.ace.edit($element[0])
-    editor.setTheme "ace/theme/tomorrow"
     editor.setFontSize 16
     editor.setOptions
       maxLines: Infinity
@@ -158,4 +157,31 @@ angular.module "easyblog"
       editor.session.$stopWorker()
       editor.destroy()
       return
+]
+
+.directive "customInput", [->
+  restrict:"A"
+  require:"?ngModel"
+  link:($scope, $element, $attrs, ngModel)->
+    return unless ngModel?
+
+    $element.prop("contenteditable", true)
+    $element.prop("spellcheck", true)
+
+    ngModel.$render = ->
+      $element.text ngModel.$viewValue || ''
+      return
+
+    $element
+    .on "keydown", (e)->
+      if e.keyCode == 13
+        e.preventDefault()
+      return
+    .on "blur keyup change", ->
+      $scope.$apply()
+    .on "input", ->
+      ngModel.$setViewValue($element.text().replace(/[\n\r]/g, " "))
+      return
+
+    return
 ]

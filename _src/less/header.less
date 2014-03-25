@@ -4,6 +4,7 @@
   .domready &{
     .transition(~"opacity .15s ease-in-out, color .15s ease-in-out");
   }
+  color: @gray-dark;
   border: none;
   padding: 0;
   outline:none;
@@ -24,5 +25,9 @@
   .menu-open &{
     opacity: 0;
     visibility: hidden;
+  }
+  &:hover,
+  &:active{
+    color: @brand-primary;
   }
 }

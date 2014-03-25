@@ -26,7 +26,8 @@ gulp.task "css", ->
 
 
 COFFEE_FILES = [
-  "#{SRC_PATH}/coffee/*.coffee"
+  "#{SRC_PATH}/coffee/octokit*.coffee"
+  "#{SRC_PATH}/coffee/app*.coffee"
 ]
 
 JS_FILES = [

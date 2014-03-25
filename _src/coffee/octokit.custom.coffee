@@ -199,14 +199,14 @@ makeOctokit = (_, jQuery, base64encode, userAgent) =>
       # -------
       @clearCache = clearCache = () -> _cachedETags = {}
 
-      ## Dump the local cache
+      ## Get the local cache
       # -------
-      @dumpCache = dumpCache = () -> _cachedETags
+      @getCache = getCache = () -> _cachedETags
 
-      ## Load the local cache
+      ## Set the local cache
       # -------
-      @loadCache = loadCache = (cachedETags) ->
-        _cachedETags = cachedETags
+      @setCache = setCache = (cachedETags) ->
+        _cachedETags = _.extend {}, _cachedETags, cachedETags
 
       # Add a listener that fires when the `rateLimitRemaining` changes as a result of
       # communicating with github.
@@ -1196,6 +1196,11 @@ makeOctokit = (_, jQuery, base64encode, userAgent) =>
           # -------
           @getLanguages = ->
             _request 'GET', "#{@repoPath}/languages", null
+
+          # List all releases
+          # -------
+          @getReleases = () ->
+            _request 'GET', "#{@repoPath}/releases", null
 
 
       # Gist API

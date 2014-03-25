@@ -60952,510 +60952,6 @@ var dom = require("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);
 });
 
-var __slice = [].slice;
-
-$("<div id=\"mask\" data-toggle-menu></div>").appendTo($("#main"));
-
-$('[data-toggle-menu]').on('click', function() {
-  $(document.body).toggleClass('menu-open');
-});
-
-$(document.body).on("click", "a", function(e) {
-  var dest, el, target;
-  el = $(e.target).closest('a');
-  target = el.attr("target");
-  dest = el.attr("href");
-  if ((!target || target.toLowerCase() !== "_blank") && (dest != null)) {
-    $(document.body).removeClass();
-  }
-});
-
-angular.module("easyblog", ['ngRoute', 'angularLocalStorage', 'easyblog.templates']).config([
-  '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
-    $locationProvider.hashPrefix('!');
-    $routeProvider.when('/:user/:repo/:path*', {
-      templateUrl: 'templates/post.html',
-      controller: 'PostController',
-      reloadOnSearch: false
-    }).when('/:user/:repo', {
-      templateUrl: 'templates/list.html',
-      controller: 'ListController'
-    }).when('/', {
-      templateUrl: 'templates/index.html',
-      controller: 'IndexController'
-    }).otherwise({
-      redirectTo: '/'
-    });
-  }
-]).run([
-  '$rootScope', 'storage', "$location", "$filter", "$q", function($scope, storage, $location, $filter, $q) {
-    var gh, jekyllFilter, orgDefer, user, userDefer;
-    $scope.loading = true;
-    $scope.progressText = 'Loading...';
-    $scope.token = storage.get('token');
-    $scope.reponame = storage.get('reponame');
-    try {
-      $scope.cache = storage.get('cache');
-    } catch (_error) {
-      $scope.cache = null;
-    }
-    storage.bind($scope, 'token');
-    storage.bind($scope, 'reponame');
-    storage.bind($scope, 'cache');
-    if ($scope.token !== "") {
-      jekyllFilter = $filter("jekyll");
-      $scope._gh = gh = new Octokit({
-        token: $scope.token
-      });
-      if ($scope.cache != null) {
-        gh.loadCache($scope.cache);
-      }
-      $scope.saveCache = function() {
-        return $scope.cache = $scope._gh.dumpCache();
-      };
-      $scope.clearCache = function() {
-        return $scope.cache = null;
-      };
-      $scope.repos = [];
-      user = gh.getUser();
-      userDefer = $q.defer();
-      user.getInfo().then(function(info) {
-        $scope.username = info.login;
-        return user.getRepos();
-      }, function(err) {
-        return console.error(err);
-      }).then(function(repos) {
-        var repo, _i, _len;
-        repos = jekyllFilter(repos);
-        for (_i = 0, _len = repos.length; _i < _len; _i++) {
-          repo = repos[_i];
-          repo._repo = gh.getRepo(repo.owner.login, repo.name);
-        }
-        $scope.$apply(function() {
-          $scope.repos = $scope.repos.concat(repos);
-          return $scope.loading = false;
-        });
-        return userDefer.resolve();
-      }, function(err) {
-        return console.error(err);
-      });
-      orgDefer = $q.defer();
-      user.getOrgs().then(function(orgs) {
-        var index, org, orgUser, promise, promises, _i, _len;
-        promises = [];
-        for (index = _i = 0, _len = orgs.length; _i < _len; index = ++_i) {
-          org = orgs[index];
-          orgUser = gh.getUser(org.login);
-          promise = orgUser.getRepos();
-          promises.push(promise);
-        }
-        return $.when.apply(this, promises);
-      }, function(err) {
-        return console.error(err);
-      }).then(function() {
-        var resArrays;
-        resArrays = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        $scope.$apply(function() {
-          var repo, repos, res, _i, _j, _len, _len1;
-          for (_i = 0, _len = resArrays.length; _i < _len; _i++) {
-            res = resArrays[_i];
-            repos = jekyllFilter(res[0]);
-            for (_j = 0, _len1 = repos.length; _j < _len1; _j++) {
-              repo = repos[_j];
-              repo._repo = gh.getRepo(repo.owner.login, repo.name);
-            }
-            $scope.repos = $scope.repos.concat(repos);
-          }
-          return $scope.loading = false;
-        });
-        return orgDefer.resolve();
-      }, function(err) {
-        return console.error(err);
-      });
-      $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
-      $scope.blogListReady.then(function() {
-        $scope.saveCache();
-        return $scope.getRepo = function(username, reponame) {
-          var repo, _i, _len, _ref;
-          _ref = $scope.repos;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            repo = _ref[_i];
-            if (repo.owner.login === username && repo.name === reponame) {
-              return repo;
-            }
-          }
-          return null;
-        };
-      }, function(err) {
-        return console.error(arguments);
-      });
-    } else {
-      window.location.replace('/');
-    }
-  }
-]);
-
-angular.module("easyblog").controller("IndexController", [
-  function() {
-    return console.log("index");
-  }
-]).controller("ListController", [
-  "$scope", "$routeParams", function($scope, $routeParams) {
-    var reponame, username;
-    username = $routeParams.user;
-    reponame = $routeParams.repo;
-    if ((username != null) && (reponame != null)) {
-      $scope.blogListReady.then(function() {
-        var repo, _repo;
-        if (repo = $scope.getRepo(username, reponame)) {
-          _repo = repo._repo;
-          return _repo.git.getTree('master', {
-            recursive: true
-          }).then(function(tree) {
-            var configFileExists, configFileReg, file, postReg, posts, res, _i, _len;
-            $scope.saveCache();
-            posts = [];
-            configFileExists = false;
-            postReg = /^(_posts|_drafts)\/(?:[\w\.-]\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
-            configFileReg = /^_config.yml$/;
-            for (_i = 0, _len = tree.length; _i < _len; _i++) {
-              file = tree[_i];
-              if (file.type !== 'blob') {
-                continue;
-              }
-              if (res = file.path.match(postReg)) {
-                posts.push({
-                  user: username,
-                  repo: reponame,
-                  type: res[1],
-                  date: new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10)),
-                  urlTitle: res[5],
-                  info: file
-                });
-              } else if (configFileReg.test(file.path)) {
-                configFileExists = true;
-              }
-            }
-            if (configFileExists) {
-              return $scope.$apply(function() {
-                $scope.reponame = reponame;
-                return $scope.blogList = posts;
-              });
-            }
-          });
-        }
-      });
-    }
-    return console.log("list");
-  }
-]).controller("PostController", [
-  "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
-    var path, reponame, sha, username;
-    username = $routeParams.user;
-    reponame = $routeParams.repo;
-    path = $routeParams.path;
-    sha = $routeParams.sha;
-    if ((username != null) && (reponame != null) && (path != null)) {
-      $scope.blogListReady.then(function() {
-        var repo, searchAndShow, show, _repo;
-        if (repo = $scope.getRepo(username, reponame)) {
-          _repo = repo._repo;
-          show = function() {
-            return _repo.git.getBlob(sha).then(function(post) {
-              $scope.saveCache();
-              return $scope.$apply(function() {
-                return $scope.post = post;
-              });
-            }, function(err) {
-              if (err.status === 404) {
-                return searchAndShow();
-              } else {
-                return console.error(err.error);
-              }
-            });
-          };
-          searchAndShow = function() {
-            return _repo.git.getTree('master', {
-              recursive: true
-            }).then(function(tree) {
-              var blob;
-              $scope.saveCache();
-              blob = _.findWhere(tree, {
-                path: path
-              });
-              if (blob != null) {
-                sha = blob.sha;
-                $location.search('sha', sha);
-                return show();
-              } else {
-                return console.error("file path not found");
-              }
-            });
-          };
-          if (sha == null) {
-            return searchAndShow();
-          } else {
-            return show();
-          }
-        }
-      });
-    }
-    return console.log("edit");
-  }
-]);
-
-angular.module("easyblog").directive("blogList", [
-  function() {
-    return {
-      restrict: "A",
-      templateUrl: "templates/blog-list.html"
-    };
-  }
-]).directive("post", [
-  "$timeout", function($timeout) {
-    return {
-      restrict: "A",
-      templateUrl: "templates/editor.html",
-      require: "?ngModel",
-      scope: true,
-      link: function($scope, $element, $attr, ngModel) {
-        var promise, update, ymlReg;
-        if (ngModel == null) {
-          return;
-        }
-        ymlReg = /^(?:---\n)((?:.|\n)*?)\n---\n/;
-        ngModel.$formatters.push(function(modelValue) {
-          var content, frontMatter;
-          if (modelValue != null) {
-            frontMatter = null;
-            content = modelValue.replace(ymlReg, function(match, yml) {
-              var e;
-              try {
-                frontMatter = jsyaml.safeLoad(yml);
-              } catch (_error) {
-                e = _error;
-                console.error(e);
-              }
-              return '';
-            });
-            $scope.$evalAsync(function() {
-              $scope.frontMatter = frontMatter;
-              return $scope.content = content;
-            });
-          }
-          return modelValue;
-        });
-        update = function() {
-          var content, frontMatter, viewValue, yml;
-          yml = jsyaml.safeDump($scope.frontMatter, {
-            skipInvalid: true
-          });
-          frontMatter = "---\n" + yml + "---\n";
-          content = $scope.content;
-          viewValue = frontMatter + content;
-          return $scope.$evalAsync(function() {
-            return ngModel.$setViewValue(viewValue);
-          });
-        };
-        promise = null;
-        $scope.$watch('content', function(data, oldData) {
-          if ((data != null) && (oldData != null) && data !== oldData) {
-            if (promise != null) {
-              $timeout.cancel(promise);
-            }
-            return promise = $timeout(update, 10);
-          }
-        });
-        return $scope.$watchCollection('frontMatter', function(data, oldData) {
-          if ((data != null) && (oldData != null)) {
-            if (promise != null) {
-              $timeout.cancel(promise);
-            }
-            return promise = $timeout(update, 200);
-          }
-        });
-      }
-    };
-  }
-]).directive('editor', [
-  "$timeout", function($timeout) {
-    return {
-      restrict: "EA",
-      require: "?ngModel",
-      link: function($scope, $element, $attrs, ngModel) {
-        var editor, onChange, promise, session, textarea, update;
-        if (ngModel == null) {
-          return;
-        }
-        textarea = $element.prev("textarea");
-        textarea.hide();
-        editor = window.ace.edit($element[0]);
-        editor.setTheme("ace/theme/tomorrow");
-        editor.setFontSize(16);
-        editor.setOptions({
-          maxLines: Infinity
-        });
-        editor.setShowPrintMargin(false);
-        editor.setHighlightActiveLine(false);
-        editor.renderer.setShowGutter(false);
-        session = editor.getSession();
-        session.setUseWrapMode(true);
-        session.setMode("ace/mode/markdown");
-        (function(self) {
-          var checkLine, customWorker;
-          checkLine = function(currentLine) {
-            var line;
-            line = self.lines[currentLine];
-            if (line.length !== 0) {
-              if (line[0].type.indexOf("markup.heading.multi") === 0) {
-                self.lines[currentLine - 1].forEach(function(previousLineObject) {
-                  previousLineObject.type = "markup.heading";
-                });
-              }
-            }
-          };
-          customWorker = function() {
-            var currentLine, doc, endLine, len, processedLines, startLine, workerStart;
-            if (!self.running) {
-              return;
-            }
-            workerStart = new Date();
-            currentLine = self.currentLine;
-            endLine = -1;
-            doc = self.doc;
-            while (self.lines[currentLine]) {
-              currentLine++;
-            }
-            startLine = currentLine;
-            len = doc.getLength();
-            processedLines = 0;
-            self.running = false;
-            while (currentLine < len) {
-              self.$tokenizeRow(currentLine);
-              endLine = currentLine;
-              while (true) {
-                checkLine(currentLine);
-                currentLine++;
-                if (!self.lines[currentLine]) {
-                  break;
-                }
-              }
-              processedLines++;
-              if ((processedLines % 5 === 0) && (new Date() - workerStart) > 20) {
-                self.running = setTimeout(customWorker, 20);
-                self.currentLine = currentLine;
-                return;
-              }
-            }
-            self.currentLine = currentLine;
-            if (startLine <= endLine) {
-              self.fireUpdateEvent(startLine, endLine);
-            }
-          };
-          self.$worker = function() {
-            self.lines.splice(0, self.lines.length);
-            self.states.splice(0, self.states.length);
-            self.currentLine = 0;
-            customWorker();
-          };
-        })(editor.session.bgTokenizer);
-        ngModel.$formatters.push(function(value) {
-          if (angular.isUndefined(value) || value === null) {
-            $element.addClass("placeholder");
-            return "";
-          } else if (angular.isObject(value) || angular.isArray(value)) {
-            throw new Error("ace cannot use an object or an array as a model");
-          } else {
-            $element.removeClass("placeholder");
-          }
-          return value;
-        });
-        ngModel.$render = function() {
-          session.setValue(ngModel.$viewValue);
-        };
-        update = function() {
-          var viewValue;
-          viewValue = session.getValue();
-          return $scope.$evalAsync(function() {
-            return ngModel.$setViewValue(viewValue);
-          });
-        };
-        promise = null;
-        onChange = function() {
-          if (promise != null) {
-            $timeout.cancel(promise);
-          }
-          return promise = $timeout(update, 190, true);
-        };
-        session.on("change", onChange);
-        return $element.on("$destroy", function() {
-          editor.session.$stopWorker();
-          editor.destroy();
-        });
-      }
-    };
-  }
-]);
-
-angular.module("easyblog").factory("utils", [
-  function() {
-    return {
-      filterRepos: function(repos, names) {}
-    };
-  }
-]).filter("jekyll", [
-  function() {
-    var userPage;
-    userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]*)\.github\.io/;
-    return function(repos) {
-      if (!(repos instanceof Array)) {
-        return null;
-      }
-      return _.filter(repos, function(repo) {
-        var res;
-        if (res = repo.full_name.match(userPage)) {
-          if (res[1] === res[2]) {
-            return true;
-          }
-        }
-        return false;
-      });
-    };
-  }
-]);
-
-angular.module("easyblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html']);
-
-angular.module("templates/blog-list.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" style=\"width: 18px; height: 18px; vertical-align: text-bottom\">\n    {{repo.owner.login}}\n  </a>\n  <!--<div class=\"body\">\n    <p class=\"text-muted\">\n      <a href=\"{{repo.html_url}}\" target=\"_blank\">{{repo.name}}</a>\n      Last updated at <time>{{repo.updated_at}}</time>\n    </p>\n    <p class=\"text-muted\">{{repo.description}}</p>\n  </div>-->\n</li>");
-  }
-]);
-
-angular.module("templates/post.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/post.html", "<article post ng-model=\"post\" ng-if=\"post\"></article>");
-  }
-]);
-
-angular.module("templates/editor.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/editor.html", "<form>\n  <div class=\"form-group\">\n    <input class=\"form-control input-lg post-title\" placeholder=\"Title\" ng-model=\"frontMatter.title\"/>\n    <input class=\"form-control post-tagline\" placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"/>\n  </div>\n  <br><br>\n  <div class=\"form-group\">\n    <textarea class=\"form-control\" placeholder=\"Story...\" ng-model=\"content\"></textarea>\n    <div class=\"placeholder\" editor ng-model=\"content\" placeholder=\"Story...\"></div>\n  </div>\n</form>");
-  }
-]);
-
-angular.module("templates/list.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/list.html", "<div class=\"page-header\" ng-repeat=\"post in blogList | orderBy : post.date : reverse\">\n  <h5>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}?sha={{post.info.sha}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h5>\n  <time>{{post.date | date : 'MM/dd/yyyy'}}</time>\n</div>");
-  }
-]);
-
-angular.module("templates/index.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/index.html", "index");
-  }
-]);
-
 var Octokit, encode, err, jQuery, makeOctokit, moduleName, najax, _, _i, _len, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -61465,7 +60961,7 @@ makeOctokit = (function(_this) {
     var Octokit;
     Octokit = (function() {
       function Octokit(clientOptions) {
-        var AuthenticatedUser, Branch, ETagResponse, Gist, GitRepo, Organization, Repository, Team, User, clearCache, dumpCache, loadCache, notifyEnd, notifyStart, toQueryString, _cachedETags, _client, _listeners, _request;
+        var AuthenticatedUser, Branch, ETagResponse, Gist, GitRepo, Organization, Repository, Team, User, clearCache, getCache, notifyEnd, notifyStart, setCache, toQueryString, _cachedETags, _client, _listeners, _request;
         if (clientOptions == null) {
           clientOptions = {};
         }
@@ -61645,11 +61141,11 @@ makeOctokit = (function(_this) {
         this.clearCache = clearCache = function() {
           return _cachedETags = {};
         };
-        this.dumpCache = dumpCache = function() {
+        this.getCache = getCache = function() {
           return _cachedETags;
         };
-        this.loadCache = loadCache = function(cachedETags) {
-          return _cachedETags = cachedETags;
+        this.setCache = setCache = function(cachedETags) {
+          return _cachedETags = _.extend({}, _cachedETags, cachedETags);
         };
         this.onRateLimitChanged = function(listener) {
           return _listeners.push(listener);
@@ -62542,6 +62038,9 @@ makeOctokit = (function(_this) {
             this.getLanguages = function() {
               return _request('GET', "" + this.repoPath + "/languages", null);
             };
+            this.getReleases = function() {
+              return _request('GET', "" + this.repoPath + "/releases", null);
+            };
           }
 
           return Repository;
@@ -62711,3 +62210,533 @@ if (typeof exports !== "undefined" && exports !== null) {
     err('Base64 not included');
   }
 }
+
+var __slice = [].slice;
+
+$("<div id=\"mask\" data-toggle-menu></div>").appendTo($("#main"));
+
+$('[data-toggle-menu]').on('click', function() {
+  $(document.body).toggleClass('menu-open');
+});
+
+$(document.body).on("click", "a", function(e) {
+  var dest, el, target;
+  el = $(e.target).closest('a');
+  target = el.attr("target");
+  dest = el.attr("href");
+  if ((!target || target.toLowerCase() !== "_blank") && (dest != null)) {
+    $(document.body).removeClass();
+  }
+});
+
+angular.module("easyblog", ['ngRoute', 'angularLocalStorage', 'easyblog.templates']).config([
+  '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+    $locationProvider.hashPrefix('!');
+    $routeProvider.when('/:user/:repo/:path*', {
+      templateUrl: 'templates/post.html',
+      controller: 'PostController',
+      reloadOnSearch: false
+    }).when('/:user/:repo', {
+      templateUrl: 'templates/list.html',
+      controller: 'ListController'
+    }).when('/', {
+      templateUrl: 'templates/index.html',
+      controller: 'IndexController'
+    }).otherwise({
+      redirectTo: '/'
+    });
+  }
+]).run([
+  '$rootScope', 'storage', "$location", "$filter", "$q", function($scope, storage, $location, $filter, $q) {
+    var gh, jekyllFilter, orgDefer, user, userDefer;
+    $(document.documentElement).removeClass("nojs").addClass("domready");
+    $scope.loading = true;
+    $scope.progressText = 'Loading...';
+    $scope.token = storage.get('token');
+    $scope.reponame = storage.get('reponame');
+    try {
+      $scope.cache = storage.get('cache');
+    } catch (_error) {
+      $scope.cache = null;
+    }
+    storage.bind($scope, 'token');
+    storage.bind($scope, 'reponame');
+    storage.bind($scope, 'cache');
+    if ($scope.token !== "") {
+      jekyllFilter = $filter("jekyll");
+      $scope._gh = gh = new Octokit({
+        token: $scope.token
+      });
+      if ($scope.cache != null) {
+        gh.setCache($scope.cache);
+      }
+      $scope.saveCache = function() {
+        return $scope.cache = $scope._gh.getCache();
+      };
+      $scope.clearCache = function() {
+        return $scope.cache = null;
+      };
+      $scope.repos = [];
+      user = gh.getUser();
+      userDefer = $q.defer();
+      user.getInfo().then(function(info) {
+        $scope.username = info.login;
+        return user.getRepos();
+      }, function(err) {
+        return console.error(err);
+      }).then(function(repos) {
+        var repo, _i, _len;
+        repos = jekyllFilter(repos);
+        for (_i = 0, _len = repos.length; _i < _len; _i++) {
+          repo = repos[_i];
+          repo._repo = gh.getRepo(repo.owner.login, repo.name);
+        }
+        $scope.$apply(function() {
+          $scope.repos = $scope.repos.concat(repos);
+          return $scope.loading = false;
+        });
+        return userDefer.resolve();
+      }, function(err) {
+        return console.error(err);
+      });
+      orgDefer = $q.defer();
+      user.getOrgs().then(function(orgs) {
+        var index, org, orgUser, promise, promises, _i, _len;
+        promises = [];
+        for (index = _i = 0, _len = orgs.length; _i < _len; index = ++_i) {
+          org = orgs[index];
+          orgUser = gh.getUser(org.login);
+          promise = orgUser.getRepos();
+          promises.push(promise);
+        }
+        return $.when.apply(this, promises);
+      }, function(err) {
+        return console.error(err);
+      }).then(function() {
+        var resArrays;
+        resArrays = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        $scope.$apply(function() {
+          var repo, repos, res, _i, _j, _len, _len1;
+          for (_i = 0, _len = resArrays.length; _i < _len; _i++) {
+            res = resArrays[_i];
+            repos = jekyllFilter(res[0]);
+            for (_j = 0, _len1 = repos.length; _j < _len1; _j++) {
+              repo = repos[_j];
+              repo._repo = gh.getRepo(repo.owner.login, repo.name);
+            }
+            $scope.repos = $scope.repos.concat(repos);
+          }
+          return $scope.loading = false;
+        });
+        return orgDefer.resolve();
+      }, function(err) {
+        return console.error(err);
+      });
+      $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
+      $scope.blogListReady.then(function() {
+        $scope.saveCache();
+        return $scope.getRepo = function(username, reponame) {
+          var repo, _i, _len, _ref;
+          _ref = $scope.repos;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            repo = _ref[_i];
+            if (repo.owner.login === username && repo.name === reponame) {
+              return repo;
+            }
+          }
+          return null;
+        };
+      }, function(err) {
+        return console.error(arguments);
+      });
+    } else {
+      window.location.replace('/');
+    }
+  }
+]);
+
+angular.module("easyblog").controller("IndexController", [
+  function() {
+    return console.log("index");
+  }
+]).controller("ListController", [
+  "$scope", "$routeParams", function($scope, $routeParams) {
+    var reponame, username;
+    username = $routeParams.user;
+    reponame = $routeParams.repo;
+    if ((username != null) && (reponame != null)) {
+      $scope.blogListReady.then(function() {
+        var repo, _repo;
+        if (repo = $scope.getRepo(username, reponame)) {
+          _repo = repo._repo;
+          return _repo.git.getTree('master', {
+            recursive: true
+          }).then(function(tree) {
+            var configFileExists, configFileReg, file, postReg, posts, res, _i, _len;
+            $scope.saveCache();
+            posts = [];
+            configFileExists = false;
+            postReg = /^(_posts|_drafts)\/(?:[\w\.-]\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
+            configFileReg = /^_config.yml$/;
+            for (_i = 0, _len = tree.length; _i < _len; _i++) {
+              file = tree[_i];
+              if (file.type !== 'blob') {
+                continue;
+              }
+              if (res = file.path.match(postReg)) {
+                posts.push({
+                  user: username,
+                  repo: reponame,
+                  type: res[1],
+                  date: new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10)),
+                  urlTitle: res[5],
+                  info: file
+                });
+              } else if (configFileReg.test(file.path)) {
+                configFileExists = true;
+              }
+            }
+            if (configFileExists) {
+              return $scope.$apply(function() {
+                $scope.reponame = reponame;
+                return $scope.blogList = posts;
+              });
+            }
+          });
+        }
+      });
+    }
+    return console.log("list");
+  }
+]).controller("PostController", [
+  "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
+    var path, reponame, sha, username;
+    username = $routeParams.user;
+    reponame = $routeParams.repo;
+    path = $routeParams.path;
+    sha = $routeParams.sha;
+    if ((username != null) && (reponame != null) && (path != null)) {
+      $scope.blogListReady.then(function() {
+        var repo, searchAndShow, show, _repo;
+        if (repo = $scope.getRepo(username, reponame)) {
+          _repo = repo._repo;
+          show = function() {
+            return _repo.git.getBlob(sha).then(function(post) {
+              $scope.saveCache();
+              return $scope.$apply(function() {
+                return $scope.post = post;
+              });
+            }, function(err) {
+              if (err.status === 404) {
+                return searchAndShow();
+              } else {
+                return console.error(err.error);
+              }
+            });
+          };
+          searchAndShow = function() {
+            return _repo.git.getTree('master', {
+              recursive: true
+            }).then(function(tree) {
+              var blob;
+              $scope.saveCache();
+              blob = _.findWhere(tree, {
+                path: path
+              });
+              if (blob != null) {
+                sha = blob.sha;
+                $location.search('sha', sha);
+                return show();
+              } else {
+                return console.error("file path not found");
+              }
+            });
+          };
+          if (sha == null) {
+            return searchAndShow();
+          } else {
+            return show();
+          }
+        }
+      });
+    }
+    return console.log("edit");
+  }
+]);
+
+angular.module("easyblog").directive("blogList", [
+  function() {
+    return {
+      restrict: "A",
+      templateUrl: "templates/blog-list.html"
+    };
+  }
+]).directive("post", [
+  "$timeout", function($timeout) {
+    return {
+      restrict: "A",
+      templateUrl: "templates/editor.html",
+      require: "?ngModel",
+      scope: true,
+      link: function($scope, $element, $attr, ngModel) {
+        var promise, update, ymlReg;
+        if (ngModel == null) {
+          return;
+        }
+        ymlReg = /^(?:---\n)((?:.|\n)*?)\n---\n/;
+        ngModel.$formatters.push(function(modelValue) {
+          var content, frontMatter;
+          if (modelValue != null) {
+            frontMatter = null;
+            content = modelValue.replace(ymlReg, function(match, yml) {
+              var e;
+              try {
+                frontMatter = jsyaml.safeLoad(yml);
+              } catch (_error) {
+                e = _error;
+                console.error(e);
+              }
+              return '';
+            });
+            $scope.$evalAsync(function() {
+              $scope.frontMatter = frontMatter;
+              return $scope.content = content;
+            });
+          }
+          return modelValue;
+        });
+        update = function() {
+          var content, frontMatter, viewValue, yml;
+          yml = jsyaml.safeDump($scope.frontMatter, {
+            skipInvalid: true
+          });
+          frontMatter = "---\n" + yml + "---\n";
+          content = $scope.content;
+          viewValue = frontMatter + content;
+          return $scope.$evalAsync(function() {
+            return ngModel.$setViewValue(viewValue);
+          });
+        };
+        promise = null;
+        $scope.$watch('content', function(data, oldData) {
+          if ((data != null) && (oldData != null) && data !== oldData) {
+            if (promise != null) {
+              $timeout.cancel(promise);
+            }
+            return promise = $timeout(update, 10);
+          }
+        });
+        return $scope.$watchCollection('frontMatter', function(data, oldData) {
+          if ((data != null) && (oldData != null)) {
+            if (promise != null) {
+              $timeout.cancel(promise);
+            }
+            return promise = $timeout(update, 200);
+          }
+        });
+      }
+    };
+  }
+]).directive('editor', [
+  "$timeout", function($timeout) {
+    return {
+      restrict: "EA",
+      require: "?ngModel",
+      link: function($scope, $element, $attrs, ngModel) {
+        var editor, onChange, promise, session, textarea, update;
+        if (ngModel == null) {
+          return;
+        }
+        textarea = $element.prev("textarea");
+        textarea.hide();
+        editor = window.ace.edit($element[0]);
+        editor.setFontSize(16);
+        editor.setOptions({
+          maxLines: Infinity
+        });
+        editor.setShowPrintMargin(false);
+        editor.setHighlightActiveLine(false);
+        editor.renderer.setShowGutter(false);
+        session = editor.getSession();
+        session.setUseWrapMode(true);
+        session.setMode("ace/mode/markdown");
+        (function(self) {
+          var checkLine, customWorker;
+          checkLine = function(currentLine) {
+            var line;
+            line = self.lines[currentLine];
+            if (line.length !== 0) {
+              if (line[0].type.indexOf("markup.heading.multi") === 0) {
+                self.lines[currentLine - 1].forEach(function(previousLineObject) {
+                  previousLineObject.type = "markup.heading";
+                });
+              }
+            }
+          };
+          customWorker = function() {
+            var currentLine, doc, endLine, len, processedLines, startLine, workerStart;
+            if (!self.running) {
+              return;
+            }
+            workerStart = new Date();
+            currentLine = self.currentLine;
+            endLine = -1;
+            doc = self.doc;
+            while (self.lines[currentLine]) {
+              currentLine++;
+            }
+            startLine = currentLine;
+            len = doc.getLength();
+            processedLines = 0;
+            self.running = false;
+            while (currentLine < len) {
+              self.$tokenizeRow(currentLine);
+              endLine = currentLine;
+              while (true) {
+                checkLine(currentLine);
+                currentLine++;
+                if (!self.lines[currentLine]) {
+                  break;
+                }
+              }
+              processedLines++;
+              if ((processedLines % 5 === 0) && (new Date() - workerStart) > 20) {
+                self.running = setTimeout(customWorker, 20);
+                self.currentLine = currentLine;
+                return;
+              }
+            }
+            self.currentLine = currentLine;
+            if (startLine <= endLine) {
+              self.fireUpdateEvent(startLine, endLine);
+            }
+          };
+          self.$worker = function() {
+            self.lines.splice(0, self.lines.length);
+            self.states.splice(0, self.states.length);
+            self.currentLine = 0;
+            customWorker();
+          };
+        })(editor.session.bgTokenizer);
+        ngModel.$formatters.push(function(value) {
+          if (angular.isUndefined(value) || value === null) {
+            $element.addClass("placeholder");
+            return "";
+          } else if (angular.isObject(value) || angular.isArray(value)) {
+            throw new Error("ace cannot use an object or an array as a model");
+          } else {
+            $element.removeClass("placeholder");
+          }
+          return value;
+        });
+        ngModel.$render = function() {
+          session.setValue(ngModel.$viewValue);
+        };
+        update = function() {
+          var viewValue;
+          viewValue = session.getValue();
+          return $scope.$evalAsync(function() {
+            return ngModel.$setViewValue(viewValue);
+          });
+        };
+        promise = null;
+        onChange = function() {
+          if (promise != null) {
+            $timeout.cancel(promise);
+          }
+          return promise = $timeout(update, 190, true);
+        };
+        session.on("change", onChange);
+        return $element.on("$destroy", function() {
+          editor.session.$stopWorker();
+          editor.destroy();
+        });
+      }
+    };
+  }
+]).directive("customInput", [
+  function() {
+    return {
+      restrict: "A",
+      require: "?ngModel",
+      link: function($scope, $element, $attrs, ngModel) {
+        if (ngModel == null) {
+          return;
+        }
+        $element.prop("contenteditable", true);
+        $element.prop("spellcheck", true);
+        ngModel.$render = function() {
+          $element.text(ngModel.$viewValue || '');
+        };
+        $element.on("keydown", function(e) {
+          if (e.keyCode === 13) {
+            e.preventDefault();
+          }
+        }).on("blur keyup change", function() {
+          return $scope.$apply();
+        }).on("input", function() {
+          ngModel.$setViewValue($element.text().replace(/[\n\r]/g, " "));
+        });
+      }
+    };
+  }
+]);
+
+angular.module("easyblog").factory("utils", [
+  function() {
+    return {
+      filterRepos: function(repos, names) {}
+    };
+  }
+]).filter("jekyll", [
+  function() {
+    var userPage;
+    userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]*)\.github\.io/;
+    return function(repos) {
+      if (!(repos instanceof Array)) {
+        return null;
+      }
+      return _.filter(repos, function(repo) {
+        var res;
+        if (res = repo.full_name.match(userPage)) {
+          if (res[1] === res[2]) {
+            return true;
+          }
+        }
+        return false;
+      });
+    };
+  }
+]);
+
+angular.module("easyblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html']);
+
+angular.module("templates/blog-list.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n  <!--<div class=\"body\">\n    <p class=\"text-muted\">\n      <a href=\"{{repo.html_url}}\" target=\"_blank\">{{repo.name}}</a>\n      Last updated at <time>{{repo.updated_at}}</time>\n    </p>\n    <p class=\"text-muted\">{{repo.description}}</p>\n  </div>-->\n</li>");
+  }
+]);
+
+angular.module("templates/post.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/post.html", "<article post ng-model=\"post\" ng-if=\"post\"></article>");
+  }
+]);
+
+angular.module("templates/editor.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/editor.html", "<form>\n  <div class=\"page-header\">\n    <h1 custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h2 custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h2>\n  </div>\n  <br><br>\n  <div class=\"page-content\">\n    <textarea class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Story...\"></div>\n  </div>\n</form>");
+  }
+]);
+
+angular.module("templates/list.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/list.html", "<div class=\"page-header\" ng-repeat=\"post in blogList | orderBy : post.date : reverse\">\n  <h5>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}?sha={{post.info.sha}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h5>\n  <time>{{post.date | date : 'MM/dd/yyyy'}}</time>\n</div>");
+  }
+]);
+
+angular.module("templates/index.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/index.html", "index");
+  }
+]);
