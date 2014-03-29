@@ -12,7 +12,7 @@ angular.module "templates/blog-list.html", []
     ($templateCache) ->
       $templateCache.put( "templates/blog-list.html",
         """
-        <li ng-repeat="repo in repos">
+        <li ng-repeat="repo in repos track by repo.name">
           <a ng-href="#!/{{repo.full_name}}">
             <img ng-src="{{repo.owner.avatar_url}}" class="avatar">
             {{repo.owner.login}}
@@ -47,6 +47,11 @@ angular.module "templates/editor.html", []
       $templateCache.put( "templates/editor.html",
         """
         <form>
+          <div class="action text-right">
+            <button class="btn btn-default" ng-click="delete()">Delete</button>
+            <switch ng-model="frontMatter.published"></switch>
+            <button class="btn btn-success" ng-click="save()">Save</button>
+          </div>
           <header class="page-header">
             <h1 custom-input class="post-title" data-placeholder="Title" ng-model="frontMatter.title"></h1>
             <h3 custom-input class="post-tagline" data-placeholder="Tagline" ng-model="frontMatter.tagline"></h3>
@@ -67,7 +72,7 @@ angular.module "templates/list.html", []
     ($templateCache) ->
       $templateCache.put( "templates/list.html",
         """
-        <div class="page-header" ng-repeat="post in blogList | orderBy : post.date : reverse">
+        <div class="page-header" ng-repeat="post in posts | orderBy : post.date : reverse">
           <h5>
             <a ng-href="#!/{{post.user}}/{{post.repo}}/{{post.info.path}}?sha={{post.info.sha}}">{{post.urlTitle}}</a>
             <small ng-if="post.type=='_drafts'">(draft)</small>

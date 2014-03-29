@@ -23,6 +23,7 @@ angular.module "easyblog"
         content = modelValue.replace ymlReg, (match, yml)->
           try
             frontMatter = jsyaml.safeLoad yml
+            if !frontMatter.published? then frontMatter.published = true
           catch e
             console.error e
 
@@ -184,4 +185,26 @@ angular.module "easyblog"
       return
 
     return
+]
+
+.directive "switch", [->
+  restrict:"E"
+  require:"?ngModel"
+  scope:
+    value:'=ngModel'
+  replace:true
+  template:"""
+    <div class="btn-group">
+      <button type="button" class="btn" ng-click="value = false" ng-class="{'btn-default':value, 'btn-primary':!value}">Draft</button>
+      <button type="button" class="btn" ng-click="value = true" ng-class="{'btn-default':!value, 'btn-primary':value}">Public</button>
+    </div>
+  """
+  link:($scope, $element, $attr, ngModel)->
+    $scope.$watch "value", (value, old)->
+      if value? and old? and value isnt old
+        ngModel.$setViewValue(value)
+      return
+
+    return
+
 ]

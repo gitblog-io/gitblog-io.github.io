@@ -60592,7 +60592,11 @@ makeOctokit = (function(_this) {
           return _cachedETags;
         };
         this.setCache = setCache = function(cachedETags) {
-          return _cachedETags = _.extend({}, _cachedETags, cachedETags);
+          if (!(cachedETags !== null && typeof cachedETags === 'object')) {
+            throw new Error('BUG: argument of method "setCache" should be an object');
+          } else {
+            return _cachedETags = cachedETags;
+          }
         };
         this.onRateLimitChanged = function(listener) {
           return _listeners.push(listener);
@@ -61823,7 +61827,7 @@ angular.module("easyblog").controller("IndexController", [
             $scope.saveCache();
             posts = [];
             configFileExists = false;
-            postReg = /^(_posts|_drafts)\/(?:[\w\.-]\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
+            postReg = /^(_posts|_drafts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
             configFileReg = /^_config.yml$/;
             for (_i = 0, _len = tree.length; _i < _len; _i++) {
               file = tree[_i];
@@ -61846,7 +61850,7 @@ angular.module("easyblog").controller("IndexController", [
             if (configFileExists) {
               return $scope.$apply(function() {
                 $scope.reponame = reponame;
-                return $scope.blogList = posts;
+                return $scope.posts = posts;
               });
             }
           });
@@ -61939,6 +61943,9 @@ angular.module("easyblog").directive("blogList", [
               var e;
               try {
                 frontMatter = jsyaml.safeLoad(yml);
+                if (frontMatter.published == null) {
+                  frontMatter.published = true;
+                }
               } catch (_error) {
                 e = _error;
                 console.error(e);
@@ -62127,6 +62134,25 @@ angular.module("easyblog").directive("blogList", [
       }
     };
   }
+]).directive("switch", [
+  function() {
+    return {
+      restrict: "E",
+      require: "?ngModel",
+      scope: {
+        value: '=ngModel'
+      },
+      replace: true,
+      template: "<div class=\"btn-group\">\n  <button type=\"button\" class=\"btn\" ng-click=\"value = false\" ng-class=\"{'btn-default':value, 'btn-primary':!value}\">Draft</button>\n  <button type=\"button\" class=\"btn\" ng-click=\"value = true\" ng-class=\"{'btn-default':!value, 'btn-primary':value}\">Public</button>\n</div>",
+      link: function($scope, $element, $attr, ngModel) {
+        $scope.$watch("value", function(value, old) {
+          if ((value != null) && (old != null) && value !== old) {
+            ngModel.$setViewValue(value);
+          }
+        });
+      }
+    };
+  }
 ]);
 
 angular.module("easyblog").factory("utils", [
@@ -62160,7 +62186,7 @@ angular.module("easyblog.templates", ['templates/editor.html', 'templates/list.h
 
 angular.module("templates/blog-list.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n  <!--<div class=\"body\">\n    <p class=\"text-muted\">\n      <a href=\"{{repo.html_url}}\" target=\"_blank\">{{repo.name}}</a>\n      Last updated at <time>{{repo.updated_at}}</time>\n    </p>\n    <p class=\"text-muted\">{{repo.description}}</p>\n  </div>-->\n</li>");
+    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos track by repo.name\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n  <!--<div class=\"body\">\n    <p class=\"text-muted\">\n      <a href=\"{{repo.html_url}}\" target=\"_blank\">{{repo.name}}</a>\n      Last updated at <time>{{repo.updated_at}}</time>\n    </p>\n    <p class=\"text-muted\">{{repo.description}}</p>\n  </div>-->\n</li>");
   }
 ]);
 
@@ -62172,13 +62198,13 @@ angular.module("templates/post.html", []).run([
 
 angular.module("templates/editor.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/editor.html", "<form>\n  <header class=\"page-header\">\n    <h1 custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <textarea class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Story...\"></div>\n  </div>\n</form>");
+    return $templateCache.put("templates/editor.html", "<form>\n  <div class=\"action text-right\">\n    <button class=\"btn btn-default\" ng-click=\"delete()\">Delete</button>\n    <switch ng-model=\"frontMatter.published\"></switch>\n    <button class=\"btn btn-success\" ng-click=\"save()\">Save</button>\n  </div>\n  <header class=\"page-header\">\n    <h1 custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <textarea class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Story...\"></div>\n  </div>\n</form>");
   }
 ]);
 
 angular.module("templates/list.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/list.html", "<div class=\"page-header\" ng-repeat=\"post in blogList | orderBy : post.date : reverse\">\n  <h5>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}?sha={{post.info.sha}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h5>\n  <time>{{post.date | date : 'MM/dd/yyyy'}}</time>\n</div>");
+    return $templateCache.put("templates/list.html", "<div class=\"page-header\" ng-repeat=\"post in posts | orderBy : post.date : reverse\">\n  <h5>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}?sha={{post.info.sha}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h5>\n  <time>{{post.date | date : 'MM/dd/yyyy'}}</time>\n</div>");
   }
 ]);
 

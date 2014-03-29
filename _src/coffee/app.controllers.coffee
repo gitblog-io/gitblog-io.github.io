@@ -21,7 +21,7 @@ angular.module "easyblog"
             posts = []
             configFileExists = false
 
-            postReg = /^(_posts|_drafts)\/(?:[\w\.-]\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/
+            postReg = /^(_posts|_drafts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/
             configFileReg = /^_config.yml$/
             for file in tree
               if file.type != 'blob' then continue
@@ -39,7 +39,7 @@ angular.module "easyblog"
             if configFileExists
               $scope.$apply ->
                 $scope.reponame = reponame
-                $scope.blogList = posts
+                $scope.posts = posts
 
     console.log "list"
 ]
