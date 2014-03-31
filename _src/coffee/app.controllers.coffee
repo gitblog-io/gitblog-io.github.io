@@ -152,7 +152,8 @@ angular.module "easyblog"
                 m = if m >= 10 then m + 1 else "0" + (m + 1)
                 d = date.getDate()
                 d = if d >= 10 then d else "0" + d
-                path = "_posts/#{y}-#{m}-#{d}-#{$scope.frontMatter.title}.md"
+                name = $scope.frontMatter.title.replace('\s', '-')
+                path = "_posts/#{y}-#{m}-#{d}-#{name}.md"
                 save()
                 .then (res)->
                   $scope.$evalAsync ->
