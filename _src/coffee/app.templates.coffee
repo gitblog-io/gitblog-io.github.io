@@ -71,7 +71,7 @@ angular.module "templates/list.html", []
         </div>
         <div class="page-header text-center">
           <h1>Posts</h1>
-          <small class="text-muted" ng-show="reponame">in {{reponame}}</small>
+          <small class="text-muted" ng-bind-template="in {{reponame}}"></small>
         </div>
         <div class="list-item" ng-repeat="post in posts | orderBy : post.date : reverse">
           <h3>
@@ -79,6 +79,10 @@ angular.module "templates/list.html", []
             <small ng-if="post.type=='_drafts'">(draft)</small>
           </h3>
           <small><time class="text-muted">{{post.date | date : 'MM/dd/yyyy'}}</time></small>
+        </div>
+        <div ng-show="posts.length == 0" class="jumbotron text-center">
+          <h3>No posts there.</h3>
+          <a class="btn btn-success btn-lg" ng-href="#!/{{username}}/{{reponame}}/new">New Post</a>
         </div>
         """
       )
@@ -107,6 +111,10 @@ angular.module "templates/index.html", []
               </div>
             </div>
           </div>
+        </div>
+        <div ng-show="repos.length == 0" class="jumbotron text-center">
+          <h3>No blogs there.</h3>
+          <button class="btn btn-primary btn-lg">Create One</button>
         </div>
         """
       )

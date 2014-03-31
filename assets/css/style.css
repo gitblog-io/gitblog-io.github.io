@@ -1155,7 +1155,7 @@ input[type="button"].btn-block {
   padding: 30px;
   margin-bottom: 30px;
   color: inherit;
-  background-color: #e6e6e6;
+  background-color: transparent;
 }
 .jumbotron h1,
 .jumbotron .h1 {
@@ -1486,6 +1486,19 @@ a:focus {
 }
 article[post] {
   margin: 100px 0;
+}
+.logo-huge {
+  font-family: 'pure';
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 200px;
 }
 @font-face {
   font-family: 'pure';
