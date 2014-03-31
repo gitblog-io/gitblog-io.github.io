@@ -4,7 +4,6 @@ angular.module "easyblog.templates", [
   'templates/index.html'
   'templates/blog-list.html'
   'templates/post.html'
-  'templates/progress.html'
 ]
 
 angular.module "templates/blog-list.html", []
