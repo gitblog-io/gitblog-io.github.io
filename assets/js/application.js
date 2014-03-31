@@ -62271,7 +62271,7 @@ angular.module("easyblog", ['ngRoute', 'angularLocalStorage', 'easyblog.template
       $scope._gh = gh = new Octokit({
         token: $scope.token
       });
-      if ($scope.cache != null) {
+      if ($scope.cache !== "") {
         gh.setCache($scope.cache);
       }
       $scope.saveCache = function() {

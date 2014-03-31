@@ -72,7 +72,7 @@ angular.module "easyblog", [
 
       $scope._gh = gh = new Octokit( token:$scope.token )
 
-      if $scope.cache? then gh.setCache($scope.cache)
+      if $scope.cache != "" then gh.setCache($scope.cache)
 
       $scope.saveCache = ->
         $scope.cache = $scope._gh.getCache()
