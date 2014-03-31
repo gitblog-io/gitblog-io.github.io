@@ -5,6 +5,7 @@ plumber = require "gulp-plumber"
 gulp = require "gulp"
 path = require "path"
 streamqueue = require "streamqueue"
+uglify = require "gulp-uglify"
 
 BOWER_PATH = "bower_components/"
 SRC_PATH = "_src/"
@@ -22,6 +23,7 @@ gulp.task "css", ->
         path.resolve(__dirname, "#{SRC_PATH}/less")
         path.resolve(__dirname, "#{BOWER_PATH}/bootstrap/less")
       ]
+      compress: true
     .pipe gulp.dest("#{DEST_PATH}/css")
 
 
@@ -59,6 +61,7 @@ gulp.task "js", ->
   appQueue.done()
     .pipe plumber()
     .pipe concat "application.js"
+    .pipe uglify()
     .pipe gulp.dest("#{DEST_PATH}/js")
 
 gulp.task "watch", ["css", "js"], ->
