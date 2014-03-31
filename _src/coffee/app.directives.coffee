@@ -1,10 +1,5 @@
 angular.module "easyblog"
 
-.directive "progress", [->
-  restrict: "A"
-  templateUrl: "templates/progress.html"
-]
-
 .directive "blogList", [->
   restrict: "A"
   templateUrl: "templates/blog-list.html"
