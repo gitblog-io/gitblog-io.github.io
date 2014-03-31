@@ -73,7 +73,7 @@ angular.module "templates/list.html", []
           <h1>Posts</h1>
           <small class="text-muted" ng-bind-template="in {{reponame}}"></small>
         </div>
-        <div class="list-item" ng-repeat="post in posts | orderBy : post.date : reverse">
+        <div class="list-item" ng-repeat="post in posts | orderBy : 'date' : true">
           <h3>
             <a ng-href="#!/{{post.user}}/{{post.repo}}/{{post.info.path}}?sha={{post.info.sha}}">{{post.urlTitle}}</a>
             <small ng-if="post.type=='_drafts'">(draft)</small>
