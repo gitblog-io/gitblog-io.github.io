@@ -80,7 +80,7 @@ angular.module "templates/list.html", []
           </h3>
           <small><time class="text-muted">{{post.date | date : 'MM/dd/yyyy'}}</time></small>
         </div>
-        <div ng-show="posts.length == 0" class="jumbotron text-center">
+        <div ng-show="!loading && !posts.length" class="jumbotron text-center">
           <h3>No posts there.</h3>
           <a class="btn btn-success btn-lg" ng-href="#!/{{username}}/{{reponame}}/new">New Post</a>
         </div>
@@ -112,7 +112,7 @@ angular.module "templates/index.html", []
             </div>
           </div>
         </div>
-        <div ng-show="repos.length == 0" class="jumbotron text-center">
+        <div ng-show="!loading && !repos.length" class="jumbotron text-center">
           <h3>No blogs there.</h3>
           <button class="btn btn-primary btn-lg">Create One</button>
         </div>
