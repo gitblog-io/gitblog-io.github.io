@@ -5,7 +5,7 @@ angular.module "easyblog"
 ]
 
 .filter "jekyll", [->
-  userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]*)\.github\.io/
+  userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]*)\.github\.(?:io|com)/
   (repos)->
     return null unless repos instanceof Array
     _.filter repos, (repo)->
