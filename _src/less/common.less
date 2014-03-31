@@ -1,0 +1,52 @@
+body{
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  .transition(color .15s);
+
+  &:hover,
+  &:focus {
+    color: black;
+    text-decoration: none;
+  }
+
+  &:focus {
+    .tab-focus();
+  }
+}
+
+.avatar{
+  .square(18px);
+  vertical-align: text-bottom;
+  border-radius: 10%;
+  &.avatar-large{
+    .square(48px);
+  }
+}
+
+.list-item{
+  margin: 50px 0;
+}
+
+.index-wrap{
+  @media (min-width: @screen-small){
+    margin-left: 30%;
+  }
+  margin-top: 50px;
+}
+
+.action{
+  position: absolute;
+  right: 0;
+  top:10px;
+  >.btn,
+  >.btn-group{
+    margin-right: 15px;
+  }
+}
+
+article[post]{
+  margin: 100px 0;
+}

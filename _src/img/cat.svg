@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="64px"
+	 height="64px" viewBox="-31.5 32.5 64 64" enable-background="new -31.5 32.5 64 64" xml:space="preserve">
+<g id="Layer_1">
+	<g id="Layer_1_1_" display="none">
+		<rect x="12" y="47" display="inline" width="40" height="17"/>
+		<polygon display="inline" points="12,47 12,32 26,47 		"/>
+		<polygon display="inline" points="52,47 52,32 38,47 		"/>
+		
+			<line display="inline" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-miterlimit="10" x1="24.5" y1="64" x2="24.5" y2="57"/>
+		
+			<line display="inline" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-miterlimit="10" x1="39.5" y1="64" x2="39.5" y2="57"/>
+	</g>
+	<g id="图层_2">
+		<polygon points="28.5,56.5 28.5,96.5 12.5,96.5 12.5,84.5 8.5,84.5 8.5,96.5 -7.5,96.5 -7.5,84.5 -11.5,84.5 -11.5,96.5 
+			-27.5,96.5 -27.5,56.5 -11.5,72.5 12.5,72.5 		"/>
+	</g>
+</g>
+<g id="Layer_2">
+	<rect x="-11.5" y="84.5" fill="#FFFFFF" width="4" height="12"/>
+	<rect x="8.5" y="84.5" fill="#FFFFFF" width="4" height="12"/>
+</g>
+</svg>

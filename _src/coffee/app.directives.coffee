@@ -1,5 +1,10 @@
 angular.module "easyblog"
 
+.directive "progress", [->
+  restrict: "A"
+  templateUrl: "templates/progress.html"
+]
+
 .directive "blogList", [->
   restrict: "A"
   templateUrl: "templates/blog-list.html"
@@ -9,7 +14,6 @@ angular.module "easyblog"
   restrict: "A"
   templateUrl: "templates/editor.html"
   require: "?ngModel"
-  scope:true
   link:($scope, $element, $attr, ngModel)->
     return unless ngModel?
 
@@ -40,8 +44,8 @@ angular.module "easyblog"
       frontMatter = "---\n#{yml}---\n"
       content = $scope.content
       viewValue = frontMatter + content
-      $scope.$evalAsync ->
-        ngModel.$setViewValue(viewValue)
+      ngModel.$setViewValue(viewValue)
+      $scope.$apply()
 
     promise = null
     $scope.$watch 'content', (data, oldData)->
@@ -129,7 +133,7 @@ angular.module "easyblog"
     )(editor.session.bgTokenizer)
 
     ngModel.$formatters.push (value) ->
-      if angular.isUndefined(value) or value is null
+      if angular.isUndefined(value) or value is null or value == ""
         $element.addClass "placeholder"
         return ""
       else if angular.isObject(value) or angular.isArray(value)
@@ -144,8 +148,7 @@ angular.module "easyblog"
 
     update = ->
       viewValue = session.getValue()
-      $scope.$evalAsync ->
-        ngModel.$setViewValue(viewValue)
+      ngModel.$setViewValue(viewValue)
 
     promise = null
     onChange = ->
@@ -153,6 +156,13 @@ angular.module "easyblog"
       promise = $timeout update, 190, true
 
     session.on "change", onChange
+
+    editor.on "focus", ->
+      $element.removeClass "placeholder"
+
+    editor.on "blur", ->
+      if session.getValue() == ""
+        $element.addClass "placeholder"
 
     $element.on "$destroy", ->
       editor.session.$stopWorker()
@@ -195,8 +205,8 @@ angular.module "easyblog"
   replace:true
   template:"""
     <div class="btn-group">
-      <button type="button" class="btn" ng-click="value = false" ng-class="{'btn-default':value, 'btn-primary':!value}">Draft</button>
-      <button type="button" class="btn" ng-click="value = true" ng-class="{'btn-default':!value, 'btn-primary':value}">Public</button>
+      <button type="button" class="btn" ng-click="value = false" ng-class="{'btn-default':value, 'btn-primary active':!value}">Draft</button>
+      <button type="button" class="btn" ng-click="value = true" ng-class="{'btn-default':!value, 'btn-primary active':value}">Public</button>
     </div>
   """
   link:($scope, $element, $attr, ngModel)->

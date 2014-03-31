@@ -1,13 +1,18 @@
 angular.module "easyblog"
 
-.controller "IndexController", [->
-  console.log "index"
+.controller "IndexController", [
+  "$scope"
+  ($scope)->
+    $scope.$root.loading = true
+    $scope.blogListReady.then ->
+      $scope.$root.loading = false
 ]
 
 .controller "ListController", [
   "$scope"
   "$routeParams"
   ($scope, $routeParams)->
+    $scope.$root.loading = true
     username = $routeParams.user
     reponame = $routeParams.repo
     if username? and reponame?
@@ -21,7 +26,7 @@ angular.module "easyblog"
             posts = []
             configFileExists = false
 
-            postReg = /^(_posts|_drafts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/
+            postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/
             configFileReg = /^_config.yml$/
             for file in tree
               if file.type != 'blob' then continue
@@ -38,7 +43,9 @@ angular.module "easyblog"
 
             if configFileExists
               $scope.$apply ->
+                $scope.$root.loading = false
                 $scope.reponame = reponame
+                $scope.username = username
                 $scope.posts = posts
 
     console.log "list"
@@ -49,14 +56,44 @@ angular.module "easyblog"
   "$routeParams"
   "$location"
   ($scope, $routeParams, $location)->
+    $scope.$root.loading = true
     username = $routeParams.user
     reponame = $routeParams.repo
     path = $routeParams.path
     sha = $routeParams.sha
     if username? and reponame? and path?
+      $scope.username = username
+      $scope.reponame = reponame
       $scope.blogListReady.then ->
         if repo = $scope.getRepo(username, reponame)
           _repo = repo._repo
+
+          save = ->
+            $scope.$root.loading = true
+            branch =　_repo.getBranch "master"
+            message = "Update by easyblog.github.io at" + (new Date()).toLocaleString()
+            promise = branch.write(path, $scope.post, message, false)
+            promise.then (res)->
+              $scope.$evalAsync ->
+                $location.search("sha", res.sha) unless $scope.new
+                $scope.$root.loading = false
+            , (err)->
+              console.error err
+
+            promise
+
+          deleteFunc = ->
+            $scope.$root.loading = true
+            branch =　_repo.getBranch "master"
+            message = "Update by easyblog.github.io at" + (new Date()).toLocaleString()
+            promise = branch.remove(path, message)
+            promise.then (res)->
+              $scope.$evalAsync ->
+                $location.path("/#{username}/#{reponame}")
+            , (err)->
+              console.error err
+
+            promise
 
           show = ->
             _repo.git.getBlob(sha)
@@ -64,7 +101,12 @@ angular.module "easyblog"
               $scope.saveCache()
 
               $scope.$apply ->
+                $scope.$root.loading = false
                 $scope.post = post
+
+                $scope.save = save
+
+                $scope.delete = deleteFunc
             , (err)->
               if err.status == 404
                 searchAndShow()
@@ -80,13 +122,46 @@ angular.module "easyblog"
                 path: path
               if blob?
                 sha = blob.sha
-                $location.search('sha', sha)
+                $scope.$evalAsync ->
+                  $location.search('sha', sha)
                 show()
               else
                 console.error "file path not found"
 
+          newPost = """---
+            layout: post
+            title:
+            tagline:
+            category: null
+            tags: []
+            published: true
+            ---
+
+            """
+
           unless sha?
-            searchAndShow()
+            if path == "new"
+              $scope.new = true
+              $scope.$root.loading = false
+              $scope.post = newPost
+
+              $scope.save = ->
+                date = new Date()
+                y = date.getFullYear()
+                m = date.getMonth()
+                m = if m >= 10 then m + 1 else "0" + (m + 1)
+                d = date.getDate()
+                d = if d >= 10 then d else "0" + d
+                path = "_posts/#{y}-#{m}-#{d}-#{$scope.frontMatter.title}.md"
+                save()
+                .then (res)->
+                  $scope.$evalAsync ->
+                    $location.path("/#{username}/#{reponame}/#{path}")
+                    .search('sha',res.sha)
+                    .replace()
+
+            else
+              searchAndShow()
           else
             show()
 

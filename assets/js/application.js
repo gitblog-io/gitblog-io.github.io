@@ -14091,7 +14091,7 @@ return jQuery;
 }));
 
 /**
- * @license AngularJS v1.2.14
+ * @license AngularJS v1.2.15-build.2399+sha.ca4ddfa
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -14160,7 +14160,7 @@ function minErr(module) {
       return match;
     });
 
-    message = message + '\nhttp://errors.angularjs.org/1.2.14/' +
+    message = message + '\nhttp://errors.angularjs.org/1.2.15-build.2399+sha.ca4ddfa/' +
       (module ? module + '/' : '') + code;
     for (i = 2; i < arguments.length; i++) {
       message = message + (i == 2 ? '?' : '&') + 'p' + (i-2) + '=' +
@@ -15632,7 +15632,7 @@ function setupModuleLoader(window) {
      * Then you can create an injector and load your modules like this:
      *
      * ```js
-     * var injector = angular.injector(['ng', 'MyModule'])
+     * var injector = angular.injector(['ng', 'myModule'])
      * ```
      *
      * However it's more likely that you'll just use
@@ -15641,7 +15641,7 @@ function setupModuleLoader(window) {
      *
      * @param {!string} name The name of the module to create or retrieve.
      * @param {Array.<string>=} requires If specified then new module is being created. If
-     *        unspecified then the the module is being retrieved for further configuration.
+     *        unspecified then the module is being retrieved for further configuration.
      * @param {Function} configFn Optional configuration function for the module. Same as
      *        {@link angular.Module#config Module#config()}.
      * @returns {module} new module with the {@link angular.Module} api.
@@ -15682,7 +15682,6 @@ function setupModuleLoader(window) {
            * @ngdoc property
            * @name angular.Module#requires
            * @module ng
-           * @propertyOf angular.Module
            * @returns {Array.<string>} List of module names which must be loaded before this module.
            * @description
            * Holds the list of modules which the injector will load before the current module is
@@ -15694,7 +15693,6 @@ function setupModuleLoader(window) {
            * @ngdoc property
            * @name angular.Module#name
            * @module ng
-           * @propertyOf angular.Module
            * @returns {string} Name of the module.
            * @description
            */
@@ -15972,11 +15970,11 @@ function setupModuleLoader(window) {
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '1.2.14',    // all of these placeholder strings will be replaced by grunt's
+  full: '1.2.15-build.2399+sha.ca4ddfa',    // all of these placeholder strings will be replaced by grunt's
   major: 1,    // package task
   minor: 2,
-  dot: 14,
-  codeName: 'feisty-cryokinesis'
+  dot: 15,
+  codeName: 'snapshot'
 };
 
 
@@ -16557,7 +16555,7 @@ forEach({
     return jqLite(element).data('$isolateScope') || jqLite(element).data('$isolateScopeNoTemplate');
   },
 
-  controller: jqLiteController ,
+  controller: jqLiteController,
 
   injector: function(element) {
     return jqLiteInheritedData(element, '$injector');
@@ -18430,7 +18428,6 @@ function Browser(window, document, $log, $sniffer) {
 
   /**
    * @name $browser#onUrlChange
-   * @TODO(vojta): refactor to use node's syntax for events
    *
    * @description
    * Register callback function that will be called, when url changes.
@@ -18451,6 +18448,7 @@ function Browser(window, document, $log, $sniffer) {
    * @return {function(string)} Returns the registered listener fn - handy if the fn is anonymous.
    */
   self.onUrlChange = function(callback) {
+    // TODO(vojta): refactor to use node's syntax for events
     if (!urlChangeInit) {
       // We listen on both (hashchange/popstate) when available, as some browsers (e.g. Opera)
       // don't fire popstate when user change the address bar and don't fire hashchange when url
@@ -19372,7 +19370,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       Suffix = 'Directive',
       COMMENT_DIRECTIVE_REGEXP = /^\s*directive\:\s*([\d\w\-_]+)\s+(.*)$/,
       CLASS_DIRECTIVE_REGEXP = /(([\d\w\-_]+)(?:\:([^;]+))?;?)/,
-      TABLE_CONTENT_REGEXP = /^<\s*(tr|th|td|tbody)(\s+[^>]*)?>/i;
+      TABLE_CONTENT_REGEXP = /^<\s*(tr|th|td|thead|tbody|tfoot)(\s+[^>]*)?>/i;
 
   // Ref: http://developers.whatwg.org/webappapis.html#event-handler-idl-attributes
   // The assumption is that future DOM event attribute names will begin with
@@ -20518,16 +20516,15 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       template = trim(template);
       if ((type = TABLE_CONTENT_REGEXP.exec(template))) {
         type = type[1].toLowerCase();
-        var table = jqLite('<table>' + template + '</table>'),
-            tbody = table.children('tbody'),
-            leaf = /(td|th)/.test(type) && table.find('tr');
-        if (tbody.length && type !== 'tbody') {
-          table = tbody;
+        var table = jqLite('<table>' + template + '</table>');
+        if (/(thead|tbody|tfoot)/.test(type)) {
+          return table.children(type);
         }
-        if (leaf && leaf.length) {
-          table = leaf;
+        table = table.children('tbody');
+        if (type === 'tr') {
+          return table.children('tr');
         }
-        return table.contents();
+        return table.children('tr').contents();
       }
       return jqLite('<div>' +
                       template +
@@ -21617,7 +21614,7 @@ function $HttpProvider() {
      *   - **headers** – `{function([headerName])}` – Header getter function.
      *   - **config** – `{Object}` – The configuration object that was used to generate the request.
      *
-     * @property {Array.&ltObject&gt;} pendingRequests Array of config objects for currently pending
+     * @property {Array.<Object>} pendingRequests Array of config objects for currently pending
      *   requests. This is primarily meant to be used for debugging purposes.
      *
      *
@@ -21919,7 +21916,6 @@ function $HttpProvider() {
         /**
          * @ngdoc property
          * @name $http#defaults
-         * @propertyOf ng.$http
          *
          * @description
          * Runtime equivalent of the `$httpProvider.defaults` property. Allows configuration of
@@ -22670,7 +22666,7 @@ function $IntervalProvider() {
       * @description
       * Cancels a task associated with the `promise`.
       *
-      * @param {number} promise Promise returned by the `$interval` function.
+      * @param {promise} promise returned by the `$interval` function.
       * @returns {boolean} Returns `true` if the task was successfully canceled.
       */
     interval.cancel = function(promise) {
@@ -25568,7 +25564,6 @@ function $RootScopeProvider(){
     /**
      * @ngdoc property
      * @name $rootScope.Scope#$id
-     * @propertyOf ng.$rootScope.Scope
      * @returns {number} Unique scope ID (monotonically increasing alphanumeric sequence) useful for
      *   debugging.
      */
@@ -26081,7 +26076,6 @@ function $RootScopeProvider(){
       /**
        * @ngdoc event
        * @name $rootScope.Scope#$destroy
-       * @eventOf ng.$rootScope.Scope
        * @eventType broadcast on scope being destroyed
        *
        * @description
@@ -26299,7 +26293,7 @@ function $RootScopeProvider(){
        *   - `defaultPrevented` - `{boolean}`: true if `preventDefault` was called.
        *
        * @param {string} name Event name to listen on.
-       * @param {function(event, args...)} listener Function to call when the event is emitted.
+       * @param {function(event, ...args)} listener Function to call when the event is emitted.
        * @returns {function()} Returns a deregistration function for this listener.
        */
       $on: function(name, listener) {
@@ -27100,7 +27094,7 @@ function $SceDelegateProvider() {
  * |---------------------|----------------|
  * | `$sce.HTML`         | For HTML that's safe to source into the application.  The {@link ng.directive:ngBindHtml ngBindHtml} directive uses this context for bindings. |
  * | `$sce.CSS`          | For CSS that's safe to source into the application.  Currently unused.  Feel free to use it in your own directives. |
- * | `$sce.URL`          | For URLs that are safe to follow as links.  Currently unused (`<a href=` and `<img src=` sanitize their urls and don't consititute an SCE context. |
+ * | `$sce.URL`          | For URLs that are safe to follow as links.  Currently unused (`<a href=` and `<img src=` sanitize their urls and don't constitute an SCE context. |
  * | `$sce.RESOURCE_URL` | For URLs that are not only safe to follow as links, but whose contens are also safe to include in your application.  Examples include `ng-include`, `src` / `ngSrc` bindings for tags other than `IMG` (e.g. `IFRAME`, `OBJECT`, etc.)  <br><br>Note that `$sce.RESOURCE_URL` makes a stronger statement about the URL than `$sce.URL` does and therefore contexts requiring values trusted for `$sce.RESOURCE_URL` can be used anywhere that values trusted for `$sce.URL` are required. |
  * | `$sce.JS`           | For JavaScript that is safe to execute in your application's context.  Currently unused.  Feel free to use it in your own directives. |
  *
@@ -28541,6 +28535,32 @@ function timeZoneGetter(date) {
   return paddedZone;
 }
 
+function getFirstThursdayOfYear(year) {
+    // 0 = index of January
+    var dayOfWeekOnFirst = (new Date(year, 0, 1)).getDay();
+    // 4 = index of Thursday (+1 to account for 1st = 5)
+    // 11 = index of *next* Thursday (+1 account for 1st = 12)
+    return new Date(year, 0, ((dayOfWeekOnFirst <= 4) ? 5 : 12) - dayOfWeekOnFirst);
+}
+
+function getThursdayThisWeek(datetime) {
+    return new Date(datetime.getFullYear(), datetime.getMonth(),
+      // 4 = index of Thursday
+      datetime.getDate() + (4 - datetime.getDay()));
+}
+
+function weekGetter(size) {
+   return function(date) {
+      var firstThurs = getFirstThursdayOfYear(date.getFullYear()),
+         thisThurs = getThursdayThisWeek(date);
+
+      var diff = +thisThurs - +firstThurs,
+         result = 1 + Math.round(diff / 6.048e8); // 6.048e8 ms per week
+
+      return padNumber(result, size);
+   };
+}
+
 function ampmGetter(date, formats) {
   return date.getHours() < 12 ? formats.AMPMS[0] : formats.AMPMS[1];
 }
@@ -28569,10 +28589,12 @@ var DATE_FORMATS = {
   EEEE: dateStrGetter('Day'),
    EEE: dateStrGetter('Day', true),
      a: ampmGetter,
-     Z: timeZoneGetter
+     Z: timeZoneGetter,
+    ww: weekGetter(2),
+     w: weekGetter(1)
 };
 
-var DATE_FORMATS_SPLIT = /((?:[^yMdHhmsaZE']+)|(?:'(?:[^']|'')*')|(?:E+|y+|M+|d+|H+|h+|m+|s+|a|Z))(.*)/,
+var DATE_FORMATS_SPLIT = /((?:[^yMdHhmsaZEw']+)|(?:'(?:[^']|'')*')|(?:E+|y+|M+|d+|H+|h+|m+|s+|a|Z|w+))(.*)/,
     NUMBER_STRING = /^\-?\d+$/;
 
 /**
@@ -28607,6 +28629,8 @@ var DATE_FORMATS_SPLIT = /((?:[^yMdHhmsaZE']+)|(?:'(?:[^']|'')*')|(?:E+|y+|M+|d+
  *   * `'.sss' or ',sss'`: Millisecond in second, padded (000-999)
  *   * `'a'`: am/pm marker
  *   * `'Z'`: 4 digit (+sign) representation of the timezone offset (-1200-+1200)
+ *   * `'ww'`: ISO-8601 week of year (00-53)
+ *   * `'w'`: ISO-8601 week of year (0-53)
  *
  *   `format` string can also be one of the following predefined
  *   {@link guide/i18n localizable formats}:
@@ -28747,7 +28771,7 @@ function dateFilter($locale) {
  * @returns {string} JSON string.
  *
  *
- * @example:
+ * @example
    <example>
      <file name="index.html">
        <pre>{{ {'name':'value'} | json }}</pre>
@@ -29897,6 +29921,11 @@ var ngFormDirective = formDirectiveFactory(true);
 var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
 var EMAIL_REGEXP = /^[a-z0-9!#$%&'*+/=?^_`{|}~.-]+@[a-z0-9-]+(\.[a-z0-9-]+)*$/i;
 var NUMBER_REGEXP = /^\s*(\-|\+)?(\d+|(\d*(\.\d*)))\s*$/;
+var DATE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})$/;
+var DATETIMELOCAL_REGEXP = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)$/;
+var WEEK_REGEXP = /^(\d{4})-W(\d\d)$/;
+var MONTH_REGEXP = /^(\d{4})-(\d\d)$/;
+var TIME_REGEXP = /^(\d\d):(\d\d)$/;
 
 var inputType = {
 
@@ -29977,6 +30006,425 @@ var inputType = {
    */
   'text': textInputType,
 
+    /**
+     * @ngdoc input
+     * @name input[date]
+     *
+     * @description
+     * Input with date validation and transformation. In browsers that do not yet support
+     * the HTML5 date input, a text element will be used. In that case, text must be entered in a valid ISO-8601
+     * date format (yyyy-MM-dd), for example: `2009-01-06`. The model must always be a Date object.
+     *
+     * @param {string} ngModel Assignable angular expression to data-bind to.
+     * @param {string=} name Property name of the form under which the control is published.
+     * @param {string=} min Sets the `min` validation error key if the value entered is less than `min`. This must be a
+     * valid ISO date string (yyyy-MM-dd).
+     * @param {string=} max Sets the `max` validation error key if the value entered is greater than `max`. This must be
+     * a valid ISO date string (yyyy-MM-dd).
+     * @param {string=} required Sets `required` validation error key if the value is not entered.
+     * @param {string=} ngRequired Adds `required` attribute and `required` validation constraint to
+     *    the element when the ngRequired expression evaluates to true. Use `ngRequired` instead of
+     *    `required` when you want to data-bind to the `required` attribute.
+     * @param {string=} ngChange Angular expression to be executed when input changes due to user
+     *    interaction with the input element.
+     *
+     * @example
+     <example name="date-input-directive">
+     <file name="index.html">
+       <script>
+          function Ctrl($scope) {
+            $scope.value = new Date(2013, 9, 22);
+          }
+       </script>
+       <form name="myForm" ng-controller="Ctrl as dateCtrl">
+          Pick a date between in 2013:
+          <input type="date" id="exampleInput" name="input" ng-model="value"
+              placeholder="yyyy-MM-dd" min="2013-01-01" max="2013-12-31" required />
+          <span class="error" ng-show="myForm.input.$error.required">
+              Required!</span>
+          <span class="error" ng-show="myForm.input.$error.date">
+              Not a valid date!</span>
+           <tt>value = {{value | date: "yyyy-MM-dd"}}</tt><br/>
+           <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+           <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+           <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+           <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt><br/>
+       </form>
+     </file>
+     <file name="protractor.js" type="protractor">
+        var value = element(by.binding('value | date: "yyyy-MM-dd"'));
+        var valid = element(by.binding('myForm.input.$valid'));
+        var input = element(by.model('value'));
+
+        // currently protractor/webdriver does not support
+        // sending keys to all known HTML5 input controls
+        // for various browsers (see https://github.com/angular/protractor/issues/562).
+        function setInput(val) {
+          // set the value of the element and force validation.
+          var scr = "var ipt = document.getElementById('exampleInput'); " +
+          "ipt.value = '" + val + "';" +
+          "angular.element(ipt).scope().$apply(function(s) { s.myForm[ipt.name].$setViewValue('" + val + "'); });";
+          browser.executeScript(scr);
+        }
+
+        it('should initialize to model', function() {
+          expect(value.getText()).toContain('2013-10-22');
+          expect(valid.getText()).toContain('myForm.input.$valid = true');
+        });
+
+        it('should be invalid if empty', function() {
+          setInput('');
+          expect(value.getText()).toEqual('value =');
+          expect(valid.getText()).toContain('myForm.input.$valid = false');
+        });
+
+        it('should be invalid if over max', function() {
+          setInput('2015-01-01');
+          expect(value.getText()).toContain('');
+          expect(valid.getText()).toContain('myForm.input.$valid = false');
+        });
+     </file>
+     </example>f
+     */
+  'date': createDateInputType('date', DATE_REGEXP,
+         createDateParser(DATE_REGEXP, ['yyyy', 'MM', 'dd']),
+         'yyyy-MM-dd'),
+
+   /**
+    * @ngdoc input
+    * @name input[dateTimeLocal]
+    *
+    * @description
+    * Input with datetime validation and transformation. In browsers that do not yet support
+    * the HTML5 date input, a text element will be used. In that case, the text must be entered in a valid ISO-8601
+    * local datetime format (yyyy-MM-ddTHH:mm), for example: `2010-12-28T14:57`. The model must be a Date object.
+    *
+    * @param {string} ngModel Assignable angular expression to data-bind to.
+    * @param {string=} name Property name of the form under which the control is published.
+    * @param {string=} min Sets the `min` validation error key if the value entered is less than `min`. This must be a
+    * valid ISO datetime format (yyyy-MM-ddTHH:mm).
+    * @param {string=} max Sets the `max` validation error key if the value entered is greater than `max`. This must be
+    * a valid ISO datetime format (yyyy-MM-ddTHH:mm).
+    * @param {string=} required Sets `required` validation error key if the value is not entered.
+    * @param {string=} ngRequired Adds `required` attribute and `required` validation constraint to
+    *    the element when the ngRequired expression evaluates to true. Use `ngRequired` instead of
+    *    `required` when you want to data-bind to the `required` attribute.
+    * @param {string=} ngChange Angular expression to be executed when input changes due to user
+    *    interaction with the input element.
+    *
+    * @example
+    <example name="datetimelocal-input-directive">
+    <file name="index.html">
+      <script>
+        function Ctrl($scope) {
+          $scope.value = new Date(2010, 11, 28, 14, 57);
+        }
+      </script>
+      <form name="myForm" ng-controller="Ctrl as dateCtrl">
+        Pick a date between in 2013:
+        <input type="datetime-local" id="exampleInput" name="input" ng-model="value"
+            placeholder="yyyy-MM-ddTHH:mm" min="2001-01-01T00:00" max="2013-12-31T00:00" required />
+        <span class="error" ng-show="myForm.input.$error.required">
+            Required!</span>
+        <span class="error" ng-show="myForm.input.$error.datetimelocal">
+            Not a valid date!</span>
+        <tt>value = {{value | date: "yyyy-MM-ddTHH:mm"}}</tt><br/>
+        <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+        <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+        <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+        <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt><br/>
+      </form>
+    </file>
+    <file name="protractor.js" type="protractor">
+      var value = element(by.binding('value | date: "yyyy-MM-ddTHH:mm"'));
+      var valid = element(by.binding('myForm.input.$valid'));
+      var input = element(by.model('value'));
+
+      // currently protractor/webdriver does not support
+      // sending keys to all known HTML5 input controls
+      // for various browsers (https://github.com/angular/protractor/issues/562).
+      function setInput(val) {
+        // set the value of the element and force validation.
+        var scr = "var ipt = document.getElementById('exampleInput'); " +
+        "ipt.value = '" + val + "';" +
+        "angular.element(ipt).scope().$apply(function(s) { s.myForm[ipt.name].$setViewValue('" + val + "'); });";
+        browser.executeScript(scr);
+      }
+
+      it('should initialize to model', function() {
+        expect(value.getText()).toContain('2010-12-28T14:57');
+        expect(valid.getText()).toContain('myForm.input.$valid = true');
+      });
+
+      it('should be invalid if empty', function() {
+        setInput('');
+        expect(value.getText()).toEqual('value =');
+        expect(valid.getText()).toContain('myForm.input.$valid = false');
+      });
+
+      it('should be invalid if over max', function() {
+        setInput('2015-01-01T23:59');
+        expect(value.getText()).toContain('');
+        expect(valid.getText()).toContain('myForm.input.$valid = false');
+      });
+    </file>
+    </example>
+    */
+  'datetime-local': createDateInputType('datetimelocal', DATETIMELOCAL_REGEXP,
+      createDateParser(DATETIMELOCAL_REGEXP, ['yyyy', 'MM', 'dd', 'HH', 'mm']),
+      'yyyy-MM-ddTHH:mm'),
+
+  /**
+   * @ngdoc input
+   * @name input[time]
+   *
+   * @description
+   * Input with time validation and transformation. In browsers that do not yet support
+   * the HTML5 date input, a text element will be used. In that case, the text must be entered in a valid ISO-8601
+   * local time format (HH:mm), for example: `14:57`. Model must be a Date object. This binding will always output a
+   * Date object to the model of January 1, 1900, or local date `new Date(0, 0, 1, HH, mm)`.
+   *
+   * @param {string} ngModel Assignable angular expression to data-bind to.
+   * @param {string=} name Property name of the form under which the control is published.
+   * @param {string=} min Sets the `min` validation error key if the value entered is less than `min`. This must be a
+   * valid ISO time format (HH:mm).
+   * @param {string=} max Sets the `max` validation error key if the value entered is greater than `max`. This must be a
+   * valid ISO time format (HH:mm).
+   * @param {string=} required Sets `required` validation error key if the value is not entered.
+   * @param {string=} ngRequired Adds `required` attribute and `required` validation constraint to
+   *    the element when the ngRequired expression evaluates to true. Use `ngRequired` instead of
+   *    `required` when you want to data-bind to the `required` attribute.
+   * @param {string=} ngChange Angular expression to be executed when input changes due to user
+   *    interaction with the input element.
+   *
+   * @example
+   <example name="time-input-directive">
+   <file name="index.html">
+     <script>
+      function Ctrl($scope) {
+        $scope.value = new Date(0, 0, 1, 14, 57);
+      }
+     </script>
+     <form name="myForm" ng-controller="Ctrl as dateCtrl">
+        Pick a between 8am and 5pm:
+        <input type="time" id="exampleInput" name="input" ng-model="value"
+            placeholder="HH:mm" min="08:00" max="17:00" required />
+        <span class="error" ng-show="myForm.input.$error.required">
+            Required!</span>
+        <span class="error" ng-show="myForm.input.$error.time">
+            Not a valid date!</span>
+        <tt>value = {{value | date: "HH:mm"}}</tt><br/>
+        <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+        <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+        <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+        <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt><br/>
+     </form>
+   </file>
+   <file name="protractor.js" type="protractor">
+      var value = element(by.binding('value | date: "HH:mm"'));
+      var valid = element(by.binding('myForm.input.$valid'));
+      var input = element(by.model('value'));
+
+      // currently protractor/webdriver does not support
+      // sending keys to all known HTML5 input controls
+      // for various browsers (https://github.com/angular/protractor/issues/562).
+      function setInput(val) {
+        // set the value of the element and force validation.
+        var scr = "var ipt = document.getElementById('exampleInput'); " +
+        "ipt.value = '" + val + "';" +
+        "angular.element(ipt).scope().$apply(function(s) { s.myForm[ipt.name].$setViewValue('" + val + "'); });";
+        browser.executeScript(scr);
+      }
+
+      it('should initialize to model', function() {
+        expect(value.getText()).toContain('14:57');
+        expect(valid.getText()).toContain('myForm.input.$valid = true');
+      });
+
+      it('should be invalid if empty', function() {
+        setInput('');
+        expect(value.getText()).toEqual('value =');
+        expect(valid.getText()).toContain('myForm.input.$valid = false');
+      });
+
+      it('should be invalid if over max', function() {
+        setInput('23:59');
+        expect(value.getText()).toContain('');
+        expect(valid.getText()).toContain('myForm.input.$valid = false');
+      });
+   </file>
+   </example>
+   */
+  'time': createDateInputType('time', TIME_REGEXP,
+      createDateParser(TIME_REGEXP, ['HH', 'mm']),
+     'HH:mm'),
+
+   /**
+    * @ngdoc input
+    * @name input[week]
+    *
+    * @description
+    * Input with week-of-the-year validation and transformation to Date. In browsers that do not yet support
+    * the HTML5 week input, a text element will be used. In that case, the text must be entered in a valid ISO-8601
+    * week format (yyyy-W##), for example: `2013-W02`. The model must always be a Date object.
+    *
+    * @param {string} ngModel Assignable angular expression to data-bind to.
+    * @param {string=} name Property name of the form under which the control is published.
+    * @param {string=} min Sets the `min` validation error key if the value entered is less than `min`. This must be a
+    * valid ISO week format (yyyy-W##).
+    * @param {string=} max Sets the `max` validation error key if the value entered is greater than `max`. This must be
+    * a valid ISO week format (yyyy-W##).
+    * @param {string=} required Sets `required` validation error key if the value is not entered.
+    * @param {string=} ngRequired Adds `required` attribute and `required` validation constraint to
+    *    the element when the ngRequired expression evaluates to true. Use `ngRequired` instead of
+    *    `required` when you want to data-bind to the `required` attribute.
+    * @param {string=} ngChange Angular expression to be executed when input changes due to user
+    *    interaction with the input element.
+    *
+    * @example
+    <example name="week-input-directive">
+    <file name="index.html">
+      <script>
+      function Ctrl($scope) {
+        $scope.value = new Date(2013, 0, 3);
+      }
+      </script>
+      <form name="myForm" ng-controller="Ctrl as dateCtrl">
+        Pick a date between in 2013:
+        <input id="exampleInput" type="week" name="input" ng-model="value"
+            placeholder="YYYY-W##" min="2012-W32" max="2013-W52" required />
+        <span class="error" ng-show="myForm.input.$error.required">
+            Required!</span>
+        <span class="error" ng-show="myForm.input.$error.week">
+            Not a valid date!</span>
+        <tt>value = {{value | date: "yyyy-Www"}}</tt><br/>
+        <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+        <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+        <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+        <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt><br/>
+      </form>
+    </file>
+    <file name="protractor.js" type="protractor">
+      var value = element(by.binding('value | date: "yyyy-Www"'));
+      var valid = element(by.binding('myForm.input.$valid'));
+      var input = element(by.model('value'));
+
+      // currently protractor/webdriver does not support
+      // sending keys to all known HTML5 input controls
+      // for various browsers (https://github.com/angular/protractor/issues/562).
+      function setInput(val) {
+        // set the value of the element and force validation.
+        var scr = "var ipt = document.getElementById('exampleInput'); " +
+        "ipt.value = '" + val + "';" +
+        "angular.element(ipt).scope().$apply(function(s) { s.myForm[ipt.name].$setViewValue('" + val + "'); });";
+        browser.executeScript(scr);
+      }
+
+      it('should initialize to model', function() {
+        expect(value.getText()).toContain('2013-W01');
+        expect(valid.getText()).toContain('myForm.input.$valid = true');
+      });
+
+      it('should be invalid if empty', function() {
+        setInput('');
+        expect(value.getText()).toEqual('value =');
+        expect(valid.getText()).toContain('myForm.input.$valid = false');
+      });
+
+      it('should be invalid if over max', function() {
+        setInput('2015-W01');
+        expect(value.getText()).toContain('');
+        expect(valid.getText()).toContain('myForm.input.$valid = false');
+      });
+    </file>
+    </example>
+    */
+  'week': createDateInputType('week', WEEK_REGEXP, weekParser, 'yyyy-Www'),
+
+  /**
+   * @ngdoc input
+   * @name input[month]
+   *
+   * @description
+   * Input with month validation and transformation. In browsers that do not yet support
+   * the HTML5 month input, a text element will be used. In that case, the text must be entered in a valid ISO-8601
+   * month format (yyyy-MM), for example: `2009-01`. The model must always be a Date object. In the event the model is
+   * not set to the first of the month, the first of that model's month is assumed.
+   *
+   * @param {string} ngModel Assignable angular expression to data-bind to.
+   * @param {string=} name Property name of the form under which the control is published.
+   * @param {string=} min Sets the `min` validation error key if the value entered is less than `min`. This must be
+   * a valid ISO month format (yyyy-MM).
+   * @param {string=} max Sets the `max` validation error key if the value entered is greater than `max`. This must
+   * be a valid ISO month format (yyyy-MM).
+   * @param {string=} required Sets `required` validation error key if the value is not entered.
+   * @param {string=} ngRequired Adds `required` attribute and `required` validation constraint to
+   *    the element when the ngRequired expression evaluates to true. Use `ngRequired` instead of
+   *    `required` when you want to data-bind to the `required` attribute.
+   * @param {string=} ngChange Angular expression to be executed when input changes due to user
+   *    interaction with the input element.
+   *
+   * @example
+   <example name="month-input-directive">
+   <file name="index.html">
+     <script>
+      function Ctrl($scope) {
+        $scope.value = new Date(2013, 9, 1);
+      }
+     </script>
+     <form name="myForm" ng-controller="Ctrl as dateCtrl">
+       Pick a month int 2013:
+       <input id="exampleInput" type="month" name="input" ng-model="value"
+          placeholder="yyyy-MM" min="2013-01" max="2013-12" required />
+       <span class="error" ng-show="myForm.input.$error.required">
+          Required!</span>
+       <span class="error" ng-show="myForm.input.$error.month">
+          Not a valid month!</span>
+       <tt>value = {{value | date: "yyyy-MM"}}</tt><br/>
+       <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+       <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+       <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+       <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt><br/>
+     </form>
+   </file>
+   <file name="protractor.js" type="protractor">
+      var value = element(by.binding('value | date: "yyyy-MM"'));
+      var valid = element(by.binding('myForm.input.$valid'));
+      var input = element(by.model('value'));
+
+      // currently protractor/webdriver does not support
+      // sending keys to all known HTML5 input controls
+      // for various browsers (https://github.com/angular/protractor/issues/562).
+      function setInput(val) {
+        // set the value of the element and force validation.
+        var scr = "var ipt = document.getElementById('exampleInput'); " +
+        "ipt.value = '" + val + "';" +
+        "angular.element(ipt).scope().$apply(function(s) { s.myForm[ipt.name].$setViewValue('" + val + "'); });";
+        browser.executeScript(scr);
+      }
+
+      it('should initialize to model', function() {
+        expect(value.getText()).toContain('2013-10');
+        expect(valid.getText()).toContain('myForm.input.$valid = true');
+      });
+
+      it('should be invalid if empty', function() {
+        setInput('');
+        expect(value.getText()).toEqual('value =');
+        expect(valid.getText()).toContain('myForm.input.$valid = false');
+      });
+
+      it('should be invalid if over max', function() {
+        setInput('2015-01');
+        expect(value.getText()).toContain('');
+        expect(valid.getText()).toContain('myForm.input.$valid = false');
+      });
+   </file>
+   </example>
+   */
+  'month': createDateInputType('month', MONTH_REGEXP,
+     createDateParser(MONTH_REGEXP, ['yyyy', 'MM']),
+     'yyyy-MM'),
 
   /**
    * @ngdoc input
@@ -30479,6 +30927,108 @@ function textInputType(scope, element, attr, ctrl, $sniffer, $browser) {
   }
 }
 
+function weekParser(isoWeek) {
+   if(isDate(isoWeek)) {
+      return isoWeek;
+   }
+
+   if(isString(isoWeek)) {
+      WEEK_REGEXP.lastIndex = 0;
+      var parts = WEEK_REGEXP.exec(isoWeek);
+      if(parts) {
+         var year = +parts[1],
+            week = +parts[2],
+            firstThurs = getFirstThursdayOfYear(year),
+            addDays = (week - 1) * 7;
+         return new Date(year, 0, firstThurs.getDate() + addDays);
+      }
+   }
+
+   return NaN;
+}
+
+function createDateParser(regexp, mapping) {
+   return function(iso) {
+      var parts, map;
+
+      if(isDate(iso)) {
+         return iso;
+      }
+
+      if(isString(iso)) {
+         regexp.lastIndex = 0;
+         parts = regexp.exec(iso);
+
+         if(parts) {
+            parts.shift();
+            map = { yyyy: 0, MM: 1, dd: 1, HH: 0, mm: 0 };
+
+            forEach(parts, function(part, index) {
+               if(index < mapping.length) {
+                  map[mapping[index]] = +part;
+               }
+            });
+
+            return new Date(map.yyyy, map.MM - 1, map.dd, map.HH, map.mm);
+         }
+      }
+
+      return NaN;
+   };
+}
+
+function createDateInputType(type, regexp, parseDate, format) {
+   return function dynamicDateInputType(scope, element, attr, ctrl, $sniffer, $browser, $filter) {
+      textInputType(scope, element, attr, ctrl, $sniffer, $browser);
+
+      ctrl.$parsers.push(function(value) {
+         if(ctrl.$isEmpty(value)) {
+            ctrl.$setValidity(type, true);
+            return null;
+         }
+
+         if(regexp.test(value)) {
+            ctrl.$setValidity(type, true);
+            return parseDate(value);
+         }
+
+         ctrl.$setValidity(type, false);
+         return undefined;
+      });
+
+      ctrl.$formatters.push(function(value) {
+         if(isDate(value)) {
+            return $filter('date')(value, format);
+         }
+         return '';
+      });
+
+      if(attr.min) {
+         var minValidator = function(value) {
+            var valid = ctrl.$isEmpty(value) ||
+               (parseDate(value) >= parseDate(attr.min));
+            ctrl.$setValidity('min', valid);
+            return valid ? value : undefined;
+         };
+
+         ctrl.$parsers.push(minValidator);
+         ctrl.$formatters.push(minValidator);
+      }
+
+      if(attr.max) {
+         var maxValidator = function(value) {
+            var valid = ctrl.$isEmpty(value) ||
+               (parseDate(value) <= parseDate(attr.max));
+            ctrl.$setValidity('max', valid);
+            return valid ? value : undefined;
+         };
+
+         ctrl.$parsers.push(maxValidator);
+         ctrl.$formatters.push(maxValidator);
+      }
+   };
+}
+
 function numberInputType(scope, element, attr, ctrl, $sniffer, $browser) {
   textInputType(scope, element, attr, ctrl, $sniffer, $browser);
 
@@ -30738,14 +31288,14 @@ function checkboxInputType(scope, element, attr, ctrl) {
       </file>
     </example>
  */
-var inputDirective = ['$browser', '$sniffer', function($browser, $sniffer) {
+var inputDirective = ['$browser', '$sniffer', '$filter', function($browser, $sniffer, $filter) {
   return {
     restrict: 'E',
     require: '?ngModel',
     link: function(scope, element, attr, ctrl) {
       if (ctrl) {
         (inputType[lowercase(attr.type)] || inputType.text)(scope, element, attr, ctrl, $sniffer,
-                                                            $browser);
+                                                            $browser, $filter);
       }
     }
   };
@@ -31133,6 +31683,11 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
  *    - {@link input[number] number}
  *    - {@link input[email] email}
  *    - {@link input[url] url}
+ *    - {@link input[date] date}
+ *    - {@link input[dateTimeLocal] dateTimeLocal}
+ *    - {@link input[time] time}
+ *    - {@link input[month] month}
+ *    - {@link input[week] week}
  *  - {@link ng.directive:select select}
  *  - {@link ng.directive:textarea textarea}
  *
@@ -31492,7 +32047,7 @@ var ngValueDirective = function() {
  * Typically, you don't use `ngBind` directly, but instead you use the double curly markup like
  * `{{ expression }}` which is similar but less verbose.
  *
- * It is preferrable to use `ngBind` instead of `{{ expression }}` when a template is momentarily
+ * It is preferable to use `ngBind` instead of `{{ expression }}` when a template is momentarily
  * displayed by the browser in its raw state before Angular compiles it. Since `ngBind` is an
  * element attribute, it makes the bindings invisible to the user while the page is loading.
  *
@@ -32978,7 +33533,6 @@ var ngIfDirective = ['$animate', function($animate) {
 /**
  * @ngdoc event
  * @name ngInclude#$includeContentRequested
- * @eventOf ng.directive:ngInclude
  * @eventType emit on the scope ngInclude was declared in
  * @description
  * Emitted every time the ngInclude content is requested.
@@ -32988,7 +33542,6 @@ var ngIfDirective = ['$animate', function($animate) {
 /**
  * @ngdoc event
  * @name ngInclude#$includeContentLoaded
- * @eventOf ng.directive:ngInclude
  * @eventType emit on the current ngInclude scope
  * @description
  * Emitted every time the ngInclude content is reloaded.
@@ -34209,7 +34762,6 @@ var ngStyleDirective = ngDirective(function(scope, element, attr) {
  * @scope
  * @priority 800
  * @param {*} ngSwitch|on expression to match against <tt>ng-switch-when</tt>.
- * @paramDescription
  * On child elements add:
  *
  * * `ngSwitchWhen`: the case statement to match against. If match then this
@@ -34458,7 +35010,7 @@ var ngTranscludeDirective = ngDirective({
  * `<script>` element must be specified as `text/ng-template`, and a cache name for the template must be
  * assigned through the element's `id`, which can then be used as a directive's `templateUrl`.
  *
- * @param {'text/ng-template'} type Must be set to `'text/ng-template'`.
+ * @param {string} type Must be set to `'text/ng-template'`.
  * @param {string} id Cache name of the template.
  *
  * @example
@@ -35127,7 +35679,7 @@ var optionDirective = ['$interpolate', function($interpolate) {
 
 var styleDirective = valueFn({
   restrict: 'E',
-  terminal: true
+  terminal: false
 });
 
   //try to bind to jquery now so that one can write angular.element().read()
@@ -35144,7 +35696,7 @@ var styleDirective = valueFn({
 
 !angular.$$csp() && angular.element(document).find('head').prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide{display:none !important;}ng\\:form{display:block;}.ng-animate-block-transitions{transition:0s all!important;-webkit-transition:0s all!important;}</style>');
 /**
- * @license AngularJS v1.2.14
+ * @license AngularJS v1.2.15-build.2399+sha.ca4ddfa
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -35397,7 +35949,7 @@ function $RouteProvider(){
      *     - `$scope` - The current route scope.
      *     - `$template` - The current route template HTML.
      *
-     * @property {Array.&lt;Object&gt;} routes Array of all configured routes.
+     * @property {Array.<Object>} routes Array of all configured routes.
      *
      * @description
      * `$route` is used for deep-linking URLs to controllers and views (HTML partials).
@@ -35412,102 +35964,103 @@ function $RouteProvider(){
      * {@link ngRoute.$routeParams `$routeParams`} service.
      *
      * @example
-       This example shows how changing the URL hash causes the `$route` to match a route against the
-       URL, and the `ngView` pulls in the partial.
-
-       Note that this example is using {@link ng.directive:script inlined templates}
-       to get it working on jsfiddle as well.
-
-     <example name="$route-service" module="ngRouteExample" deps="angular-route.js" fixBase="true">
-       <file name="index.html">
-         <div ng-controller="MainCntl">
-           Choose:
-           <a href="Book/Moby">Moby</a> |
-           <a href="Book/Moby/ch/1">Moby: Ch1</a> |
-           <a href="Book/Gatsby">Gatsby</a> |
-           <a href="Book/Gatsby/ch/4?key=value">Gatsby: Ch4</a> |
-           <a href="Book/Scarlet">Scarlet Letter</a><br/>
-
-           <div ng-view></div>
-           <hr />
-
-           <pre>$location.path() = {{$location.path()}}</pre>
-           <pre>$route.current.templateUrl = {{$route.current.templateUrl}}</pre>
-           <pre>$route.current.params = {{$route.current.params}}</pre>
-           <pre>$route.current.scope.name = {{$route.current.scope.name}}</pre>
-           <pre>$routeParams = {{$routeParams}}</pre>
-         </div>
-       </file>
-
-       <file name="book.html">
-         controller: {{name}}<br />
-         Book Id: {{params.bookId}}<br />
-       </file>
-
-       <file name="chapter.html">
-         controller: {{name}}<br />
-         Book Id: {{params.bookId}}<br />
-         Chapter Id: {{params.chapterId}}
-       </file>
-
-       <file name="script.js">
-         angular.module('ngRouteExample', ['ngRoute'])
-
-         .config(function($routeProvider, $locationProvider) {
-           $routeProvider.when('/Book/:bookId', {
-             templateUrl: 'book.html',
-             controller: BookCntl,
-             resolve: {
-               // I will cause a 1 second delay
-               delay: function($q, $timeout) {
-                 var delay = $q.defer();
-                 $timeout(delay.resolve, 1000);
-                 return delay.promise;
-               }
-             }
-           });
-           $routeProvider.when('/Book/:bookId/ch/:chapterId', {
-             templateUrl: 'chapter.html',
-             controller: ChapterCntl
-           });
-
-           // configure html5 to get links working on jsfiddle
-           $locationProvider.html5Mode(true);
-         });
-
-         function MainCntl($scope, $route, $routeParams, $location) {
-           $scope.$route = $route;
-           $scope.$location = $location;
-           $scope.$routeParams = $routeParams;
-         }
-
-         function BookCntl($scope, $routeParams) {
-           $scope.name = "BookCntl";
-           $scope.params = $routeParams;
-         }
-
-         function ChapterCntl($scope, $routeParams) {
-           $scope.name = "ChapterCntl";
-           $scope.params = $routeParams;
-         }
-       </file>
-
-       <file name="protractor.js" type="protractor">
-         it('should load and compile correct template', function() {
-           element(by.linkText('Moby: Ch1')).click();
-           var content = element(by.css('[ng-view]')).getText();
-           expect(content).toMatch(/controller\: ChapterCntl/);
-           expect(content).toMatch(/Book Id\: Moby/);
-           expect(content).toMatch(/Chapter Id\: 1/);
-
-           element(by.partialLinkText('Scarlet')).click();
-
-           content = element(by.css('[ng-view]')).getText();
-           expect(content).toMatch(/controller\: BookCntl/);
-           expect(content).toMatch(/Book Id\: Scarlet/);
-         });
-       </file>
-     </example>
+     * This example shows how changing the URL hash causes the `$route` to match a route against the
+     * URL, and the `ngView` pulls in the partial.
+     *
+     * Note that this example is using {@link ng.directive:script inlined templates}
+     * to get it working on jsfiddle as well.
+     *
+     * <example name="$route-service" module="ngRouteExample"
+     *          deps="angular-route.js" fixBase="true">
+     *   <file name="index.html">
+     *     <div ng-controller="MainCntl">
+     *       Choose:
+     *       <a href="Book/Moby">Moby</a> |
+     *       <a href="Book/Moby/ch/1">Moby: Ch1</a> |
+     *       <a href="Book/Gatsby">Gatsby</a> |
+     *       <a href="Book/Gatsby/ch/4?key=value">Gatsby: Ch4</a> |
+     *       <a href="Book/Scarlet">Scarlet Letter</a><br/>
+     *
+     *       <div ng-view></div>
+     *       <hr />
+     *
+     *       <pre>$location.path() = {{$location.path()}}</pre>
+     *       <pre>$route.current.templateUrl = {{$route.current.templateUrl}}</pre>
+     *       <pre>$route.current.params = {{$route.current.params}}</pre>
+     *       <pre>$route.current.scope.name = {{$route.current.scope.name}}</pre>
+     *       <pre>$routeParams = {{$routeParams}}</pre>
+     *     </div>
+     *   </file>
+     *
+     *   <file name="book.html">
+     *     controller: {{name}}<br />
+     *     Book Id: {{params.bookId}}<br />
+     *   </file>
+     *
+     *   <file name="chapter.html">
+     *     controller: {{name}}<br />
+     *     Book Id: {{params.bookId}}<br />
+     *     Chapter Id: {{params.chapterId}}
+     *   </file>
+     *
+     *   <file name="script.js">
+     *     angular.module('ngRouteExample', ['ngRoute'])
+     *
+     *     .config(function($routeProvider, $locationProvider) {
+     *       $routeProvider.when('/Book/:bookId', {
+     *         templateUrl: 'book.html',
+     *         controller: BookCntl,
+     *         resolve: {
+     *           // I will cause a 1 second delay
+     *           delay: function($q, $timeout) {
+     *             var delay = $q.defer();
+     *             $timeout(delay.resolve, 1000);
+     *             return delay.promise;
+     *           }
+     *         }
+     *       });
+     *       $routeProvider.when('/Book/:bookId/ch/:chapterId', {
+     *         templateUrl: 'chapter.html',
+     *         controller: ChapterCntl
+     *       });
+     *
+     *       // configure html5 to get links working on jsfiddle
+     *       $locationProvider.html5Mode(true);
+     *     });
+     *
+     *     function MainCntl($scope, $route, $routeParams, $location) {
+     *       $scope.$route = $route;
+     *       $scope.$location = $location;
+     *       $scope.$routeParams = $routeParams;
+     *     }
+     *
+     *     function BookCntl($scope, $routeParams) {
+     *       $scope.name = "BookCntl";
+     *       $scope.params = $routeParams;
+     *     }
+     *
+     *     function ChapterCntl($scope, $routeParams) {
+     *       $scope.name = "ChapterCntl";
+     *       $scope.params = $routeParams;
+     *     }
+     *   </file>
+     *
+     *   <file name="protractor.js" type="protractor">
+     *     it('should load and compile correct template', function() {
+     *       element(by.linkText('Moby: Ch1')).click();
+     *       var content = element(by.css('[ng-view]')).getText();
+     *       expect(content).toMatch(/controller\: ChapterCntl/);
+     *       expect(content).toMatch(/Book Id\: Moby/);
+     *       expect(content).toMatch(/Chapter Id\: 1/);
+     *
+     *       element(by.partialLinkText('Scarlet')).click();
+     *
+     *       content = element(by.css('[ng-view]')).getText();
+     *       expect(content).toMatch(/controller\: BookCntl/);
+     *       expect(content).toMatch(/Book Id\: Scarlet/);
+     *     });
+     *   </file>
+     * </example>
      */
 
     /**
@@ -35820,7 +36373,7 @@ ngRouteModule.directive('ngView', ngViewFillContentFactory);
              deps="angular-route.js;angular-animate.js"
              animations="true" fixBase="true">
       <file name="index.html">
-        <div ng-controller="MainCntl as main">
+        <div ng-controller="MainCtrl as main">
           Choose:
           <a href="Book/Moby">Moby</a> |
           <a href="Book/Moby/ch/1">Moby: Ch1</a> |
@@ -35903,12 +36456,12 @@ ngRouteModule.directive('ngView', ngViewFillContentFactory);
           function($routeProvider, $locationProvider) {
             $routeProvider.when('/Book/:bookId', {
               templateUrl: 'book.html',
-              controller: BookCntl,
+              controller: BookCtrl,
               controllerAs: 'book'
             });
             $routeProvider.when('/Book/:bookId/ch/:chapterId', {
               templateUrl: 'chapter.html',
-              controller: ChapterCntl,
+              controller: ChapterCtrl,
               controllerAs: 'chapter'
             });
 
@@ -35916,19 +36469,19 @@ ngRouteModule.directive('ngView', ngViewFillContentFactory);
             $locationProvider.html5Mode(true);
         });
 
-        function MainCntl($route, $routeParams, $location) {
+        function MainCtrl($route, $routeParams, $location) {
           this.$route = $route;
           this.$location = $location;
           this.$routeParams = $routeParams;
         }
 
-        function BookCntl($routeParams) {
-          this.name = "BookCntl";
+        function BookCtrl($routeParams) {
+          this.name = "BookCtrl";
           this.params = $routeParams;
         }
 
-        function ChapterCntl($routeParams) {
-          this.name = "ChapterCntl";
+        function ChapterCtrl($routeParams) {
+          this.name = "ChapterCtrl";
           this.params = $routeParams;
         }
       </file>
@@ -35937,14 +36490,14 @@ ngRouteModule.directive('ngView', ngViewFillContentFactory);
         it('should load and compile correct template', function() {
           element(by.linkText('Moby: Ch1')).click();
           var content = element(by.css('[ng-view]')).getText();
-          expect(content).toMatch(/controller\: ChapterCntl/);
+          expect(content).toMatch(/controller\: ChapterCtrl/);
           expect(content).toMatch(/Book Id\: Moby/);
           expect(content).toMatch(/Chapter Id\: 1/);
 
           element(by.partialLinkText('Scarlet')).click();
 
           content = element(by.css('[ng-view]')).getText();
-          expect(content).toMatch(/controller\: BookCntl/);
+          expect(content).toMatch(/controller\: BookCtrl/);
           expect(content).toMatch(/Book Id\: Scarlet/);
         });
       </file>
@@ -36067,7 +36620,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 })(window, window.angular);
 
 /**
- * @license AngularJS v1.2.14
+ * @license AngularJS v1.2.15-build.2399+sha.ca4ddfa
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -61702,7 +62255,7 @@ angular.module("easyblog", ['ngRoute', 'angularLocalStorage', 'easyblog.template
     var gh, jekyllFilter, orgDefer, user, userDefer;
     $(document.documentElement).removeClass("nojs").addClass("domready");
     $scope.loading = true;
-    $scope.progressText = 'Loading...';
+    $scope.loadingText = 'Loading...';
     $scope.token = storage.get('token');
     $scope.reponame = storage.get('reponame');
     try {
@@ -61731,7 +62284,9 @@ angular.module("easyblog", ['ngRoute', 'angularLocalStorage', 'easyblog.template
       user = gh.getUser();
       userDefer = $q.defer();
       user.getInfo().then(function(info) {
-        $scope.username = info.login;
+        $scope.$apply(function() {
+          return $scope.username = info.login;
+        });
         return user.getRepos();
       }, function(err) {
         return console.error(err);
@@ -61743,8 +62298,7 @@ angular.module("easyblog", ['ngRoute', 'angularLocalStorage', 'easyblog.template
           repo._repo = gh.getRepo(repo.owner.login, repo.name);
         }
         $scope.$apply(function() {
-          $scope.repos = $scope.repos.concat(repos);
-          return $scope.loading = false;
+          return $scope.repos = $scope.repos.concat(repos);
         });
         return userDefer.resolve();
       }, function(err) {
@@ -61767,7 +62321,8 @@ angular.module("easyblog", ['ngRoute', 'angularLocalStorage', 'easyblog.template
         var resArrays;
         resArrays = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         $scope.$apply(function() {
-          var repo, repos, res, _i, _j, _len, _len1;
+          var repo, repos, res, _i, _j, _len, _len1, _results;
+          _results = [];
           for (_i = 0, _len = resArrays.length; _i < _len; _i++) {
             res = resArrays[_i];
             repos = jekyllFilter(res[0]);
@@ -61775,9 +62330,9 @@ angular.module("easyblog", ['ngRoute', 'angularLocalStorage', 'easyblog.template
               repo = repos[_j];
               repo._repo = gh.getRepo(repo.owner.login, repo.name);
             }
-            $scope.repos = $scope.repos.concat(repos);
+            _results.push($scope.repos = $scope.repos.concat(repos));
           }
-          return $scope.loading = false;
+          return _results;
         });
         return orgDefer.resolve();
       }, function(err) {
@@ -61807,12 +62362,16 @@ angular.module("easyblog", ['ngRoute', 'angularLocalStorage', 'easyblog.template
 ]);
 
 angular.module("easyblog").controller("IndexController", [
-  function() {
-    return console.log("index");
+  "$scope", function($scope) {
+    $scope.$root.loading = true;
+    return $scope.blogListReady.then(function() {
+      return $scope.$root.loading = false;
+    });
   }
 ]).controller("ListController", [
   "$scope", "$routeParams", function($scope, $routeParams) {
     var reponame, username;
+    $scope.$root.loading = true;
     username = $routeParams.user;
     reponame = $routeParams.repo;
     if ((username != null) && (reponame != null)) {
@@ -61827,7 +62386,7 @@ angular.module("easyblog").controller("IndexController", [
             $scope.saveCache();
             posts = [];
             configFileExists = false;
-            postReg = /^(_posts|_drafts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
+            postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
             configFileReg = /^_config.yml$/;
             for (_i = 0, _len = tree.length; _i < _len; _i++) {
               file = tree[_i];
@@ -61849,7 +62408,9 @@ angular.module("easyblog").controller("IndexController", [
             }
             if (configFileExists) {
               return $scope.$apply(function() {
+                $scope.$root.loading = false;
                 $scope.reponame = reponame;
+                $scope.username = username;
                 return $scope.posts = posts;
               });
             }
@@ -61862,20 +62423,59 @@ angular.module("easyblog").controller("IndexController", [
 ]).controller("PostController", [
   "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
     var path, reponame, sha, username;
+    $scope.$root.loading = true;
     username = $routeParams.user;
     reponame = $routeParams.repo;
     path = $routeParams.path;
     sha = $routeParams.sha;
     if ((username != null) && (reponame != null) && (path != null)) {
+      $scope.username = username;
+      $scope.reponame = reponame;
       $scope.blogListReady.then(function() {
-        var repo, searchAndShow, show, _repo;
+        var deleteFunc, newPost, repo, save, searchAndShow, show, _repo;
         if (repo = $scope.getRepo(username, reponame)) {
           _repo = repo._repo;
+          save = function() {
+            var branch, message, promise;
+            $scope.$root.loading = true;
+            branch = 　_repo.getBranch("master");
+            message = "Update by easyblog.github.io at" + (new Date()).toLocaleString();
+            promise = branch.write(path, $scope.post, message, false);
+            promise.then(function(res) {
+              return $scope.$evalAsync(function() {
+                if (!$scope["new"]) {
+                  $location.search("sha", res.sha);
+                }
+                return $scope.$root.loading = false;
+              });
+            }, function(err) {
+              return console.error(err);
+            });
+            return promise;
+          };
+          deleteFunc = function() {
+            var branch, message, promise;
+            $scope.$root.loading = true;
+            branch = 　_repo.getBranch("master");
+            message = "Update by easyblog.github.io at" + (new Date()).toLocaleString();
+            promise = branch.remove(path, message);
+            promise.then(function(res) {
+              return $scope.$evalAsync(function() {
+                return $location.path("/" + username + "/" + reponame);
+              });
+            }, function(err) {
+              return console.error(err);
+            });
+            return promise;
+          };
           show = function() {
             return _repo.git.getBlob(sha).then(function(post) {
               $scope.saveCache();
               return $scope.$apply(function() {
-                return $scope.post = post;
+                $scope.$root.loading = false;
+                $scope.post = post;
+                $scope.save = save;
+                return $scope["delete"] = deleteFunc;
               });
             }, function(err) {
               if (err.status === 404) {
@@ -61896,15 +62496,39 @@ angular.module("easyblog").controller("IndexController", [
               });
               if (blob != null) {
                 sha = blob.sha;
-                $location.search('sha', sha);
+                $scope.$evalAsync(function() {
+                  return $location.search('sha', sha);
+                });
                 return show();
               } else {
                 return console.error("file path not found");
               }
             });
           };
+          newPost = "---\nlayout: post\ntitle:\ntagline:\ncategory: null\ntags: []\npublished: true\n---\n";
           if (sha == null) {
-            return searchAndShow();
+            if (path === "new") {
+              $scope["new"] = true;
+              $scope.$root.loading = false;
+              $scope.post = newPost;
+              return $scope.save = function() {
+                var d, date, m, y;
+                date = new Date();
+                y = date.getFullYear();
+                m = date.getMonth();
+                m = m >= 10 ? m + 1 : "0" + (m + 1);
+                d = date.getDate();
+                d = d >= 10 ? d : "0" + d;
+                path = "_posts/" + y + "-" + m + "-" + d + "-" + $scope.frontMatter.title + ".md";
+                return save().then(function(res) {
+                  return $scope.$evalAsync(function() {
+                    return $location.path("/" + username + "/" + reponame + "/" + path).search('sha', res.sha).replace();
+                  });
+                });
+              };
+            } else {
+              return searchAndShow();
+            }
           } else {
             return show();
           }
@@ -61915,7 +62539,14 @@ angular.module("easyblog").controller("IndexController", [
   }
 ]);
 
-angular.module("easyblog").directive("blogList", [
+angular.module("easyblog").directive("progress", [
+  function() {
+    return {
+      restrict: "A",
+      templateUrl: "templates/progress.html"
+    };
+  }
+]).directive("blogList", [
   function() {
     return {
       restrict: "A",
@@ -61928,7 +62559,6 @@ angular.module("easyblog").directive("blogList", [
       restrict: "A",
       templateUrl: "templates/editor.html",
       require: "?ngModel",
-      scope: true,
       link: function($scope, $element, $attr, ngModel) {
         var promise, update, ymlReg;
         if (ngModel == null) {
@@ -61967,9 +62597,8 @@ angular.module("easyblog").directive("blogList", [
           frontMatter = "---\n" + yml + "---\n";
           content = $scope.content;
           viewValue = frontMatter + content;
-          return $scope.$evalAsync(function() {
-            return ngModel.$setViewValue(viewValue);
-          });
+          ngModel.$setViewValue(viewValue);
+          return $scope.$apply();
         };
         promise = null;
         $scope.$watch('content', function(data, oldData) {
@@ -62073,7 +62702,7 @@ angular.module("easyblog").directive("blogList", [
           };
         })(editor.session.bgTokenizer);
         ngModel.$formatters.push(function(value) {
-          if (angular.isUndefined(value) || value === null) {
+          if (angular.isUndefined(value) || value === null || value === "") {
             $element.addClass("placeholder");
             return "";
           } else if (angular.isObject(value) || angular.isArray(value)) {
@@ -62089,9 +62718,7 @@ angular.module("easyblog").directive("blogList", [
         update = function() {
           var viewValue;
           viewValue = session.getValue();
-          return $scope.$evalAsync(function() {
-            return ngModel.$setViewValue(viewValue);
-          });
+          return ngModel.$setViewValue(viewValue);
         };
         promise = null;
         onChange = function() {
@@ -62101,6 +62728,14 @@ angular.module("easyblog").directive("blogList", [
           return promise = $timeout(update, 190, true);
         };
         session.on("change", onChange);
+        editor.on("focus", function() {
+          return $element.removeClass("placeholder");
+        });
+        editor.on("blur", function() {
+          if (session.getValue() === "") {
+            return $element.addClass("placeholder");
+          }
+        });
         return $element.on("$destroy", function() {
           editor.session.$stopWorker();
           editor.destroy();
@@ -62143,7 +62778,7 @@ angular.module("easyblog").directive("blogList", [
         value: '=ngModel'
       },
       replace: true,
-      template: "<div class=\"btn-group\">\n  <button type=\"button\" class=\"btn\" ng-click=\"value = false\" ng-class=\"{'btn-default':value, 'btn-primary':!value}\">Draft</button>\n  <button type=\"button\" class=\"btn\" ng-click=\"value = true\" ng-class=\"{'btn-default':!value, 'btn-primary':value}\">Public</button>\n</div>",
+      template: "<div class=\"btn-group\">\n  <button type=\"button\" class=\"btn\" ng-click=\"value = false\" ng-class=\"{'btn-default':value, 'btn-primary active':!value}\">Draft</button>\n  <button type=\"button\" class=\"btn\" ng-click=\"value = true\" ng-class=\"{'btn-default':!value, 'btn-primary active':value}\">Public</button>\n</div>",
       link: function($scope, $element, $attr, ngModel) {
         $scope.$watch("value", function(value, old) {
           if ((value != null) && (old != null) && value !== old) {
@@ -62182,34 +62817,40 @@ angular.module("easyblog").factory("utils", [
   }
 ]);
 
-angular.module("easyblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html']);
+angular.module("easyblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html', 'templates/progress.html']);
 
 angular.module("templates/blog-list.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos track by repo.name\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n  <!--<div class=\"body\">\n    <p class=\"text-muted\">\n      <a href=\"{{repo.html_url}}\" target=\"_blank\">{{repo.name}}</a>\n      Last updated at <time>{{repo.updated_at}}</time>\n    </p>\n    <p class=\"text-muted\">{{repo.description}}</p>\n  </div>-->\n</li>");
+    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos track by repo.name\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n</li>");
   }
 ]);
 
 angular.module("templates/post.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/post.html", "<article post ng-model=\"post\" ng-if=\"post\"></article>");
+    return $templateCache.put("templates/post.html", "<article post ng-model=\"post\"></article>");
   }
 ]);
 
 angular.module("templates/editor.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/editor.html", "<form>\n  <div class=\"action text-right\">\n    <button class=\"btn btn-default\" ng-click=\"delete()\">Delete</button>\n    <switch ng-model=\"frontMatter.published\"></switch>\n    <button class=\"btn btn-success\" ng-click=\"save()\">Save</button>\n  </div>\n  <header class=\"page-header\">\n    <h1 custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <textarea class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Story...\"></div>\n  </div>\n</form>");
+    return $templateCache.put("templates/editor.html", "<form>\n  <div class=\"action text-right\">\n    <button class=\"btn btn-default\" ng-click=\"delete()\" ng-if=\"!new\">Delete</button>\n    <a class=\"btn btn-default\" ng-href=\"#!/{{username}}/{{reponame}}\" ng-if=\"new\">Drop</a>\n    <switch ng-model=\"frontMatter.published\"></switch>\n    <button class=\"btn btn-success\" ng-click=\"save()\">Save</button>\n  </div>\n  <header class=\"page-header\">\n    <h1 custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <textarea class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Your story\"></div>\n  </div>\n</form>");
   }
 ]);
 
 angular.module("templates/list.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/list.html", "<div class=\"page-header\" ng-repeat=\"post in posts | orderBy : post.date : reverse\">\n  <h5>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}?sha={{post.info.sha}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h5>\n  <time>{{post.date | date : 'MM/dd/yyyy'}}</time>\n</div>");
+    return $templateCache.put("templates/list.html", "<div class=\"action text-right\">\n  <a class=\"btn btn-success\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>\n<div class=\"page-header text-center\">\n  <h1>Posts</h1>\n  <small class=\"text-muted\" ng-show=\"reponame\">in {{reponame}}</small>\n</div>\n<div class=\"list-item\" ng-repeat=\"post in posts | orderBy : post.date : reverse\">\n  <h3>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}?sha={{post.info.sha}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h3>\n  <small><time class=\"text-muted\">{{post.date | date : 'MM/dd/yyyy'}}</time></small>\n</div>");
   }
 ]);
 
 angular.module("templates/index.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/index.html", "index");
+    return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>");
+  }
+]);
+
+angular.module("templates/progress.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/progress.html", "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" width=\"200px\" height=\"200px\" viewBox=\"0 0 200 200\" enable-background=\"new 0 0 200 200\" xml:space=\"preserve\">\n  <g id=\"layer-cat\">\n    <g>\n      <g>\n        <polygon points=\"137.336,64.466 137.336,117.181 116.25,117.181 110.979,117.181 89.893,117.181 84.623,117.181 63.536,117.181 63.536,64.466 84.622,85.552 116.25,85.552\"/>\n      </g>\n      <rect class=\"cat-eye\" transform-origin=\"84.622 117.18\" x=\"84.622\" y=\"101.367\" fill=\"#FFFFFF\" width=\"5.271\" height=\"15.813\"/>\n      <rect class=\"cat-eye\" transform-origin=\"110.979 117.18\" x=\"110.979\" y=\"101.367\" fill=\"#FFFFFF\" width=\"5.271\" height=\"15.813\"/>\n    </g>\n  </g>\n  <g id=\"layer-line\">\n    <line stroke=\"#000000\" stroke-width=\"3\" stroke-miterlimit=\"10\" x1=\"24\" y1=\"118.5\" x2=\"177\" y2=\"118.5\"/>\n  </g>\n  <g id=\"layer-pencil\">\n    <g>\n      <path d=\"M44.78,86.211c-2.721,1.408-4.764,3.753-5.617,6.434c-0.72,2.261-0.543,4.611,0.49,6.615l4.213,8.072\n        c0.011,0.023,0.015,0.05,0.029,0.074c0.006,0.014,0.018,0.023,0.023,0.037l0.004-0.004l8.942,17.134\n        c0.404,0.785,1.006,1.454,1.736,1.954l9.746,6.35c0.028,0.013,0.806,0.471,1.233,0.607c2.425,0.771,5.021-0.571,5.795-3.002\n        c0.155-0.483,0.222-1.492,0.228-1.528l0.589-11.536c0.019-0.885-0.185-1.758-0.596-2.547L58.382,89.555\n        C56.002,84.958,50.03,83.489,44.78,86.211z\"></path>\n      <path fill=\"#FFD268\" d=\"M66.072,111.494c-1.166-0.26-2.38-0.291-3.587-0.146l-8.092-15.654c2.524,0.005,4.805,1.14,5.889,3.24\n        c0.009,0.014,0.01,0.027,0.018,0.04l0.021-0.013l6.694,12.819C66.702,111.681,66.4,111.567,66.072,111.494z\"></path>\n      <path fill=\"#FFC334\" d=\"M61.139,111.612c-0.919,0.224-1.832,0.521-2.698,0.97c-1.013,0.521-1.894,1.212-2.692,1.971L47.59,98.772\n        c0.716-0.809,1.596-1.519,2.644-2.061c0.893-0.463,1.819-0.748,2.736-0.899L61.139,111.612z\"></path>\n      <path fill=\"#E2AF38\" d=\"M54.779,115.545c-0.838,1.015-1.494,2.147-1.899,3.361l-6.668-12.775c-0.973-1.941-0.703-4.229,0.5-6.185\n        L54.779,115.545z\"></path>\n      <path fill=\"#666666\" d=\"M68.969,128.8c-0.012,0.146-0.04,0.607-0.112,0.903c-0.341,1.027-1.446,1.599-2.479,1.27\n        c-0.206-0.083-0.542-0.281-0.666-0.354l-4.368-2.847c0.417-1.446,1.469-2.812,3.071-3.642c1.625-0.842,3.384-0.92,4.817-0.395\n        L68.969,128.8z\"></path>\n      <path fill=\"#EACEBE\" d=\"M69.298,122.396c-1.695-0.508-3.667-0.379-5.488,0.562c-1.727,0.894-3.027,2.365-3.639,4.052l-4.131-2.691\n        c-0.273-0.188-0.514-0.461-0.704-0.766c-1-3.094,0.765-6.798,4.315-8.632c3.753-1.939,8.061-1.053,9.853,1.932\n        c0.028,0.172,0.056,0.341,0.052,0.515L69.298,122.396z\"></path>\n      <path fill=\"#D76F6E\" d=\"M56.042,90.768l1.457,2.794c-0.283-0.09-0.546-0.211-0.844-0.278c-2.5-0.552-5.21-0.167-7.632,1.086\n        c-2.7,1.395-4.737,3.732-5.6,6.417l-1.434-2.747c-0.708-1.372-0.821-3.007-0.315-4.597c0.644-2.021,2.217-3.804,4.318-4.894\n        c1.973-1.021,4.115-1.324,6.036-0.854C53.819,88.136,55.244,89.228,56.042,90.768L56.042,90.768z\"></path>\n    </g>\n  </g>\n</svg>\n<div class=\"text\">{{loadingText}}</div>");
   }
 ]);

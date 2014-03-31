@@ -53,7 +53,7 @@ angular.module "easyblog", [
     .addClass("domready")
 
     $scope.loading = true
-    $scope.progressText = 'Loading...'
+    $scope.loadingText = 'Loading...'
 
     $scope.token = storage.get 'token'
     $scope.reponame = storage.get 'reponame'
@@ -86,7 +86,8 @@ angular.module "easyblog", [
       userDefer = $q.defer()
       user.getInfo()
       .then (info)->
-        $scope.username = info.login
+        $scope.$apply ->
+          $scope.username = info.login
         user.getRepos()
       , (err)->
         console.error err
@@ -96,7 +97,6 @@ angular.module "easyblog", [
           repo._repo = gh.getRepo(repo.owner.login, repo.name)
         $scope.$apply ->
           $scope.repos = $scope.repos.concat repos
-          $scope.loading = false
         userDefer.resolve()
       , (err)->
         console.error err
@@ -119,7 +119,6 @@ angular.module "easyblog", [
             for repo in repos
               repo._repo = gh.getRepo(repo.owner.login, repo.name)
             $scope.repos = $scope.repos.concat repos
-          $scope.loading = false
         orgDefer.resolve()
       , (err)->
         console.error err

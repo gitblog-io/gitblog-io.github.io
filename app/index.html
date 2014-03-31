@@ -1,28 +1,29 @@
 ---
 layout: app
 ---
-<div class="progress-layer" progress ng-if="loading">
-  <div class="progress progress-striped active">
-    <div class="progress-bar" role="progressbar" style="width: 100%"></div>
-  </div>
-  <div class="h3">{{progressText}}</div>
-</div>
+<div class="progress-layer" progress ng-if="loading"></div>
 <header id="header">
   <button id="btn-open-menu" data-toggle-menu>_</button>
 </header>
 <div id="main-wrap">
-  <div id="main" ng-view></div>
+  <div id="main">
+    <div ng-view></div>
+  </div>
 </div>
 <aside id="menu-sidebar">
-  <nav>
-    <ul class="menu">
-      <li><a href="/"><i class="icon-home"></i>Home</a></li>
-      <li><a href="/about.html"><i class="icon-info-sign"></i>About</a></li>
-    </ul>
-    <ul class="menu" blog-list></ul>
-  </nav>
-  <footer>
-    &copy; easyblog 2014<br><a target="_blank" href="https://github.com/hyspace">hyspace <i class="icon-cat"></i></a>
-  </footer>
+  <div class="sidebar-wrap">
+    <nav>
+      <ul class="menu">
+        <li><a href="#!/"><i class="icon-home"></i>Home</a></li>
+        <li><a href="/about.html"><i class="icon-info-sign"></i>About</a></li>
+      </ul>
+
+      <h6>Blogs</h6>
+      <ul class="menu" blog-list></ul>
+    </nav>
+    <footer>
+      &copy; easyblog 2014<br><a target="_blank" href="https://github.com/hyspace">hyspace <i class="icon-cat"></i></a>
+    </footer>
+  </div>
 </aside>
 <script src="/assets/js/application.js"></script>

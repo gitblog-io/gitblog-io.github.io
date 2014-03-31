@@ -15,18 +15,11 @@ body.menu-open{
 
 #main{
   background-color: @body-bg;
-  padding-top: 1px;
-  margin-top: -1px;
+  padding-top: 50px;
   .translate3d(0, 0, 0);
   .transition-transform(.15s ease-in-out);
   .menu-open &{
     .translate3d(@menubar-width, 0, 0);
-  }
-  @media (min-width: @screen-medium){
-    .transform-none();
-    .menu-open &{
-      .transform-none();
-    }
   }
 }
 
@@ -50,7 +43,6 @@ body.menu-open{
   top: 0;
   z-index: 4;
   width: @menubar-width;
-  .translate3d(0, 0, 0);
   .translate3d(-@menubar-width, 0, 0);
   .menu-open &{
     .translate3d(0, 0, 0);

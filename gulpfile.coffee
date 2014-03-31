@@ -65,4 +65,12 @@ gulp.task "watch", ["css", "js"], ->
   gulp.watch COFFEE_FILES, ["js"]
   gulp.watch "#{SRC_PATH}/less/*.less", ["css"]
 
-gulp.task "default", ["css", "js", "watch"]
+FILES =[
+  "#{SRC_PATH}/img/*"
+]
+
+gulp.task "copy", ->
+  gulp.src FILES
+    .pipe gulp.dest("#{DEST_PATH}/img")
+
+gulp.task "default", ["css", "js", "copy", "watch"]
