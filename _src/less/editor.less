@@ -28,3 +28,23 @@
 .post-tagline{
   font-weight: 200;
 }
+
+.drag .ace_hidden-cursors .ace_cursor {
+  opacity: 1;
+  background-color: @brand-success;
+}
+.drag-area{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  .size(600px, 100px);
+  font-size: 60px;
+  line-height: 100px;
+  margin-left: -300px;
+  margin-top: -50px;
+  text-align: center;
+  display: none;
+  .drag &{
+    display: block;
+  }
+}

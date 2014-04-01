@@ -52,6 +52,7 @@ angular.module "templates/editor.html", []
           </header>
           <br>
           <div class="page-content">
+            <div class="drag-area">Drop to upload</div>
             <textarea class="form-control" placeholder="Story..." ng-model="post"></textarea>
             <div class="placeholder" editor ng-model="content" data-placeholder="Your story"></div>
           </div>
