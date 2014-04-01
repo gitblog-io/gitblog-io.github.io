@@ -130,32 +130,37 @@ angular.module "templates/about.html", []
         """
         <div class="page-header text-center">
           <h1>About easyblog</h1>
-          <small class="text-muted" ng-show="username">The easiest way to post on Github Pages</small>
+          <small class="text-muted">The easiest way to post on Github Pages</small>
         </div>
-        <h3>Author</h3>
-        <p><a target="_blank" href="https://github.com/hyspace">hyspace</a></p>
+        <div class="text-center">
+          <h3>Project</h3>
+          <p><a class="btn btn-primary" target="_blank" href="https://github.com/easyblog/easyblog.github.io/"><i class="icon-github-alt"></i> Easyblog</a></p>
 
-        <h3>Bug report</h3>
-        <p><a target="_blank" href="https://github.com/easyblog/easyblog.github.io/issues">Issues</a></p>
+          <h3>Author</h3>
+          <p><a class="btn btn-primary" target="_blank" href="https://github.com/hyspace"><i class="icon-cat"></i> hyspace</a></p>
 
-        <h3>Opensouce projects used in easyblog</h3>
-        <ul>
-          <li><a target="_blank" href="http://www.angularjs.org/">Angular.js</a></li>
-          <li><a target="_blank" href="http://ace.c9.io/">Ace editor</a></li>
-          <li><a target="_blank" href="https://github.com/philschatz/octokit.js">Octokit.js</a></li>
-          <li><a target="_blank" href="http://jquery.com/">jQuery</a></li>
-          <li><a target="_blank" href="http://getbootstrap.com/">Bootstrap</a></li>
-          <li><a target="_blank" href="http://lodash.com/">lodash</a></li>
-          <li><a target="_blank" href="http://nodeca.github.io/js-yaml/">js-yaml</a></li>
-          <li><a target="_blank" href="https://github.com/agrublev/angularLocalStorage">angularLocalStorage</a></li>
-          <li><a target="_blank" href="https://github.com/facultymatt/angular-unsavedChanges">angular-unsavedChanges</a></li>
-        </ul>
+          <h3>Bug report</h3>
+          <p><a target="_blank" href="https://github.com/easyblog/easyblog.github.io/issues">Issues</a></p>
 
-        <h3>Other projects</h3>
-        <ul>
-          <li><a target="_blank" href="https://stackedit.io/">stackedit</a></li>
-          <li><a target="_blank" href="http://prose.io/">prose</a></li>
-        </ul>
+          <h3>Opensouce projects used in easyblog</h3>
+          <ul class="list-unstyled">
+            <li><a target="_blank" href="http://www.angularjs.org/">Angular.js</a></li>
+            <li><a target="_blank" href="http://ace.c9.io/">Ace editor</a></li>
+            <li><a target="_blank" href="https://github.com/philschatz/octokit.js">Octokit.js</a></li>
+            <li><a target="_blank" href="http://jquery.com/">jQuery</a></li>
+            <li><a target="_blank" href="http://getbootstrap.com/">Bootstrap</a></li>
+            <li><a target="_blank" href="http://lodash.com/">lodash</a></li>
+            <li><a target="_blank" href="http://nodeca.github.io/js-yaml/">js-yaml</a></li>
+            <li><a target="_blank" href="https://github.com/agrublev/angularLocalStorage">angularLocalStorage</a></li>
+            <li><a target="_blank" href="https://github.com/facultymatt/angular-unsavedChanges">angular-unsavedChanges</a></li>
+          </ul>
+
+          <h3>Other projects</h3>
+          <ul class="list-unstyled">
+            <li><a target="_blank" href="https://stackedit.io/">stackedit</a></li>
+            <li><a target="_blank" href="http://prose.io/">prose</a></li>
+          </ul>
+        </div>
         """
       )
   ]
