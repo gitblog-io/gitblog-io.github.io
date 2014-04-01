@@ -64324,56 +64324,56 @@ angular.module("easyblog").controller("IndexController", [
     });
   }
 ]).controller("ListController", [
-  "$scope", "$routeParams", function($scope, $routeParams) {
+  "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
     var reponame, username;
     $scope.$root.loading = true;
     username = $routeParams.user;
     reponame = $routeParams.repo;
-    if ((username != null) && (reponame != null)) {
-      $scope.blogListReady.then(function() {
-        var repo, _repo;
-        if (repo = $scope.getRepo(username, reponame)) {
-          _repo = repo._repo;
-          return _repo.git.getTree('master', {
-            recursive: true
-          }).then(function(tree) {
-            var configFileExists, configFileReg, file, postReg, posts, res, _i, _len;
-            $scope.saveCache();
-            posts = [];
-            configFileExists = false;
-            postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
-            configFileReg = /^_config.yml$/;
-            for (_i = 0, _len = tree.length; _i < _len; _i++) {
-              file = tree[_i];
-              if (file.type !== 'blob') {
-                continue;
-              }
-              if (res = file.path.match(postReg)) {
-                posts.push({
-                  user: username,
-                  repo: reponame,
-                  type: res[1],
-                  date: new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10)),
-                  urlTitle: res[5],
-                  info: file
-                });
-              } else if (configFileReg.test(file.path)) {
-                configFileExists = true;
-              }
+    return $scope.blogListReady.then(function() {
+      var repo, _repo;
+      if (repo = $scope.getRepo(username, reponame)) {
+        _repo = repo._repo;
+        return _repo.git.getTree('master', {
+          recursive: true
+        }).then(function(tree) {
+          var configFileExists, configFileReg, file, postReg, posts, res, _i, _len;
+          $scope.saveCache();
+          posts = [];
+          configFileExists = false;
+          postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
+          configFileReg = /^_config.yml$/;
+          for (_i = 0, _len = tree.length; _i < _len; _i++) {
+            file = tree[_i];
+            if (file.type !== 'blob') {
+              continue;
             }
-            if (configFileExists) {
-              return $scope.$apply(function() {
-                $scope.$root.loading = false;
-                $scope.reponame = reponame;
-                $scope.username = username;
-                return $scope.posts = posts;
+            if (res = file.path.match(postReg)) {
+              posts.push({
+                user: username,
+                repo: reponame,
+                type: res[1],
+                date: new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10)),
+                urlTitle: res[5],
+                info: file
               });
+            } else if (configFileReg.test(file.path)) {
+              configFileExists = true;
             }
-          });
-        }
-      });
-    }
-    return console.log("list");
+          }
+          if (configFileExists) {
+            return $scope.$apply(function() {
+              $scope.$root.loading = false;
+              $scope.reponame = reponame;
+              $scope.username = username;
+              return $scope.posts = posts;
+            });
+          }
+        });
+      } else {
+        console.error("blog do not exist");
+        return $location.path('/').replace();
+      }
+    });
   }
 ]).controller("PostController", [
   "$scope", "$routeParams", "$location", "uploader", function($scope, $routeParams, $location, uploader) {
@@ -64383,114 +64383,114 @@ angular.module("easyblog").controller("IndexController", [
     reponame = $routeParams.repo;
     path = $routeParams.path;
     sha = $routeParams.sha;
-    if ((username != null) && (reponame != null) && (path != null)) {
-      $scope.username = username;
-      $scope.reponame = reponame;
-      $scope.filepath = path;
-      $scope.blogListReady.then(function() {
-        var deleteFunc, newPost, repo, save, searchAndShow, show, _repo;
-        if (repo = $scope.getRepo(username, reponame)) {
-          _repo = repo._repo;
-          $scope.uploader = uploader.call($scope, _repo);
-          save = function() {
-            var branch, message, promise;
+    $scope.username = username;
+    $scope.reponame = reponame;
+    $scope.filepath = path;
+    return $scope.blogListReady.then(function() {
+      var deleteFunc, newPost, repo, save, searchAndShow, show, _repo;
+      if (repo = $scope.getRepo(username, reponame)) {
+        _repo = repo._repo;
+        $scope.uploader = uploader.call($scope, _repo);
+        save = function() {
+          var branch, message, promise;
+          $scope.$root.loading = true;
+          branch = 　_repo.getBranch("master");
+          message = "Update by easyblog.github.io at " + (new Date()).toLocaleString();
+          promise = branch.write(path, $scope.post, message, false);
+          promise.then(function(res) {
+            return $scope.$evalAsync(function() {
+              $scope.$root.loading = false;
+              return $scope.postForm.$setPristine();
+            });
+          }, function(err) {
+            return console.error(err);
+          });
+          return promise;
+        };
+        deleteFunc = function() {
+          var branch, message, promise;
+          if (window.confirm("Are you sure to delete " + $scope.filepath + "?")) {
             $scope.$root.loading = true;
             branch = 　_repo.getBranch("master");
             message = "Update by easyblog.github.io at " + (new Date()).toLocaleString();
-            promise = branch.write(path, $scope.post, message, false);
+            promise = branch.remove(path, message);
             promise.then(function(res) {
               return $scope.$evalAsync(function() {
-                $scope.$root.loading = false;
-                return $scope.postForm.$setPristine();
+                return $location.path("/" + username + "/" + reponame);
               });
             }, function(err) {
               return console.error(err);
             });
             return promise;
-          };
-          deleteFunc = function() {
-            var branch, message, promise;
-            if (window.confirm("Are you sure to delete " + $scope.filepath + "?")) {
-              $scope.$root.loading = true;
-              branch = 　_repo.getBranch("master");
-              message = "Update by easyblog.github.io at " + (new Date()).toLocaleString();
-              promise = branch.remove(path, message);
-              promise.then(function(res) {
-                return $scope.$evalAsync(function() {
-                  return $location.path("/" + username + "/" + reponame);
-                });
-              }, function(err) {
-                return console.error(err);
-              });
-              return promise;
-            }
-          };
-          show = function() {
-            return _repo.git.getBlob(sha).then(function(post) {
-              $scope.saveCache();
-              return $scope.$apply(function() {
-                $scope.$root.loading = false;
-                $scope.post = post;
-                $scope.save = save;
-                return $scope["delete"] = deleteFunc;
-              });
-            }, function(err) {
-              if (err.status === 404) {
-                return searchAndShow();
-              } else {
-                return console.error(err.error);
-              }
-            });
-          };
-          searchAndShow = function() {
-            return _repo.git.getTree('master', {
-              recursive: true
-            }).then(function(tree) {
-              var blob;
-              $scope.saveCache();
-              blob = _.findWhere(tree, {
-                path: path
-              });
-              if (blob != null) {
-                sha = blob.sha;
-                return show();
-              } else {
-                return console.error("file path not found");
-              }
-            });
-          };
-          newPost = "---\nlayout: post\ntitle:\ntagline:\ncategory: null\ntags: []\npublished: true\n---\n";
-          if (sha == null) {
-            if (path === "new") {
-              $scope["new"] = true;
-              $scope.$root.loading = false;
-              $scope.post = newPost;
-              return $scope.save = function() {
-                var d, date, m, name, y;
-                date = new Date();
-                y = date.getFullYear();
-                m = date.getMonth();
-                m = m >= 10 ? m + 1 : "0" + (m + 1);
-                d = date.getDate();
-                d = d >= 10 ? d : "0" + d;
-                name = $scope.frontMatter.title.replace(/\s/g, '-');
-                path = "_posts/" + y + "-" + m + "-" + d + "-" + name + ".md";
-                return save().then(function(res) {
-                  return $scope.$evalAsync(function() {
-                    return $location.path("/" + username + "/" + reponame + "/" + path).search('sha', res.sha).replace();
-                  });
-                });
-              };
-            } else {
-              return searchAndShow();
-            }
-          } else {
-            return show();
           }
+        };
+        show = function() {
+          return _repo.git.getBlob(sha).then(function(post) {
+            $scope.saveCache();
+            return $scope.$apply(function() {
+              $scope.$root.loading = false;
+              $scope.post = post;
+              $scope.save = save;
+              return $scope["delete"] = deleteFunc;
+            });
+          }, function(err) {
+            if (err.status === 404) {
+              return searchAndShow();
+            } else {
+              return console.error(err.error);
+            }
+          });
+        };
+        searchAndShow = function() {
+          return _repo.git.getTree('master', {
+            recursive: true
+          }).then(function(tree) {
+            var blob;
+            $scope.saveCache();
+            blob = _.findWhere(tree, {
+              path: path
+            });
+            if (blob != null) {
+              sha = blob.sha;
+              return show();
+            } else {
+              return console.error("file path not found");
+            }
+          });
+        };
+        newPost = "---\nlayout: post\ntitle:\ntagline:\ncategory: null\ntags: []\npublished: true\n---\n";
+        if (sha == null) {
+          if (path === "new") {
+            $scope["new"] = true;
+            $scope.$root.loading = false;
+            $scope.post = newPost;
+            return $scope.save = function() {
+              var d, date, m, name, y;
+              date = new Date();
+              y = date.getFullYear();
+              m = date.getMonth();
+              m = m >= 10 ? m + 1 : "0" + (m + 1);
+              d = date.getDate();
+              d = d >= 10 ? d : "0" + d;
+              name = $scope.frontMatter.title.replace(/\s/g, '-');
+              path = "_posts/" + y + "-" + m + "-" + d + "-" + name + ".md";
+              return save().then(function(res) {
+                return $scope.$evalAsync(function() {
+                  return $location.path("/" + username + "/" + reponame + "/" + path).search('sha', res.sha).replace();
+                });
+              });
+            };
+          } else {
+            return searchAndShow();
+          }
+        } else {
+          return show();
         }
-      });
-    }
-    return console.log("edit");
+      } else {
+        console.error("blog do not exist");
+        return $location.path('/').replace();
+      }
+    });
   }
 ]);
 
