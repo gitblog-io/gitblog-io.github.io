@@ -39,21 +39,21 @@ angular.module "templates/editor.html", []
     ($templateCache) ->
       $templateCache.put( "templates/editor.html",
         """
-        <form>
+        <form name="postForm">
           <div class="action text-right">
             <button class="btn btn-default" ng-click="delete()" ng-if="!new">Delete</button>
             <a class="btn btn-default" ng-href="#!/{{username}}/{{reponame}}" ng-if="new">Drop</a>
             <switch ng-model="frontMatter.published"></switch>
-            <button class="btn btn-success" ng-click="save()">Save</button>
+            <button ng-disabled="postForm.title.$invalid" class="btn btn-success" ng-click="save()">Save</button>
           </div>
           <header class="page-header">
-            <h1 custom-input class="post-title" data-placeholder="Title" ng-model="frontMatter.title"></h1>
-            <h3 custom-input class="post-tagline" data-placeholder="Tagline" ng-model="frontMatter.tagline"></h3>
+            <h1 name="title" required custom-input class="post-title" data-placeholder="Title" ng-model="frontMatter.title"></h1>
+            <h3 name="tagline" custom-input class="post-tagline" data-placeholder="Tagline" ng-model="frontMatter.tagline"></h3>
           </header>
           <br>
           <div class="page-content">
             <div class="drag-area">Drop to upload</div>
-            <textarea class="form-control" placeholder="Story..." ng-model="post"></textarea>
+            <textarea name="content" class="form-control" placeholder="Story..." ng-model="post"></textarea>
             <div class="placeholder" editor ng-model="content" data-placeholder="Your story"></div>
           </div>
         </form>

@@ -155,7 +155,7 @@ angular.module "easyblog"
                 m = if m >= 10 then m + 1 else "0" + (m + 1)
                 d = date.getDate()
                 d = if d >= 10 then d else "0" + d
-                name = $scope.frontMatter.title.replace('\s', '-')
+                name = $scope.frontMatter.title.replace(/\s/g, '-')
                 path = "_posts/#{y}-#{m}-#{d}-#{name}.md"
                 save()
                 .then (res)->
