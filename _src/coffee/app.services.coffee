@@ -26,6 +26,8 @@ angular.module "easyblog"
 
       branch.writeMany(files, message)
       .then (res)->
+        for uuid of uuids
+          uuids[uuid] = '/' + uuids[uuid]
         d.resolve uuids, res
         return
       , (err)->
