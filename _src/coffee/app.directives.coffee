@@ -191,7 +191,7 @@ angular.module "easyblog"
           editor.insert text
 
           postdate = $scope.filepath.match(/\d{4}-\d{2}-\d{2}/)
-          path = "images/" + postdate + '-' + uuid + '.' + file.extra.extension
+          path = "assets/post-images/" + postdate + '-' + uuid + '.' + file.extra.extension
 
 
           groupID = file.extra.groupID
