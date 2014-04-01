@@ -64512,7 +64512,7 @@ angular.module("easyblog").directive("blogList", [
         if (ngModel == null) {
           return;
         }
-        ymlReg = /^(?:---\n)((?:.|\n)*?)\n---\n/;
+        ymlReg = /^(?:---\r?\n)((?:.|\r?\n)*?)\r?\n---\r?\n/;
         ngModel.$formatters.push(function(modelValue) {
           var content, frontMatter;
           if (modelValue != null) {

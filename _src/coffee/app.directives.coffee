@@ -12,7 +12,7 @@ angular.module "easyblog"
   link:($scope, $element, $attr, ngModel)->
     return unless ngModel?
 
-    ymlReg = /^(?:---\n)((?:.|\n)*?)\n---\n/
+    ymlReg = /^(?:---\r?\n)((?:.|\r?\n)*?)\r?\n---\r?\n/
 
     ngModel.$formatters.push (modelValue)->
 
