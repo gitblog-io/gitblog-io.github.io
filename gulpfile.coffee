@@ -38,7 +38,9 @@ JS_FILES = [
   "#{BOWER_PATH}/angular/angular.js"
   "#{BOWER_PATH}/angular-route/angular-route.js"
   "#{BOWER_PATH}/angular-cookies/angular-cookies.js"
+  "#{BOWER_PATH}/angular-animate/angular-animate.js"
   "#{BOWER_PATH}/angularLocalStorage/src/angularLocalStorage.js"
+  "#{BOWER_PATH}/angular-unsavedChanges/dist/unsavedChanges.js"
   # "#{BOWER_PATH}/octokit/octokit.js"
   "#{BOWER_PATH}/js-yaml/js-yaml.js"
   "#{BOWER_PATH}/ace-builds/src-noconflict/ace.js"
@@ -62,6 +64,8 @@ gulp.task "js", ->
   appQueue.done()
     .pipe plumber()
     .pipe concat "application.js"
+    .pipe gulp.dest("#{DEST_PATH}/js")
+    .pipe concat "application.min.js"
     .pipe uglify()
     .pipe gulp.dest("#{DEST_PATH}/js")
 

@@ -16,7 +16,9 @@ $(document.body)
 
 angular.module "easyblog", [
   'ngRoute'
+  'ngAnimate'
   'angularLocalStorage'
+  'unsavedChanges'
   'easyblog.templates'
 ]
 
@@ -53,7 +55,7 @@ angular.module "easyblog", [
     .addClass("domready")
 
     $scope.loading = true
-    $scope.loadingText = 'Loading...'
+    $scope.loadingText = 'Wait...'
 
     $scope.token = storage.get 'token'
     $scope.reponame = storage.get 'reponame'

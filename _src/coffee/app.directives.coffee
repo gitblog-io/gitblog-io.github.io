@@ -61,8 +61,8 @@ angular.module "easyblog"
   link:($scope, $element, $attrs, ngModel)->
     return unless ngModel?
 
-    textarea = $element.prev("textarea")
-    textarea.hide()
+    # textarea = $element.prev("textarea")
+    # textarea.hide()
 
     editor = window.ace.edit($element[0])
     editor.setFontSize 16
@@ -141,9 +141,13 @@ angular.module "easyblog"
       session.setValue ngModel.$viewValue
       return
 
+    loaded = false
     update = ->
       viewValue = session.getValue()
       ngModel.$setViewValue(viewValue)
+      if !loaded
+        $scope.postForm.$setPristine()
+        loaded = true
 
     promise = null
     onChange = ->

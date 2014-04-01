@@ -39,10 +39,10 @@ angular.module "templates/editor.html", []
     ($templateCache) ->
       $templateCache.put( "templates/editor.html",
         """
-        <form name="postForm">
+        <form name="postForm" unsaved-warning-form>
           <div class="action text-right">
-            <button class="btn btn-default" ng-click="delete()" ng-if="!new">Delete</button>
-            <a class="btn btn-default" ng-href="#!/{{username}}/{{reponame}}" ng-if="new">Drop</a>
+            <a class="btn btn-default" ng-href="#!/{{username}}/{{reponame}}">Back</a>
+            <button class="btn btn-danger" ng-click="delete()" ng-if="!new">Delete</button>
             <switch ng-model="frontMatter.published"></switch>
             <button ng-disabled="postForm.title.$invalid" class="btn btn-success" ng-click="save()">Save</button>
           </div>
@@ -53,7 +53,7 @@ angular.module "templates/editor.html", []
           <br>
           <div class="page-content">
             <div class="drag-area">Drop to upload</div>
-            <textarea name="content" class="form-control" placeholder="Story..." ng-model="post"></textarea>
+            <!--<textarea name="content" class="form-control" placeholder="Story..." ng-model="post"></textarea>-->
             <div class="placeholder" editor ng-model="content" data-placeholder="Your story"></div>
           </div>
         </form>
@@ -76,7 +76,7 @@ angular.module "templates/list.html", []
         </div>
         <div class="list-item" ng-repeat="post in posts | orderBy : 'date' : true">
           <h3>
-            <a ng-href="#!/{{post.user}}/{{post.repo}}/{{post.info.path}}?sha={{post.info.sha}}">{{post.urlTitle}}</a>
+            <a ng-href="#!/{{post.user}}/{{post.repo}}/{{post.info.path}}">{{post.urlTitle}}</a>
             <small ng-if="post.type=='_drafts'">(draft)</small>
           </h3>
           <small><time class="text-muted">{{post.date | date : 'MM/dd/yyyy'}}</time></small>

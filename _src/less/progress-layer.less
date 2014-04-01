@@ -1,5 +1,6 @@
 .progress-layer{
   position: fixed;
+  background-color: rgba(248, 247, 244, 0.5);
   z-index: 100;
   top:0;
   left: 0;
@@ -20,6 +21,13 @@
     line-height: 40px;
     text-align: center;
     width: 100%;
+  }
+  &.ng-enter{
+    .animation(fadeIn .35s);
+  }
+  &.ng-leave
+  {
+    .animation(fadeOut .35s);
   }
 }
 #layer-pencil{

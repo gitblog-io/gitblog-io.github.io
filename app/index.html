@@ -6,14 +6,14 @@ layout: app
     <g id="layer-cat">
       <g>
         <g>
-          <polygon points="137.336,64.466 137.336,117.181 116.25,117.181 110.979,117.181 89.893,117.181 84.623,117.181 63.536,117.181 63.536,64.466 84.622,85.552 116.25,85.552"/>
+          <polygon fill="#444444" points="137.336,64.466 137.336,117.181 116.25,117.181 110.979,117.181 89.893,117.181 84.623,117.181 63.536,117.181 63.536,64.466 84.622,85.552 116.25,85.552"/>
         </g>
         <rect class="cat-eye" transform-origin="84.622 117.18" x="84.622" y="101.367" fill="#FFFFFF" width="5.271" height="15.813"/>
         <rect class="cat-eye" transform-origin="110.979 117.18" x="110.979" y="101.367" fill="#FFFFFF" width="5.271" height="15.813"/>
       </g>
     </g>
     <g id="layer-line">
-      <line stroke="#000000" stroke-width="3" stroke-miterlimit="10" x1="24" y1="118.5" x2="177" y2="118.5"/>
+      <line stroke="#444444" stroke-width="3" stroke-miterlimit="10" x1="24" y1="118.5" x2="177" y2="118.5"/>
     </g>
     <g id="layer-pencil">
       <g>
@@ -66,4 +66,8 @@ layout: app
     </footer>
   </div>
 </aside>
+{% if site.safe %}
+<script src="/assets/js/application.min.js"></script>
+{% else %}
 <script src="/assets/js/application.js"></script>
+{% endif %}

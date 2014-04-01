@@ -30,7 +30,7 @@
     "gulp-less": "^1.2.3",
     "gulp-concat": "^2.1.7",
     "coffee-script": "^1.7.1",
-    "streamqueue": "0.0.5",
-    "gulp-uglify": "^0.2.1"
+    "streamqueue": "^0.0.5",
+    "gulp-uglify": "^0.2.1",
   }
 }

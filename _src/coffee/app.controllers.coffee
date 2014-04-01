@@ -78,25 +78,26 @@ angular.module "easyblog"
             promise = branch.write(path, $scope.post, message, false)
             promise.then (res)->
               $scope.$evalAsync ->
-                $location.search("sha", res.sha) unless $scope.new
                 $scope.$root.loading = false
+                $scope.postForm.$setPristine()
             , (err)->
               console.error err
 
             promise
 
           deleteFunc = ->
-            $scope.$root.loading = true
-            branch =　_repo.getBranch "master"
-            message = "Update by easyblog.github.io at " + (new Date()).toLocaleString()
-            promise = branch.remove(path, message)
-            promise.then (res)->
-              $scope.$evalAsync ->
-                $location.path("/#{username}/#{reponame}")
-            , (err)->
-              console.error err
+            if window.confirm("Are you sure to delete #{$scope.filepath}?")
+              $scope.$root.loading = true
+              branch =　_repo.getBranch "master"
+              message = "Update by easyblog.github.io at " + (new Date()).toLocaleString()
+              promise = branch.remove(path, message)
+              promise.then (res)->
+                $scope.$evalAsync ->
+                  $location.path("/#{username}/#{reponame}")
+              , (err)->
+                console.error err
 
-            promise
+              promise
 
           show = ->
             _repo.git.getBlob(sha)
@@ -125,8 +126,6 @@ angular.module "easyblog"
                 path: path
               if blob?
                 sha = blob.sha
-                $scope.$evalAsync ->
-                  $location.search('sha', sha)
                 show()
               else
                 console.error "file path not found"
