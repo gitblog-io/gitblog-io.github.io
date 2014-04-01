@@ -28,6 +28,9 @@ angular.module "easyblog", [
   ($routeProvider, $locationProvider)->
     $locationProvider.hashPrefix('!')
     $routeProvider
+      .when '/about',
+        templateUrl: 'templates/about.html'
+        controller: 'AboutController'
       .when '/:user/:repo/:path*',
         templateUrl: 'templates/post.html'
         controller: 'PostController'
@@ -38,6 +41,7 @@ angular.module "easyblog", [
       .when '/',
         templateUrl: 'templates/index.html'
         controller: 'IndexController'
+
       .otherwise
         redirectTo: '/'
     return

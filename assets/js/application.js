@@ -64181,7 +64181,10 @@ $(document.body).on("click", "a", function(e) {
 angular.module("easyblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsavedChanges', 'easyblog.templates']).config([
   '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $locationProvider.hashPrefix('!');
-    $routeProvider.when('/:user/:repo/:path*', {
+    $routeProvider.when('/about', {
+      templateUrl: 'templates/about.html',
+      controller: 'AboutController'
+    }).when('/:user/:repo/:path*', {
       templateUrl: 'templates/post.html',
       controller: 'PostController',
       reloadOnSearch: false
@@ -64307,6 +64310,13 @@ angular.module("easyblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsa
 ]);
 
 angular.module("easyblog").controller("IndexController", [
+  "$scope", function($scope) {
+    $scope.$root.loading = true;
+    return $scope.blogListReady.then(function() {
+      return $scope.$root.loading = false;
+    });
+  }
+]).controller("AboutController", [
   "$scope", function($scope) {
     $scope.$root.loading = true;
     return $scope.blogListReady.then(function() {
@@ -64898,7 +64908,7 @@ angular.module("easyblog").factory("utils", [
   }
 ]);
 
-angular.module("easyblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html']);
+angular.module("easyblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html', 'templates/about.html']);
 
 angular.module("templates/blog-list.html", []).run([
   "$templateCache", function($templateCache) {
@@ -64927,5 +64937,11 @@ angular.module("templates/list.html", []).run([
 angular.module("templates/index.html", []).run([
   "$templateCache", function($templateCache) {
     return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\">Create One</button>\n</div>");
+  }
+]);
+
+angular.module("templates/about.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/about.html", "<div class=\"page-header text-center\">\n  <h1>About easyblog</h1>\n  <small class=\"text-muted\" ng-show=\"username\">The easiest way to post on Github Pages</small>\n</div>\n<h3>Author</h3>\n<p><a target=\"_blank\" href=\"https://github.com/hyspace\">hyspace</a></p>\n\n<h3>Bug report</h3>\n<p><a target=\"_blank\" href=\"https://github.com/easyblog/easyblog.github.io/issues\">Issues</a></p>\n\n<h3>Opensouce projects used in easyblog</h3>\n<ul>\n  <li><a target=\"_blank\" href=\"http://www.angularjs.org/\">Angular.js</a></li>\n  <li><a target=\"_blank\" href=\"http://ace.c9.io/\">Ace editor</a></li>\n  <li><a target=\"_blank\" href=\"https://github.com/philschatz/octokit.js\">Octokit.js</a></li>\n  <li><a target=\"_blank\" href=\"http://jquery.com/\">jQuery</a></li>\n  <li><a target=\"_blank\" href=\"http://getbootstrap.com/\">Bootstrap</a></li>\n  <li><a target=\"_blank\" href=\"http://lodash.com/\">lodash</a></li>\n  <li><a target=\"_blank\" href=\"http://nodeca.github.io/js-yaml/\">js-yaml</a></li>\n  <li><a target=\"_blank\" href=\"https://github.com/agrublev/angularLocalStorage\">angularLocalStorage</a></li>\n  <li><a target=\"_blank\" href=\"https://github.com/facultymatt/angular-unsavedChanges\">angular-unsavedChanges</a></li>\n</ul>\n\n<h3>Other projects</h3>\n<ul>\n  <li><a target=\"_blank\" href=\"https://stackedit.io/\">stackedit</a></li>\n  <li><a target=\"_blank\" href=\"http://prose.io/\">prose</a></li>\n</ul>");
   }
 ]);

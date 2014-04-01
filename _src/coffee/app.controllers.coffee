@@ -8,6 +8,14 @@ angular.module "easyblog"
       $scope.$root.loading = false
 ]
 
+.controller "AboutController", [
+  "$scope"
+  ($scope)->
+    $scope.$root.loading = true
+    $scope.blogListReady.then ->
+      $scope.$root.loading = false
+]
+
 .controller "ListController", [
   "$scope"
   "$routeParams"
