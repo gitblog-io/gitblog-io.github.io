@@ -725,7 +725,7 @@ makeOctokit = (_, jQuery, base64encode, userAgent) =>
 
           # Update the reference of your head to point to the new commit SHA
           # -------
-          @updateHead = (head, commit, force=false) ->
+          @updateHead = (head, commit, force=true) ->
             options = {sha:commit}
             options.force = true if force
             _request 'PATCH', "#{_repoPath}/git/refs/heads/#{head}", options

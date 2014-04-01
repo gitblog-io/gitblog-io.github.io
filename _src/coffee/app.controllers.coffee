@@ -55,7 +55,8 @@ angular.module "easyblog"
   "$scope"
   "$routeParams"
   "$location"
-  ($scope, $routeParams, $location)->
+  "uploader"
+  ($scope, $routeParams, $location, uploader)->
     $scope.$root.loading = true
     username = $routeParams.user
     reponame = $routeParams.repo
@@ -64,9 +65,11 @@ angular.module "easyblog"
     if username? and reponame? and path?
       $scope.username = username
       $scope.reponame = reponame
+      $scope.filepath = path
       $scope.blogListReady.then ->
         if repo = $scope.getRepo(username, reponame)
           _repo = repo._repo
+          $scope.uploader = uploader.call($scope, _repo)
 
           save = ->
             $scope.$root.loading = true

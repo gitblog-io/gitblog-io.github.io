@@ -55,7 +55,7 @@ angular.module "easyblog"
 
 ]
 
-.directive 'editor', ["$timeout", ($timeout)->
+.directive 'editor', ["$timeout", "UUID", ($timeout, UUID)->
   restrict:"EA"
   require:"?ngModel"
   link:($scope, $element, $attrs, ngModel)->
@@ -163,6 +163,72 @@ angular.module "easyblog"
       editor.session.$stopWorker()
       editor.destroy()
       return
+
+    groups = {}
+
+    opts =
+      dragClass: "drag"
+      accept: 'image/*'
+      readAsMap:
+        "image/*": "BinaryString"
+
+      readAsDefault: "BinaryString"
+      on:
+        beforestart: (e, file) ->
+          #todo: limit file size
+
+        load: (e, file) ->
+
+          uuid = UUID()
+
+          # insert mark
+          text = "![image](<uploading-#{uuid}>)"
+          position = editor.getCursorPosition()
+          if position.column != 0
+            text = '\n' + text + '\n'
+          else
+            text = text + '\n'
+          editor.insert text
+
+          postdate = $scope.filepath.match(/\d{4}-\d{2}-\d{2}/)
+          path = "images/" + postdate + '-' + uuid + '.' + file.extra.extension
+
+
+          groupID = file.extra.groupID
+          groups[groupID].files[path]=
+            isBase64: true
+            content: e.target.result
+
+          groups[groupID].uuids[uuid] = path
+
+        error: (e, file) ->
+          console.errpr file.name + " error: " + e.toString()
+
+        skip: (file) ->
+          console.warn file.name + " skipped"
+
+        groupstart: (group) ->
+          groups[group.groupID] =
+            files: {}
+            uuids: {}
+
+        groupend: (group) ->
+          $scope.uploader.add groups[group.groupID]
+          .then (uuids)->
+            position = editor.getCursorPosition()
+
+            for uuid, path of uuids
+              reg = new RegExp("!\\[(\\w*)\\]\\(<uploading-#{uuid}>\\)")
+              editor.replace "![$1](#{path})", needle:reg
+
+            editor.clearSelection()
+            editor.moveCursorToPosition position
+          groups[group.id] = null
+
+    $(document.body).fileReaderJS(opts);
+    $element.fileClipboard(opts);
+
+    return
 ]
 
 .directive "customInput", [->

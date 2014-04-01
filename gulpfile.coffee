@@ -43,6 +43,7 @@ JS_FILES = [
   "#{BOWER_PATH}/js-yaml/js-yaml.js"
   "#{BOWER_PATH}/ace-builds/src-noconflict/ace.js"
   "#{SRC_PATH}/js/mode-markdown-custom.js"
+  "#{SRC_PATH}/js/filereader.js"
   "#{BOWER_PATH}/ace-builds/src-noconflict/theme-tomorrow.js"
 ]
 
