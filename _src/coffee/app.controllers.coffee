@@ -64,8 +64,9 @@ angular.module "easyblog"
   "$scope"
   "$routeParams"
   "$location"
+  "$timeout"
   "uploader"
-  ($scope, $routeParams, $location, uploader)->
+  ($scope, $routeParams, $location, $timeout, uploader)->
     $scope.$root.loading = true
     username = $routeParams.user
     reponame = $routeParams.repo
@@ -90,6 +91,7 @@ angular.module "easyblog"
               $scope.$root.loading = false
               $scope.postForm.$setPristine()
           , (err)->
+            $scope.$root.loading = false
             console.error err
 
           promise
@@ -102,8 +104,14 @@ angular.module "easyblog"
             promise = branch.remove(path, message)
             promise.then (res)->
               $scope.$evalAsync ->
+                $scope.$root.loadingText = "Redirecting to list..."
+
+              $timeout ->
                 $location.path("/#{username}/#{reponame}")
+                .replace()
+              , 1500
             , (err)->
+              $scope.$root.loading = false
               console.error err
 
             promise
@@ -124,6 +132,7 @@ angular.module "easyblog"
             if err.status == 404
               searchAndShow()
             else
+              $scope.$root.loading = false
               console.error err.error
 
         searchAndShow = ->
@@ -137,6 +146,7 @@ angular.module "easyblog"
               sha = blob.sha
               show()
             else
+              $scope.$root.loading = false
               console.error "file path not found"
 
         newPost = """---
@@ -168,8 +178,12 @@ angular.module "easyblog"
               save()
               .then (res)->
                 $scope.$evalAsync ->
+                  $scope.$root.loading = true
+                  $scope.$root.loadingText = "Redirecting to saved post.."
+                $timeout ->
                   $location.path("/#{username}/#{reponame}/#{path}")
                   .replace()
+                , 1500
 
           else
             searchAndShow()

@@ -64376,7 +64376,7 @@ angular.module("easyblog").controller("IndexController", [
     });
   }
 ]).controller("PostController", [
-  "$scope", "$routeParams", "$location", "uploader", function($scope, $routeParams, $location, uploader) {
+  "$scope", "$routeParams", "$location", "$timeout", "uploader", function($scope, $routeParams, $location, $timeout, uploader) {
     var path, reponame, sha, username;
     $scope.$root.loading = true;
     username = $routeParams.user;
@@ -64403,6 +64403,7 @@ angular.module("easyblog").controller("IndexController", [
               return $scope.postForm.$setPristine();
             });
           }, function(err) {
+            $scope.$root.loading = false;
             return console.error(err);
           });
           return promise;
@@ -64415,10 +64416,14 @@ angular.module("easyblog").controller("IndexController", [
             message = "Update by easyblog.github.io at " + (new Date()).toLocaleString();
             promise = branch.remove(path, message);
             promise.then(function(res) {
-              return $scope.$evalAsync(function() {
-                return $location.path("/" + username + "/" + reponame);
+              $scope.$evalAsync(function() {
+                return $scope.$root.loadingText = "Redirecting to list...";
               });
+              return $timeout(function() {
+                return $location.path("/" + username + "/" + reponame).replace();
+              }, 1500);
             }, function(err) {
+              $scope.$root.loading = false;
               return console.error(err);
             });
             return promise;
@@ -64437,6 +64442,7 @@ angular.module("easyblog").controller("IndexController", [
             if (err.status === 404) {
               return searchAndShow();
             } else {
+              $scope.$root.loading = false;
               return console.error(err.error);
             }
           });
@@ -64454,6 +64460,7 @@ angular.module("easyblog").controller("IndexController", [
               sha = blob.sha;
               return show();
             } else {
+              $scope.$root.loading = false;
               return console.error("file path not found");
             }
           });
@@ -64475,9 +64482,13 @@ angular.module("easyblog").controller("IndexController", [
               name = $scope.frontMatter.title.replace(/\s/g, '-');
               path = "_posts/" + y + "-" + m + "-" + d + "-" + name + ".md";
               return save().then(function(res) {
-                return $scope.$evalAsync(function() {
-                  return $location.path("/" + username + "/" + reponame + "/" + path).replace();
+                $scope.$evalAsync(function() {
+                  $scope.$root.loading = true;
+                  return $scope.$root.loadingText = "Redirecting to saved post..";
                 });
+                return $timeout(function() {
+                  return $location.path("/" + username + "/" + reponame + "/" + path).replace();
+                }, 1500);
               });
             };
           } else {
