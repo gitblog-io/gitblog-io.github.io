@@ -169,7 +169,6 @@ angular.module "easyblog"
               .then (res)->
                 $scope.$evalAsync ->
                   $location.path("/#{username}/#{reponame}/#{path}")
-                  .search('sha',res.sha)
                   .replace()
 
           else
