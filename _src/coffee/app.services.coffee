@@ -31,6 +31,7 @@ angular.module "easyblog"
         d.resolve uuids, res
         return
       , (err)->
+        err.uuids = uuids
         d.reject(err)
         return
       d.promise

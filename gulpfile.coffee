@@ -44,9 +44,10 @@ JS_FILES = [
   # "#{BOWER_PATH}/octokit/octokit.js"
   "#{BOWER_PATH}/js-yaml/js-yaml.js"
   "#{BOWER_PATH}/ace-builds/src-noconflict/ace.js"
-  "#{SRC_PATH}/js/mode-markdown-custom.js"
+  "#{SRC_PATH}/js/mode-markdown.js"
+  "#{SRC_PATH}/js/ext-settings_menu.js"
+  "#{SRC_PATH}/js/theme-tomorrow-markdown.js"
   "#{SRC_PATH}/js/filereader.js"
-  "#{BOWER_PATH}/ace-builds/src-noconflict/theme-tomorrow.js"
 ]
 
 gulp.task "js", ->
@@ -80,5 +81,8 @@ FILES =[
 gulp.task "copy", ->
   gulp.src FILES
     .pipe gulp.dest("#{DEST_PATH}/img")
+
+  gulp.src "#{BOWER_PATH}/ace-builds/src-min-noconflict/**/*.js"
+    .pipe gulp.dest("#{DEST_PATH}/js/ace/")
 
 gulp.task "default", ["css", "js", "copy", "watch"]

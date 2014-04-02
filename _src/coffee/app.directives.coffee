@@ -53,6 +53,17 @@ angular.module "easyblog"
         $timeout.cancel promise if promise?
         promise = $timeout update, 200
 
+    $(window).on "keydown", (event) ->
+      if event.ctrlKey or event.metaKey
+        switch String.fromCharCode(event.which).toLowerCase()
+          when "s"
+            event.preventDefault()
+            if $scope.postForm.$dirty
+              $scope.$apply ->
+                $scope.save()
+
+    return
+
 ]
 
 .directive 'editor', ["$timeout", "UUID", ($timeout, UUID)->
@@ -63,7 +74,7 @@ angular.module "easyblog"
 
     # textarea = $element.prev("textarea")
     # textarea.hide()
-
+    window.ace.config.set('basePath', '/assets/js/ace')
     editor = window.ace.edit($element[0])
     editor.setFontSize 16
     editor.setOptions
@@ -71,61 +82,13 @@ angular.module "easyblog"
     editor.setShowPrintMargin false
     editor.setHighlightActiveLine false
     editor.renderer.setShowGutter false
+    editor.setTheme('ace/theme/tomorrow-markdown')
 
     session = editor.getSession()
     session.setUseWrapMode true
+    session.setUseSoftTabs true
+    session.setTabSize 2
     session.setMode "ace/mode/markdown"
-
-    # Make bold titles...
-    ((self) ->
-      checkLine = (currentLine) ->
-        line = self.lines[currentLine]
-        if line.length isnt 0
-          if line[0].type.indexOf("markup.heading.multi") is 0
-            self.lines[currentLine - 1].forEach (previousLineObject) ->
-              previousLineObject.type = "markup.heading"
-              return
-
-        return
-      customWorker = ->
-
-        # Duplicate from background_tokenizer.js
-        return  unless self.running
-        workerStart = new Date()
-        currentLine = self.currentLine
-        endLine = -1
-        doc = self.doc
-        currentLine++  while self.lines[currentLine]
-        startLine = currentLine
-        len = doc.getLength()
-        processedLines = 0
-        self.running = false
-        while currentLine < len
-          self.$tokenizeRow currentLine
-          endLine = currentLine
-          loop
-            checkLine currentLine # benweet
-            currentLine++
-            break unless self.lines[currentLine]
-
-          # only check every 5 lines
-          processedLines++
-          if (processedLines % 5 is 0) and (new Date() - workerStart) > 20
-            self.running = setTimeout(customWorker, 20) # benweet
-            self.currentLine = currentLine
-            return
-        self.currentLine = currentLine
-        self.fireUpdateEvent startLine, endLine  if startLine <= endLine
-        return
-      self.$worker = ->
-        self.lines.splice 0, self.lines.length
-        self.states.splice 0, self.states.length
-        self.currentLine = 0
-        customWorker()
-        return
-
-      return
-    )(editor.session.bgTokenizer)
 
     ngModel.$formatters.push (value) ->
       if angular.isUndefined(value) or value is null or value == ""
@@ -168,7 +131,22 @@ angular.module "easyblog"
       editor.destroy()
       return
 
-    groups = {}
+    # Key binding
+
+    editor.commands.addCommand
+      name: "save"
+      bindKey:
+        win: "Ctrl-S"
+        mac: "Command-S"
+
+      exec: (editor) ->
+        if $scope.postForm.$dirty
+          $scope.$apply ->
+            $scope.save()
+
+
+    # File upload
+    groups = []
 
     opts =
       dragClass: "drag"
@@ -227,10 +205,73 @@ angular.module "easyblog"
 
             editor.clearSelection()
             editor.moveCursorToPosition position
+          , (err)->
+            console.error err
+            uuids = err.uuids
+            position = editor.getCursorPosition()
+
+            for uuid, path of uuids
+              reg = new RegExp("!\\[(\\w*)\\]\\(<uploading-#{uuid}>\\)")
+              editor.replace "(!image upload failed)", needle:reg
+
+            editor.clearSelection()
+            editor.moveCursorToPosition position
+
           groups[group.id] = null
 
     $(document.body).fileReaderJS(opts);
     $element.fileClipboard(opts);
+
+    # Make bold titles...
+    ((self) ->
+      checkLine = (currentLine) ->
+        line = self.lines[currentLine]
+        if line.length isnt 0
+          if line[0].type.indexOf("markup.heading.multi") is 0
+            self.lines[currentLine - 1].forEach (previousLineObject) ->
+              previousLineObject.type = "markup.heading"
+              return
+
+        return
+      customWorker = ->
+
+        # Duplicate from background_tokenizer.js
+        return  unless self.running
+        workerStart = new Date()
+        currentLine = self.currentLine
+        endLine = -1
+        doc = self.doc
+        currentLine++  while self.lines[currentLine]
+        startLine = currentLine
+        len = doc.getLength()
+        processedLines = 0
+        self.running = false
+        while currentLine < len
+          self.$tokenizeRow currentLine
+          endLine = currentLine
+          loop
+            checkLine currentLine # benweet
+            currentLine++
+            break unless self.lines[currentLine]
+
+          # only check every 5 lines
+          processedLines++
+          if (processedLines % 5 is 0) and (new Date() - workerStart) > 20
+            self.running = setTimeout(customWorker, 20) # benweet
+            self.currentLine = currentLine
+            return
+        self.currentLine = currentLine
+        self.fireUpdateEvent startLine, endLine  if startLine <= endLine
+        return
+      self.$worker = ->
+        self.lines.splice 0, self.lines.length
+        self.states.splice 0, self.states.length
+        self.currentLine = 0
+        customWorker()
+        return
+
+      return
+    )(editor.session.bgTokenizer)
 
     return
 ]
