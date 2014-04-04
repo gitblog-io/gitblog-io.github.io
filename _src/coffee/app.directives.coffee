@@ -1,4 +1,4 @@
-angular.module "easyblog"
+angular.module "gitblog"
 
 .directive "blogList", [->
   restrict: "A"

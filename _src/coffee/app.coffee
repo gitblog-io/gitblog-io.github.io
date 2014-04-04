@@ -14,12 +14,12 @@ $(document.body)
     $(document.body).removeClass()
   return
 
-angular.module "easyblog", [
+angular.module "gitblog", [
   'ngRoute'
   'ngAnimate'
   'angularLocalStorage'
   'unsavedChanges'
-  'easyblog.templates'
+  'gitblog.templates'
 ]
 
 .config [

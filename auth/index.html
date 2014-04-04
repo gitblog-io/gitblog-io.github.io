@@ -64,7 +64,7 @@ layout: default
   }
   if(code != null){
     xhr = new XMLHttpRequest;
-    xhr.open("GET", "https://easyblog-oauth.herokuapp.com/authenticate/"+code, true);
+    xhr.open("GET", "https://gitblog.herokuapp.com/authenticate/"+code, true);
     xhr.onreadystatechange = function(){
       if(xhr.readyState === 4){
         if(xhr.status === 200 ){

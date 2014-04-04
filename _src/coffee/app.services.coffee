@@ -1,4 +1,4 @@
-angular.module "easyblog"
+angular.module "gitblog"
 
 .factory "utils", [->
   filterRepos:(repos, names)->
@@ -22,7 +22,7 @@ angular.module "easyblog"
     promise: d.promise
     upload:->
       branch = _repo.getBranch('master')
-      message = "Upload image by easyblog.github.io at " + (new Date()).toLocaleString()
+      message = "Upload image by gitblog-io.github.io at " + (new Date()).toLocaleString()
 
       branch.writeMany(files, message)
       .then (res)->

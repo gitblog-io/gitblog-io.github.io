@@ -1,4 +1,4 @@
-angular.module "easyblog.templates", [
+angular.module "gitblog.templates", [
   'templates/editor.html'
   'templates/list.html'
   'templates/index.html'
@@ -129,20 +129,20 @@ angular.module "templates/about.html", []
       $templateCache.put( "templates/about.html",
         """
         <div class="page-header text-center">
-          <h1>About easyblog</h1>
+          <h1>About gitblog</h1>
           <small class="text-muted">The easiest way to post on Github Pages</small>
         </div>
         <div class="text-center">
           <h3>Project</h3>
-          <p><a class="btn btn-primary" target="_blank" href="https://github.com/easyblog/easyblog.github.io/"><i class="icon-github-alt"></i> Easyblog</a></p>
+          <p><a class="btn btn-primary" target="_blank" href="https://github.com/gitblog/gitblog-io.github.io/"><i class="icon-github-alt"></i> Gitblog</a></p>
 
           <h3>Author</h3>
           <p><a class="btn btn-primary" target="_blank" href="https://github.com/hyspace"><i class="icon-cat"></i> hyspace</a></p>
 
           <h3>Bug report</h3>
-          <p><a target="_blank" href="https://github.com/easyblog/easyblog.github.io/issues">Issues</a></p>
+          <p><a target="_blank" href="https://github.com/gitblog/gitblog-io.github.io/issues">Issues</a></p>
 
-          <h3>Opensouce projects used in easyblog</h3>
+          <h3>Opensouce projects used in gitblog</h3>
           <ul class="list-unstyled">
             <li><a target="_blank" href="http://www.angularjs.org/">Angular.js</a></li>
             <li><a target="_blank" href="http://ace.c9.io/">Ace editor</a></li>
