@@ -36187,7 +36187,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 })(window, window.angular);
 
 /**
- * @license AngularJS v1.2.15-build.2399+sha.ca4ddfa
+ * @license AngularJS v1.2.14
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -66390,2108 +66390,2300 @@ See http://github.com/bgrins/filereader.js for documentation.
     FileReaderJS.enabled = true;
 
 })(this, document);
-var Octokit, encode, err, jQuery, makeOctokit, moduleName, najax, _, _i, _len, _ref,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+(function() {
+  var Octokit, Promise, XMLHttpRequest, allPromises, createGlobalAndAMD, encode, err, injector, makeOctokit, newPromise, _,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __slice = [].slice;
 
-makeOctokit = (function(_this) {
-  return function(_, jQuery, base64encode, userAgent) {
-    var Octokit;
-    Octokit = (function() {
-      function Octokit(clientOptions) {
-        var AuthenticatedUser, Branch, ETagResponse, Gist, GitRepo, Organization, Repository, Team, User, clearCache, getCache, notifyEnd, notifyStart, setCache, toQueryString, _cachedETags, _client, _listeners, _request;
-        if (clientOptions == null) {
-          clientOptions = {};
-        }
-        _.defaults(clientOptions, {
-          rootURL: 'https://api.github.com',
-          useETags: true,
-          usePostInsteadOfPatch: false
+  _ = {};
+
+  _.isEmpty = function(object) {
+    return Object.keys(object).length === 0;
+  };
+
+  _.isArray = function(object) {
+    return !!object.slice;
+  };
+
+  _.defaults = function(object, values) {
+    var key, _i, _len, _ref, _results;
+    _ref = Object.keys(values);
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      key = _ref[_i];
+      _results.push((function(key) {
+        return object[key] != null ? object[key] : object[key] = values[key];
+      })(key));
+    }
+    return _results;
+  };
+
+  _.each = function(object, fn) {
+    var arr, key, _i, _len, _ref, _results;
+    if (_.isArray(object)) {
+      object.forEach(fn);
+    }
+    arr = [];
+    _ref = Object.keys(object);
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      key = _ref[_i];
+      _results.push((function(key) {
+        return fn(object[key]);
+      })(key));
+    }
+    return _results;
+  };
+
+  _.pairs = function(object) {
+    var arr, key, _fn, _i, _len, _ref;
+    arr = [];
+    _ref = Object.keys(object);
+    _fn = function(key) {
+      return arr.push([key, object[key]]);
+    };
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      key = _ref[_i];
+      _fn(key);
+    }
+    return arr;
+  };
+
+  _.map = function(object, fn) {
+    var arr, key, _fn, _i, _len, _ref;
+    if (_.isArray(object)) {
+      return object.map(fn);
+    }
+    arr = [];
+    _ref = Object.keys(object);
+    _fn = function(key) {
+      return arr.push(fn(object[key]));
+    };
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      key = _ref[_i];
+      _fn(key);
+    }
+    return arr;
+  };
+
+  _.last = function(object, n) {
+    var len;
+    len = object.length;
+    return object.slice(len - n, len);
+  };
+
+  _.select = function(object, fn) {
+    return object.filter(fn);
+  };
+
+  _.extend = function(object, template) {
+    var key, _i, _len, _ref, _results;
+    _ref = Object.keys(template);
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      key = _ref[_i];
+      _results.push((function(key) {
+        return object[key] = template[key];
+      })(key));
+    }
+    return _results;
+  };
+
+  _.toArray = function(object) {
+    return Array.prototype.slice.call(object);
+  };
+
+  makeOctokit = (function(_this) {
+    return function(newPromise, allPromises, XMLHttpRequest, base64encode, userAgent) {
+      var Octokit, ajax;
+      ajax = function(options) {
+        return newPromise(function(resolve, reject) {
+          var name, value, xhr, _ref;
+          xhr = new XMLHttpRequest();
+          xhr.dataType = options.dataType;
+          if (typeof xhr.overrideMimeType === "function") {
+            xhr.overrideMimeType(options.mimeType);
+          }
+          xhr.open(options.type, options.url);
+          if (options.data && 'GET' !== options.type) {
+            xhr.setRequestHeader('Content-Type', options.contentType);
+          }
+          _ref = options.headers;
+          for (name in _ref) {
+            value = _ref[name];
+            xhr.setRequestHeader(name, value);
+          }
+          xhr.onreadystatechange = function() {
+            var _name, _ref1;
+            if (4 === xhr.readyState) {
+              if ((_ref1 = options.statusCode) != null) {
+                if (typeof _ref1[_name = xhr.status] === "function") {
+                  _ref1[_name]();
+                }
+              }
+              if (xhr.status >= 200 && xhr.status < 300 || xhr.status === 304) {
+                return resolve(xhr);
+              } else {
+                return reject(xhr);
+              }
+            }
+          };
+          return xhr.send(options.data);
         });
-        _client = this;
-        _listeners = [];
-        ETagResponse = (function() {
-          function ETagResponse(eTag, data, textStatus) {
-            this.eTag = eTag;
-            this.data = data;
-            this.textStatus = textStatus;
+      };
+      Octokit = (function() {
+        function Octokit(clientOptions) {
+          var AuthenticatedUser, Branch, ETagResponse, Gist, GitRepo, Organization, Repository, Team, User, clearCache, getCache, notifyEnd, notifyStart, setCache, toQueryString, _cachedETags, _client, _listeners, _request;
+          if (clientOptions == null) {
+            clientOptions = {};
           }
-
-          return ETagResponse;
-
-        })();
-        _cachedETags = {};
-        notifyStart = function(promise, path) {
-          return promise.notify({
-            type: 'start',
-            path: path
+          _.defaults(clientOptions, {
+            rootURL: 'https://api.github.com',
+            useETags: true,
+            usePostInsteadOfPatch: false
           });
-        };
-        notifyEnd = function(promise, path) {
-          return promise.notify({
-            type: 'end',
-            path: path
-          });
-        };
-        _request = function(method, path, data, options) {
-          var ajaxConfig, auth, headers, jqXHR, mimeType, promise;
-          if (options == null) {
-            options = {
-              raw: false,
-              isBase64: false,
-              isBoolean: false
-            };
-          }
-          if ('PATCH' === method && clientOptions.usePostInsteadOfPatch) {
-            method = 'POST';
-          }
-          mimeType = void 0;
-          if (options.isBase64) {
-            mimeType = 'text/plain; charset=x-user-defined';
-          }
-          headers = {
-            'Accept': 'application/vnd.github.raw'
+          _client = this;
+          _listeners = [];
+          ETagResponse = (function() {
+            function ETagResponse(eTag, data, status) {
+              this.eTag = eTag;
+              this.data = data;
+              this.status = status;
+            }
+
+            return ETagResponse;
+
+          })();
+          _cachedETags = {};
+          notifyStart = function(promise, path) {
+            return typeof promise.notify === "function" ? promise.notify({
+              type: 'start',
+              path: path
+            }) : void 0;
           };
-          if (userAgent) {
-            headers['User-Agent'] = userAgent;
-          }
-          if (path in _cachedETags) {
-            headers['If-None-Match'] = _cachedETags[path].eTag;
-          } else {
-            headers['If-Modified-Since'] = 'Thu, 01 Jan 1970 00:00:00 GMT';
-          }
-          if (clientOptions.token || (clientOptions.username && clientOptions.password)) {
-            if (clientOptions.token) {
-              auth = "token " + clientOptions.token;
-            } else {
-              auth = 'Basic ' + base64encode("" + clientOptions.username + ":" + clientOptions.password);
-            }
-            headers['Authorization'] = auth;
-          }
-          promise = new jQuery.Deferred();
-          ajaxConfig = {
-            url: clientOptions.rootURL + path,
-            type: method,
-            contentType: 'application/json',
-            mimeType: mimeType,
-            headers: headers,
-            processData: false,
-            data: !options.raw && data && JSON.stringify(data) || data,
-            dataType: !options.raw ? 'json' : void 0
+          notifyEnd = function(promise, path) {
+            return typeof promise.notify === "function" ? promise.notify({
+              type: 'end',
+              path: path
+            }) : void 0;
           };
-          if (options.isBoolean) {
-            ajaxConfig.statusCode = {
-              204: (function(_this) {
-                return function() {
-                  notifyEnd(promise, path);
-                  return promise.resolve(true);
-                };
-              })(this),
-              404: (function(_this) {
-                return function() {
-                  notifyEnd(promise, path);
-                  return promise.resolve(false);
-                };
-              })(this)
-            };
-          }
-          jqXHR = jQuery.ajax(ajaxConfig);
-          jqXHR.always((function(_this) {
-            return function() {
-              var listener, rateLimit, rateLimitRemaining, _i, _len, _results;
-              notifyEnd(promise, path);
-              rateLimit = parseFloat(jqXHR.getResponseHeader('X-RateLimit-Limit'));
-              rateLimitRemaining = parseFloat(jqXHR.getResponseHeader('X-RateLimit-Remaining'));
-              _results = [];
-              for (_i = 0, _len = _listeners.length; _i < _len; _i++) {
-                listener = _listeners[_i];
-                _results.push(listener(rateLimitRemaining, rateLimit, method, path, data, options));
-              }
-              return _results;
-            };
-          })(this));
-          jqXHR.done(function(data, textStatus) {
-            var converted, eTag, eTagResponse, i, _i, _ref;
-            if (304 === jqXHR.status) {
-              if (clientOptions.useETags && _cachedETags[path]) {
-                eTagResponse = _cachedETags[path];
-                return promise.resolve(eTagResponse.data, eTagResponse.textStatus, jqXHR);
-              } else {
-                return promise.resolve(jqXHR.responseText, textStatus, jqXHR);
-              }
-            } else if (204 === jqXHR.status && options.isBoolean) {
-              return promise.resolve(true, textStatus, jqXHR);
-            } else {
-              if ('GET' === method && options.isBase64) {
-                converted = '';
-                for (i = _i = 0, _ref = data.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-                  converted += String.fromCharCode(data.charCodeAt(i) & 0xff);
-                }
-                data = converted;
-              }
-              if ('GET' === method && jqXHR.getResponseHeader('ETag') && clientOptions.useETags) {
-                eTag = jqXHR.getResponseHeader('ETag');
-                _cachedETags[path] = new ETagResponse(eTag, data, textStatus);
-              }
-              return promise.resolve(data, textStatus, jqXHR);
-            }
-          }).fail(function(unused, msg, desc) {
-            var json;
-            if (options.isBoolean && 404 === jqXHR.status) {
-              return promise.resolve(false);
-            } else {
-              if (jqXHR.getResponseHeader('Content-Type') !== 'application/json; charset=utf-8') {
-                return promise.reject({
-                  error: jqXHR.responseText,
-                  status: jqXHR.status,
-                  _jqXHR: jqXHR
-                });
-              } else {
-                if (jqXHR.responseText) {
-                  json = JSON.parse(jqXHR.responseText);
-                } else {
-                  json = '';
-                }
-                return promise.reject({
-                  error: json,
-                  status: jqXHR.status,
-                  _jqXHR: jqXHR
-                });
-              }
-            }
-          });
-          notifyStart(promise, path);
-          return promise.promise();
-        };
-        toQueryString = function(options) {
-          var params;
-          if (_.isEmpty(options)) {
-            return '';
-          }
-          params = [];
-          _.each(_.pairs(options), function(_arg) {
-            var key, value;
-            key = _arg[0], value = _arg[1];
-            return params.push("" + key + "=" + (encodeURIComponent(value)));
-          });
-          return "?" + (params.join('&'));
-        };
-        this.clearCache = clearCache = function() {
-          return _cachedETags = {};
-        };
-        this.getCache = getCache = function() {
-          return _cachedETags;
-        };
-        this.setCache = setCache = function(cachedETags) {
-          if (!(cachedETags !== null && typeof cachedETags === 'object')) {
-            throw new Error('BUG: argument of method "setCache" should be an object');
-          } else {
-            return _cachedETags = cachedETags;
-          }
-        };
-        this.onRateLimitChanged = function(listener) {
-          return _listeners.push(listener);
-        };
-        this.getZen = function() {
-          return _request('GET', '/zen', null, {
-            raw: true
-          });
-        };
-        this.getAllUsers = function(since) {
-          var options;
-          if (since == null) {
-            since = null;
-          }
-          options = {};
-          if (since) {
-            options.since = since;
-          }
-          return _request('GET', '/users', options);
-        };
-        this.getOrgRepos = function(orgName, type) {
-          if (type == null) {
-            type = 'all';
-          }
-          return _request('GET', "/orgs/" + orgName + "/repos?type=" + type + "&per_page=1000&sort=updated&direction=desc", null);
-        };
-        this.getPublicGists = function(since) {
-          var getDate, options;
-          if (since == null) {
-            since = null;
-          }
-          options = null;
-          getDate = function(time) {
-            if (Date === time.constructor) {
-              return time.toISOString();
-            }
-            return time;
-          };
-          if (since) {
-            options = {
-              since: getDate(since)
-            };
-          }
-          return _request('GET', '/gists/public', options);
-        };
-        this.getPublicEvents = function() {
-          return _request('GET', '/events', null);
-        };
-        this.getNotifications = function(options) {
-          var getDate, queryString;
-          if (options == null) {
-            options = {};
-          }
-          getDate = function(time) {
-            if (Date === time.constructor) {
-              return time.toISOString();
-            }
-            return time;
-          };
-          if (options.since) {
-            options.since = getDate(options.since);
-          }
-          queryString = toQueryString(options);
-          return _request('GET', "/notifications" + queryString, null);
-        };
-        User = (function() {
-          function User(_username) {
-            var _cachedInfo, _rootPath;
-            if (_username == null) {
-              _username = null;
-            }
-            if (_username) {
-              _rootPath = "/users/" + _username;
-            } else {
-              _rootPath = "/user";
-            }
-            _cachedInfo = null;
-            this.getInfo = function(force) {
-              var promise;
-              if (force == null) {
-                force = false;
-              }
-              if (force) {
-                _cachedInfo = null;
-              }
-              if (_cachedInfo) {
-                promise = new jQuery.Deferred();
-                promise.resolve(_cachedInfo);
-                return promise;
-              }
-              return _request('GET', "" + _rootPath, null).done(function(info) {
-                return _cachedInfo = info;
-              });
-            };
-            this.getRepos = function(type, sort, direction) {
-              if (type == null) {
-                type = 'all';
-              }
-              if (sort == null) {
-                sort = 'pushed';
-              }
-              if (direction == null) {
-                direction = 'desc';
-              }
-              return _request('GET', "" + _rootPath + "/repos?type=" + type + "&per_page=1000&sort=" + sort + "&direction=" + direction, null);
-            };
-            this.getOrgs = function() {
-              return _request('GET', "" + _rootPath + "/orgs", null);
-            };
-            this.getGists = function() {
-              return _request('GET', "" + _rootPath + "/gists", null);
-            };
-            this.getFollowers = function() {
-              return _request('GET', "" + _rootPath + "/followers", null);
-            };
-            this.getFollowing = function() {
-              return _request('GET', "" + _rootPath + "/following", null);
-            };
-            this.isFollowing = function(user) {
-              return _request('GET', "" + _rootPath + "/following/" + user, null, {
-                isBoolean: true
-              });
-            };
-            this.getPublicKeys = function() {
-              return _request('GET', "" + _rootPath + "/keys", null);
-            };
-            this.getReceivedEvents = function(onlyPublic) {
-              var isPublic;
-              if (!_username) {
-                throw new Error('BUG: This does not work for authenticated users yet!');
-              }
-              isPublic = '';
-              if (onlyPublic) {
-                isPublic = '/public';
-              }
-              return _request('GET', "/users/" + _username + "/received_events" + isPublic, null);
-            };
-            this.getEvents = function(onlyPublic) {
-              var isPublic;
-              if (!_username) {
-                throw new Error('BUG: This does not work for authenticated users yet!');
-              }
-              isPublic = '';
-              if (onlyPublic) {
-                isPublic = '/public';
-              }
-              return _request('GET', "/users/" + _username + "/events" + isPublic, null);
-            };
-          }
-
-          return User;
-
-        })();
-        AuthenticatedUser = (function(_super) {
-          __extends(AuthenticatedUser, _super);
-
-          function AuthenticatedUser() {
-            AuthenticatedUser.__super__.constructor.call(this);
-            this.updateInfo = function(options) {
-              return _request('PATCH', '/user', options);
-            };
-            this.getGists = function() {
-              return _request('GET', '/gists', null);
-            };
-            this.follow = function(username) {
-              return _request('PUT', "/user/following/" + username, null);
-            };
-            this.unfollow = function(username) {
-              return _request('DELETE', "/user/following/" + username, null);
-            };
-            this.getEmails = function() {
-              return _request('GET', '/user/emails', null);
-            };
-            this.addEmail = function(emails) {
-              if (!_.isArray(emails)) {
-                emails = [emails];
-              }
-              return _request('POST', '/user/emails', emails);
-            };
-            this.addEmail = function(emails) {
-              if (!_.isArray(emails)) {
-                emails = [emails];
-              }
-              return _request('DELETE', '/user/emails', emails);
-            };
-            this.getPublicKey = function(id) {
-              return _request('GET', "/user/keys/" + id, null);
-            };
-            this.addPublicKey = function(title, key) {
-              return _request('POST', "/user/keys", {
-                title: title,
-                key: key
-              });
-            };
-            this.updatePublicKey = function(id, options) {
-              return _request('PATCH', "/user/keys/" + id, options);
-            };
-            this.createRepo = function(name, options) {
-              if (options == null) {
-                options = {};
-              }
-              options.name = name;
-              return _request('POST', "/user/repos", options);
-            };
-          }
-
-          return AuthenticatedUser;
-
-        })(User);
-        Team = (function() {
-          function Team(id) {
-            this.id = id;
-            this.getInfo = function() {
-              return _request('GET', "/teams/" + this.id, null);
-            };
-            this.updateTeam = function(options) {
-              return _request('PATCH', "/teams/" + this.id, options);
-            };
-            this.remove = function() {
-              return _request('DELETE', "/teams/" + this.id);
-            };
-            this.getMembers = function() {
-              return _request('GET', "/teams/" + this.id + "/members");
-            };
-            this.isMember = function(user) {
-              return _request('GET', "/teams/" + this.id + "/members/" + user, null, {
-                isBoolean: true
-              });
-            };
-            this.addMember = function(user) {
-              return _request('PUT', "/teams/" + this.id + "/members/" + user);
-            };
-            this.removeMember = function(user) {
-              return _request('DELETE', "/teams/" + this.id + "/members/" + user);
-            };
-            this.getRepos = function() {
-              return _request('GET', "/teams/" + this.id + "/repos");
-            };
-            this.addRepo = function(orgName, repoName) {
-              return _request('PUT', "/teams/" + this.id + "/repos/" + orgName + "/" + repoName);
-            };
-            this.removeRepo = function(orgName, repoName) {
-              return _request('DELETE', "/teams/" + this.id + "/repos/" + orgName + "/" + repoName);
-            };
-          }
-
-          return Team;
-
-        })();
-        Organization = (function() {
-          function Organization(name) {
-            this.name = name;
-            this.getInfo = function() {
-              return _request('GET', "/orgs/" + this.name, null);
-            };
-            this.updateInfo = function(options) {
-              return _request('PATCH', "/orgs/" + this.name, options);
-            };
-            this.getTeams = function() {
-              return _request('GET', "/orgs/" + this.name + "/teams", null);
-            };
-            this.createTeam = function(name, repoNames, permission) {
-              var options;
-              if (repoNames == null) {
-                repoNames = null;
-              }
-              if (permission == null) {
-                permission = 'pull';
-              }
+          _request = function(method, path, data, options) {
+            var auth, headers, mimeType, promise;
+            if (options == null) {
               options = {
-                name: name,
-                permission: permission
+                raw: false,
+                isBase64: false,
+                isBoolean: false
               };
-              if (repoNames) {
-                options.repo_names = repoNames;
+            }
+            if ('PATCH' === method && clientOptions.usePostInsteadOfPatch) {
+              method = 'POST';
+            }
+            mimeType = void 0;
+            if (options.isBase64) {
+              mimeType = 'text/plain; charset=x-user-defined';
+            }
+            headers = {
+              'Accept': 'application/vnd.github.raw'
+            };
+            if (userAgent) {
+              headers['User-Agent'] = userAgent;
+            }
+            if (path in _cachedETags) {
+              headers['If-None-Match'] = _cachedETags[path].eTag;
+            } else {
+              headers['If-Modified-Since'] = 'Thu, 01 Jan 1970 00:00:00 GMT';
+            }
+            if (clientOptions.token || (clientOptions.username && clientOptions.password)) {
+              if (clientOptions.token) {
+                auth = "token " + clientOptions.token;
+              } else {
+                auth = 'Basic ' + base64encode("" + clientOptions.username + ":" + clientOptions.password);
               }
-              return _request('POST', "/orgs/" + this.name + "/teams", options);
-            };
-            this.getMembers = function() {
-              return _request('GET', "/orgs/" + this.name + "/members", null);
-            };
-            this.isMember = function(user) {
-              return _request('GET', "/orgs/" + this.name + "/members/" + user, null, {
-                isBoolean: true
-              });
-            };
-            this.removeMember = function(user) {
-              return _request('DELETE', "/orgs/" + this.name + "/members/" + user, null);
-            };
-            this.createRepo = function(name, options) {
-              if (options == null) {
-                options = {};
-              }
-              options.name = name;
-              return _request('POST', "/orgs/" + this.name + "/repos", options);
-            };
-            this.getRepos = function() {
-              return _request('GET', "/orgs/" + this.name + "/repos?type=all", null);
-            };
-          }
-
-          return Organization;
-
-        })();
-        GitRepo = (function() {
-          function GitRepo(repoUser, repoName) {
-            var _repoPath;
-            this.repoUser = repoUser;
-            this.repoName = repoName;
-            _repoPath = "/repos/" + this.repoUser + "/" + this.repoName;
-            this.deleteRepo = function() {
-              return _request('DELETE', "" + _repoPath);
-            };
-            this._updateTree = function(branch) {
-              return this.getRef("heads/" + branch).promise();
-            };
-            this.getRef = function(ref) {
-              return _request('GET', "" + _repoPath + "/git/refs/" + ref, null).then((function(_this) {
-                return function(res) {
-                  return res.object.sha;
+              headers['Authorization'] = auth;
+            }
+            promise = newPromise(function(resolve, reject) {
+              var ajaxConfig, always, onError, xhrPromise;
+              ajaxConfig = {
+                url: clientOptions.rootURL + path,
+                type: method,
+                contentType: 'application/json',
+                mimeType: mimeType,
+                headers: headers,
+                processData: false,
+                data: !options.raw && data && JSON.stringify(data) || data,
+                dataType: !options.raw ? 'json' : void 0
+              };
+              if (options.isBoolean) {
+                ajaxConfig.statusCode = {
+                  204: (function(_this) {
+                    return function() {
+                      return resolve(true);
+                    };
+                  })(this),
+                  404: (function(_this) {
+                    return function() {
+                      return resolve(false);
+                    };
+                  })(this)
                 };
-              })(this)).promise();
-            };
-            this.createRef = function(options) {
-              return _request('POST', "" + _repoPath + "/git/refs", options);
-            };
-            this.deleteRef = function(ref) {
-              return _request('DELETE', "" + _repoPath + "/git/refs/" + ref, this.options);
-            };
-            this.getBranches = function() {
-              return _request('GET', "" + _repoPath + "/git/refs/heads", null).then((function(_this) {
-                return function(heads) {
-                  return _.map(heads, function(head) {
-                    return _.last(head.ref.split("/"));
-                  });
-                };
-              })(this)).promise();
-            };
-            this.getBlob = function(sha, isBase64) {
-              return _request('GET', "" + _repoPath + "/git/blobs/" + sha, null, {
-                raw: true,
-                isBase64: isBase64
-              });
-            };
-            this.getSha = function(branch, path) {
-              if (path === '') {
-                return this.getRef("heads/" + branch);
               }
-              return this.getTree(branch, {
-                recursive: true
-              }).then((function(_this) {
-                return function(tree) {
-                  var file;
-                  file = _.select(tree, function(file) {
-                    return file.path === path;
-                  })[0];
-                  if (file != null ? file.sha : void 0) {
-                    return file != null ? file.sha : void 0;
+              xhrPromise = ajax(ajaxConfig);
+              always = (function(_this) {
+                return function(jqXHR) {
+                  var listener, rateLimit, rateLimitRemaining, _i, _len, _results;
+                  notifyEnd(_this, path);
+                  rateLimit = parseFloat(jqXHR.getResponseHeader('X-RateLimit-Limit'));
+                  rateLimitRemaining = parseFloat(jqXHR.getResponseHeader('X-RateLimit-Remaining'));
+                  _results = [];
+                  for (_i = 0, _len = _listeners.length; _i < _len; _i++) {
+                    listener = _listeners[_i];
+                    _results.push(listener(rateLimitRemaining, rateLimit, method, path, data, options));
                   }
-                  return (new jQuery.Deferred()).reject({
-                    message: 'SHA_NOT_FOUND'
-                  });
+                  return _results;
                 };
-              })(this)).promise();
-            };
-            this.getContents = function(path, sha) {
-              var queryString;
-              if (sha == null) {
-                sha = null;
-              }
-              queryString = '';
-              if (sha !== null) {
-                queryString = toQueryString({
-                  ref: sha
-                });
-              }
-              return _request('GET', "" + _repoPath + "/contents/" + path + queryString, null, {
-                raw: true
-              }).then((function(_this) {
-                return function(contents) {
-                  return contents;
-                };
-              })(this)).promise();
-            };
-            this.removeFile = function(path, message, sha, branch) {
-              var params;
-              params = {
-                message: message,
-                sha: sha,
-                branch: branch
-              };
-              return _request('DELETE', "" + _repoPath + "/contents/" + path, params, null);
-            };
-            this.getTree = function(tree, options) {
-              var queryString;
-              if (options == null) {
-                options = null;
-              }
-              queryString = toQueryString(options);
-              return _request('GET', "" + _repoPath + "/git/trees/" + tree + queryString, null).then((function(_this) {
-                return function(res) {
-                  return res.tree;
-                };
-              })(this)).promise();
-            };
-            this.postBlob = function(content, isBase64) {
-              if (typeof content === 'string') {
-                if (isBase64) {
-                  content = base64encode(content);
-                }
-                content = {
-                  content: content,
-                  encoding: 'utf-8'
-                };
-              }
-              if (isBase64) {
-                content.encoding = 'base64';
-              }
-              return _request('POST', "" + _repoPath + "/git/blobs", content).then((function(_this) {
-                return function(res) {
-                  return res.sha;
-                };
-              })(this)).promise();
-            };
-            this.updateTreeMany = function(baseTree, newTree) {
-              var data;
-              data = {
-                base_tree: baseTree,
-                tree: newTree
-              };
-              return _request('POST', "" + _repoPath + "/git/trees", data).then((function(_this) {
-                return function(res) {
-                  return res.sha;
-                };
-              })(this)).promise();
-            };
-            this.postTree = function(tree) {
-              return _request('POST', "" + _repoPath + "/git/trees", {
-                tree: tree
-              }).then((function(_this) {
-                return function(res) {
-                  return res.sha;
-                };
-              })(this)).promise();
-            };
-            this.commit = function(parents, tree, message) {
-              var data;
-              if (!_.isArray(parents)) {
-                parents = [parents];
-              }
-              data = {
-                message: message,
-                parents: parents,
-                tree: tree
-              };
-              return _request('POST', "" + _repoPath + "/git/commits", data).then(function(commit) {
-                return commit.sha;
-              }).promise();
-            };
-            this.updateHead = function(head, commit, force) {
-              var options;
-              if (force == null) {
-                force = true;
-              }
-              options = {
-                sha: commit
-              };
-              if (force) {
-                options.force = true;
-              }
-              return _request('PATCH', "" + _repoPath + "/git/refs/heads/" + head, options);
-            };
-            this.getCommit = function(sha) {
-              return _request('GET', "" + _repoPath + "/commits/" + sha, null);
-            };
-            this.getCommits = function(options) {
-              var getDate, queryString;
-              if (options == null) {
-                options = {};
-              }
-              options = _.extend({}, options);
-              getDate = function(time) {
-                if (Date === time.constructor) {
-                  return time.toISOString();
-                }
-                return time;
-              };
-              if (options.since) {
-                options.since = getDate(options.since);
-              }
-              if (options.until) {
-                options.until = getDate(options.until);
-              }
-              queryString = toQueryString(options);
-              return _request('GET', "" + _repoPath + "/commits" + queryString, null).promise();
-            };
-          }
-
-          return GitRepo;
-
-        })();
-        Branch = (function() {
-          function Branch(git, getRef) {
-            var _getRef, _git;
-            _git = git;
-            _getRef = getRef || function() {
-              throw new Error('BUG: No way to fetch branch ref!');
-            };
-            this.getCommit = function(sha) {
-              return _git.getCommit(sha);
-            };
-            this.getCommits = function(options) {
-              if (options == null) {
-                options = {};
-              }
-              options = _.extend({}, options);
-              return _getRef().then(function(branch) {
-                options.sha = branch;
-                return _git.getCommits(options);
-              }).promise();
-            };
-            this.createBranch = function(newBranchName) {
-              return _getRef().then((function(_this) {
-                return function(branch) {
-                  return _git.getSha(branch, '').then(function(sha) {
-                    return _git.createRef({
-                      sha: sha,
-                      ref: "refs/heads/" + newBranchName
-                    });
-                  });
-                };
-              })(this)).promise();
-            };
-            this.read = function(path, isBase64) {
-              return _getRef().then((function(_this) {
-                return function(branch) {
-                  return _git.getSha(branch, path).then(function(sha) {
-                    return _git.getBlob(sha, isBase64).then(function(bytes) {
-                      return {
-                        sha: sha,
-                        content: bytes
-                      };
-                    });
-                  });
-                };
-              })(this)).promise();
-            };
-            this.contents = function(path) {
-              return _getRef().then((function(_this) {
-                return function(branch) {
-                  return _git.getSha(branch, '').then(function(sha) {
-                    return _git.getContents(path, sha).then(function(contents) {
-                      return contents;
-                    });
-                  });
-                };
-              })(this)).promise();
-            };
-            this.remove = function(path, message, sha) {
-              if (message == null) {
-                message = "Removed " + path;
-              }
-              if (sha == null) {
-                sha = null;
-              }
-              return _getRef().then((function(_this) {
-                return function(branch) {
-                  if (sha) {
-                    return _git.removeFile(path, message, sha, branch);
+              })(this);
+              xhrPromise.then(function(jqXHR) {
+                var converted, eTag, eTagResponse, i, _i, _ref;
+                always(jqXHR);
+                if (304 === jqXHR.status) {
+                  if (clientOptions.useETags && _cachedETags[path]) {
+                    eTagResponse = _cachedETags[path];
+                    return resolve(eTagResponse.data, eTagResponse.status, jqXHR);
                   } else {
-                    return _git.getSha(branch, path).then(function(sha) {
-                      return _git.removeFile(path, message, sha, branch);
+                    return resolve(jqXHR.responseText, status, jqXHR);
+                  }
+                } else if (204 === jqXHR.status && options.isBoolean) {
+                  return resolve(true, status, jqXHR);
+                } else {
+                  if (jqXHR.responseText && 'json' === ajaxConfig.dataType) {
+                    data = JSON.parse(jqXHR.responseText);
+                  } else {
+                    data = jqXHR.responseText || firstArg;
+                  }
+                  if ('GET' === method && options.isBase64) {
+                    converted = '';
+                    for (i = _i = 0, _ref = data.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+                      converted += String.fromCharCode(data.charCodeAt(i) & 0xff);
+                    }
+                    data = converted;
+                  }
+                  if ('GET' === method && jqXHR.getResponseHeader('ETag') && clientOptions.useETags) {
+                    eTag = jqXHR.getResponseHeader('ETag');
+                    _cachedETags[path] = new ETagResponse(eTag, data, jqXHR.status);
+                  }
+                  return resolve(data, jqXHR.status, jqXHR);
+                }
+              });
+              onError = function(jqXHR) {
+                var json;
+                always(jqXHR);
+                if (options.isBoolean && 404 === jqXHR.status) {
+                  return resolve(false);
+                } else {
+                  if (jqXHR.getResponseHeader('Content-Type') !== 'application/json; charset=utf-8') {
+                    return reject({
+                      error: jqXHR.responseText,
+                      status: jqXHR.status,
+                      _jqXHR: jqXHR
+                    });
+                  } else {
+                    if (jqXHR.responseText) {
+                      json = JSON.parse(jqXHR.responseText);
+                    } else {
+                      json = '';
+                    }
+                    return reject({
+                      error: json,
+                      status: jqXHR.status,
+                      _jqXHR: jqXHR
                     });
                   }
-                };
-              })(this)).promise();
-            };
-            this.move = function(path, newPath, message) {
-              if (message == null) {
-                message = "Moved " + path;
-              }
-              return _getRef().then((function(_this) {
-                return function(branch) {
-                  return _git._updateTree(branch).then(function(latestCommit) {
-                    return _git.getTree(latestCommit, {
-                      recursive: true
-                    }).then(function(tree) {
-                      _.each(tree, function(ref) {
-                        if (ref.path === path) {
-                          ref.path = newPath;
-                        }
-                        if (ref.type === 'tree') {
-                          return delete ref.sha;
-                        }
-                      });
-                      return _git.postTree(tree).then(function(rootTree) {
-                        return _git.commit(latestCommit, rootTree, message).then(function(commit) {
-                          return _git.updateHead(branch, commit).then(function(res) {
-                            return res;
-                          });
-                        });
-                      });
-                    });
-                  });
-                };
-              })(this)).promise();
-            };
-            this.write = function(path, content, message, isBase64, parentCommitSha) {
-              var contents;
-              if (message == null) {
-                message = "Changed " + path;
-              }
-              if (parentCommitSha == null) {
-                parentCommitSha = null;
-              }
-              contents = {};
-              contents[path] = {
-                content: content,
-                isBase64: isBase64
+                }
               };
-              return this.writeMany(contents, message, parentCommitSha).promise();
+              return (typeof xhrPromise["catch"] === "function" ? xhrPromise["catch"](onError) : void 0) || xhrPromise.fail(onError);
+            });
+            notifyStart(promise, path);
+            return promise;
+          };
+          toQueryString = function(options) {
+            var params;
+            if (_.isEmpty(options)) {
+              return '';
+            }
+            params = [];
+            _.each(_.pairs(options), function(_arg) {
+              var key, value;
+              key = _arg[0], value = _arg[1];
+              return params.push("" + key + "=" + (encodeURIComponent(value)));
+            });
+            return "?" + (params.join('&'));
+          };
+          this.clearCache = clearCache = function() {
+            return _cachedETags = {};
+          };
+          this.getCache = getCache = function() {
+            return _cachedETags;
+          };
+          this.setCache = setCache = function(cachedETags) {
+            if (!(cachedETags !== null && typeof cachedETags === 'object')) {
+              throw new Error('BUG: argument of method "setCache" should be an object');
+            } else {
+              return _cachedETags = cachedETags;
+            }
+          };
+          this.onRateLimitChanged = function(listener) {
+            return _listeners.push(listener);
+          };
+          this.getZen = function() {
+            return _request('GET', '/zen', null, {
+              raw: true
+            });
+          };
+          this.getAllUsers = function(since) {
+            var options;
+            if (since == null) {
+              since = null;
+            }
+            options = {};
+            if (since) {
+              options.since = since;
+            }
+            return _request('GET', '/users', options);
+          };
+          this.getOrgRepos = function(orgName, type) {
+            if (type == null) {
+              type = 'all';
+            }
+            return _request('GET', "/orgs/" + orgName + "/repos?type=" + type + "&per_page=1000&sort=updated&direction=desc", null);
+          };
+          this.getPublicGists = function(since) {
+            var getDate, options;
+            if (since == null) {
+              since = null;
+            }
+            options = null;
+            getDate = function(time) {
+              if (Date === time.constructor) {
+                return time.toISOString();
+              }
+              return time;
             };
-            this.writeMany = function(contents, message, parentCommitShas) {
-              if (message == null) {
-                message = "Changed Multiple";
+            if (since) {
+              options = {
+                since: getDate(since)
+              };
+            }
+            return _request('GET', '/gists/public', options);
+          };
+          this.getPublicEvents = function() {
+            return _request('GET', '/events', null);
+          };
+          this.getNotifications = function(options) {
+            var getDate, queryString;
+            if (options == null) {
+              options = {};
+            }
+            getDate = function(time) {
+              if (Date === time.constructor) {
+                return time.toISOString();
               }
-              if (parentCommitShas == null) {
-                parentCommitShas = null;
+              return time;
+            };
+            if (options.since) {
+              options.since = getDate(options.since);
+            }
+            queryString = toQueryString(options);
+            return _request('GET', "/notifications" + queryString, null);
+          };
+          User = (function() {
+            function User(_username) {
+              var _cachedInfo, _rootPath;
+              if (_username == null) {
+                _username = null;
               }
-              return _getRef().then((function(_this) {
-                return function(branch) {
-                  var afterParentCommitShas;
-                  afterParentCommitShas = function(parentCommitShas) {
-                    var promises;
-                    promises = _.map(_.pairs(contents), function(_arg) {
-                      var content, data, isBase64, path;
-                      path = _arg[0], data = _arg[1];
-                      content = data.content || data;
-                      isBase64 = data.isBase64 || false;
-                      return _git.postBlob(content, isBase64).then((function(_this) {
-                        return function(blob) {
-                          return {
-                            path: path,
-                            mode: '100644',
-                            type: 'blob',
-                            sha: blob
-                          };
-                        };
-                      })(this));
+              if (_username) {
+                _rootPath = "/users/" + _username;
+              } else {
+                _rootPath = "/user";
+              }
+              _cachedInfo = null;
+              this.getInfo = function(force) {
+                if (force == null) {
+                  force = false;
+                }
+                if (force) {
+                  _cachedInfo = null;
+                }
+                if (_cachedInfo) {
+                  return Promise.resolve(_cachedInfo);
+                }
+                return _request('GET', "" + _rootPath, null).then(function(info) {
+                  return _cachedInfo = info;
+                });
+              };
+              this.getRepos = function(type, sort, direction) {
+                if (type == null) {
+                  type = 'all';
+                }
+                if (sort == null) {
+                  sort = 'pushed';
+                }
+                if (direction == null) {
+                  direction = 'desc';
+                }
+                return _request('GET', "" + _rootPath + "/repos?type=" + type + "&per_page=1000&sort=" + sort + "&direction=" + direction, null);
+              };
+              this.getOrgs = function() {
+                return _request('GET', "" + _rootPath + "/orgs", null);
+              };
+              this.getGists = function() {
+                return _request('GET', "" + _rootPath + "/gists", null);
+              };
+              this.getFollowers = function() {
+                return _request('GET', "" + _rootPath + "/followers", null);
+              };
+              this.getFollowing = function() {
+                return _request('GET', "" + _rootPath + "/following", null);
+              };
+              this.isFollowing = function(user) {
+                return _request('GET', "" + _rootPath + "/following/" + user, null, {
+                  isBoolean: true
+                });
+              };
+              this.getPublicKeys = function() {
+                return _request('GET', "" + _rootPath + "/keys", null);
+              };
+              this.getReceivedEvents = function(onlyPublic) {
+                var isPublic;
+                if (!_username) {
+                  throw new Error('BUG: This does not work for authenticated users yet!');
+                }
+                isPublic = '';
+                if (onlyPublic) {
+                  isPublic = '/public';
+                }
+                return _request('GET', "/users/" + _username + "/received_events" + isPublic, null);
+              };
+              this.getEvents = function(onlyPublic) {
+                var isPublic;
+                if (!_username) {
+                  throw new Error('BUG: This does not work for authenticated users yet!');
+                }
+                isPublic = '';
+                if (onlyPublic) {
+                  isPublic = '/public';
+                }
+                return _request('GET', "/users/" + _username + "/events" + isPublic, null);
+              };
+            }
+
+            return User;
+
+          })();
+          AuthenticatedUser = (function(_super) {
+            __extends(AuthenticatedUser, _super);
+
+            function AuthenticatedUser() {
+              AuthenticatedUser.__super__.constructor.call(this);
+              this.updateInfo = function(options) {
+                return _request('PATCH', '/user', options);
+              };
+              this.getGists = function() {
+                return _request('GET', '/gists', null);
+              };
+              this.follow = function(username) {
+                return _request('PUT', "/user/following/" + username, null);
+              };
+              this.unfollow = function(username) {
+                return _request('DELETE', "/user/following/" + username, null);
+              };
+              this.getEmails = function() {
+                return _request('GET', '/user/emails', null);
+              };
+              this.addEmail = function(emails) {
+                if (!_.isArray(emails)) {
+                  emails = [emails];
+                }
+                return _request('POST', '/user/emails', emails);
+              };
+              this.addEmail = function(emails) {
+                if (!_.isArray(emails)) {
+                  emails = [emails];
+                }
+                return _request('DELETE', '/user/emails', emails);
+              };
+              this.getPublicKey = function(id) {
+                return _request('GET', "/user/keys/" + id, null);
+              };
+              this.addPublicKey = function(title, key) {
+                return _request('POST', "/user/keys", {
+                  title: title,
+                  key: key
+                });
+              };
+              this.updatePublicKey = function(id, options) {
+                return _request('PATCH', "/user/keys/" + id, options);
+              };
+              this.createRepo = function(name, options) {
+                if (options == null) {
+                  options = {};
+                }
+                options.name = name;
+                return _request('POST', "/user/repos", options);
+              };
+            }
+
+            return AuthenticatedUser;
+
+          })(User);
+          Team = (function() {
+            function Team(id) {
+              this.id = id;
+              this.getInfo = function() {
+                return _request('GET', "/teams/" + this.id, null);
+              };
+              this.updateTeam = function(options) {
+                return _request('PATCH', "/teams/" + this.id, options);
+              };
+              this.remove = function() {
+                return _request('DELETE', "/teams/" + this.id);
+              };
+              this.getMembers = function() {
+                return _request('GET', "/teams/" + this.id + "/members");
+              };
+              this.isMember = function(user) {
+                return _request('GET', "/teams/" + this.id + "/members/" + user, null, {
+                  isBoolean: true
+                });
+              };
+              this.addMember = function(user) {
+                return _request('PUT', "/teams/" + this.id + "/members/" + user);
+              };
+              this.removeMember = function(user) {
+                return _request('DELETE', "/teams/" + this.id + "/members/" + user);
+              };
+              this.getRepos = function() {
+                return _request('GET', "/teams/" + this.id + "/repos");
+              };
+              this.addRepo = function(orgName, repoName) {
+                return _request('PUT', "/teams/" + this.id + "/repos/" + orgName + "/" + repoName);
+              };
+              this.removeRepo = function(orgName, repoName) {
+                return _request('DELETE', "/teams/" + this.id + "/repos/" + orgName + "/" + repoName);
+              };
+            }
+
+            return Team;
+
+          })();
+          Organization = (function() {
+            function Organization(name) {
+              this.name = name;
+              this.getInfo = function() {
+                return _request('GET', "/orgs/" + this.name, null);
+              };
+              this.updateInfo = function(options) {
+                return _request('PATCH', "/orgs/" + this.name, options);
+              };
+              this.getTeams = function() {
+                return _request('GET', "/orgs/" + this.name + "/teams", null);
+              };
+              this.createTeam = function(name, repoNames, permission) {
+                var options;
+                if (repoNames == null) {
+                  repoNames = null;
+                }
+                if (permission == null) {
+                  permission = 'pull';
+                }
+                options = {
+                  name: name,
+                  permission: permission
+                };
+                if (repoNames) {
+                  options.repo_names = repoNames;
+                }
+                return _request('POST', "/orgs/" + this.name + "/teams", options);
+              };
+              this.getMembers = function() {
+                return _request('GET', "/orgs/" + this.name + "/members", null);
+              };
+              this.isMember = function(user) {
+                return _request('GET', "/orgs/" + this.name + "/members/" + user, null, {
+                  isBoolean: true
+                });
+              };
+              this.removeMember = function(user) {
+                return _request('DELETE', "/orgs/" + this.name + "/members/" + user, null);
+              };
+              this.createRepo = function(name, options) {
+                if (options == null) {
+                  options = {};
+                }
+                options.name = name;
+                return _request('POST', "/orgs/" + this.name + "/repos", options);
+              };
+              this.getRepos = function() {
+                return _request('GET', "/orgs/" + this.name + "/repos?type=all", null);
+              };
+            }
+
+            return Organization;
+
+          })();
+          GitRepo = (function() {
+            function GitRepo(repoUser, repoName) {
+              var _repoPath;
+              this.repoUser = repoUser;
+              this.repoName = repoName;
+              _repoPath = "/repos/" + this.repoUser + "/" + this.repoName;
+              this.deleteRepo = function() {
+                return _request('DELETE', "" + _repoPath);
+              };
+              this._updateTree = function(branch) {
+                return this.getRef("heads/" + branch);
+              };
+              this.getRef = function(ref) {
+                return _request('GET', "" + _repoPath + "/git/refs/" + ref, null).then((function(_this) {
+                  return function(res) {
+                    return res.object.sha;
+                  };
+                })(this));
+              };
+              this.createRef = function(options) {
+                return _request('POST', "" + _repoPath + "/git/refs", options);
+              };
+              this.deleteRef = function(ref) {
+                return _request('DELETE', "" + _repoPath + "/git/refs/" + ref, this.options);
+              };
+              this.getBranches = function() {
+                return _request('GET', "" + _repoPath + "/git/refs/heads", null).then((function(_this) {
+                  return function(heads) {
+                    return _.map(heads, function(head) {
+                      return _.last(head.ref.split("/"));
                     });
-                    return jQuery.when.apply(jQuery, promises).then(function(newTree1, newTree2, newTreeN) {
-                      var newTrees;
-                      newTrees = _.toArray(arguments);
-                      return _git.updateTreeMany(parentCommitShas, newTrees).then(function(tree) {
-                        return _git.commit(parentCommitShas, tree, message).then(function(commitSha) {
-                          return _git.updateHead(branch, commitSha).then(function(res) {
-                            return res.object;
+                  };
+                })(this));
+              };
+              this.getBlob = function(sha, isBase64) {
+                return _request('GET', "" + _repoPath + "/git/blobs/" + sha, null, {
+                  raw: true,
+                  isBase64: isBase64
+                });
+              };
+              this.getSha = function(branch, path) {
+                if (path === '') {
+                  return this.getRef("heads/" + branch);
+                }
+                return this.getTree(branch, {
+                  recursive: true
+                }).then((function(_this) {
+                  return function(tree) {
+                    var file;
+                    file = _.select(tree, function(file) {
+                      return file.path === path;
+                    })[0];
+                    if (file != null ? file.sha : void 0) {
+                      return file != null ? file.sha : void 0;
+                    }
+                    return Promise.reject({
+                      message: 'SHA_NOT_FOUND'
+                    });
+                  };
+                })(this));
+              };
+              this.getContents = function(path, sha) {
+                var queryString;
+                if (sha == null) {
+                  sha = null;
+                }
+                queryString = '';
+                if (sha !== null) {
+                  queryString = toQueryString({
+                    ref: sha
+                  });
+                }
+                return _request('GET', "" + _repoPath + "/contents/" + path + queryString, null, {
+                  raw: true
+                }).then((function(_this) {
+                  return function(contents) {
+                    return contents;
+                  };
+                })(this));
+              };
+              this.removeFile = function(path, message, sha, branch) {
+                var params;
+                params = {
+                  message: message,
+                  sha: sha,
+                  branch: branch
+                };
+                return _request('DELETE', "" + _repoPath + "/contents/" + path, params, null);
+              };
+              this.getTree = function(tree, options) {
+                var queryString;
+                if (options == null) {
+                  options = null;
+                }
+                queryString = toQueryString(options);
+                return _request('GET', "" + _repoPath + "/git/trees/" + tree + queryString, null).then((function(_this) {
+                  return function(res) {
+                    return res.tree;
+                  };
+                })(this));
+              };
+              this.postBlob = function(content, isBase64) {
+                if (typeof content === 'string') {
+                  if (isBase64) {
+                    content = base64encode(content);
+                  }
+                  content = {
+                    content: content,
+                    encoding: 'utf-8'
+                  };
+                }
+                if (isBase64) {
+                  content.encoding = 'base64';
+                }
+                return _request('POST', "" + _repoPath + "/git/blobs", content).then((function(_this) {
+                  return function(res) {
+                    return res.sha;
+                  };
+                })(this));
+              };
+              this.updateTreeMany = function(baseTree, newTree) {
+                var data;
+                data = {
+                  base_tree: baseTree,
+                  tree: newTree
+                };
+                return _request('POST', "" + _repoPath + "/git/trees", data).then((function(_this) {
+                  return function(res) {
+                    return res.sha;
+                  };
+                })(this));
+              };
+              this.postTree = function(tree) {
+                return _request('POST', "" + _repoPath + "/git/trees", {
+                  tree: tree
+                }).then((function(_this) {
+                  return function(res) {
+                    return res.sha;
+                  };
+                })(this));
+              };
+              this.commit = function(parents, tree, message) {
+                var data;
+                if (!_.isArray(parents)) {
+                  parents = [parents];
+                }
+                data = {
+                  message: message,
+                  parents: parents,
+                  tree: tree
+                };
+                return _request('POST', "" + _repoPath + "/git/commits", data).then(function(commit) {
+                  return commit.sha;
+                });
+              };
+              this.updateHead = function(head, commit, force) {
+                var options;
+                if (force == null) {
+                  force = false;
+                }
+                options = {
+                  sha: commit
+                };
+                if (force) {
+                  options.force = true;
+                }
+                return _request('PATCH', "" + _repoPath + "/git/refs/heads/" + head, options);
+              };
+              this.getCommit = function(sha) {
+                return _request('GET', "" + _repoPath + "/commits/" + sha, null);
+              };
+              this.getCommits = function(options) {
+                var getDate, queryString;
+                if (options == null) {
+                  options = {};
+                }
+                options = _.extend({}, options);
+                getDate = function(time) {
+                  if (Date === time.constructor) {
+                    return time.toISOString();
+                  }
+                  return time;
+                };
+                if (options.since) {
+                  options.since = getDate(options.since);
+                }
+                if (options.until) {
+                  options.until = getDate(options.until);
+                }
+                queryString = toQueryString(options);
+                return _request('GET', "" + _repoPath + "/commits" + queryString, null);
+              };
+            }
+
+            return GitRepo;
+
+          })();
+          Branch = (function() {
+            function Branch(git, getRef) {
+              var _getRef, _git;
+              _git = git;
+              _getRef = getRef || function() {
+                throw new Error('BUG: No way to fetch branch ref!');
+              };
+              this.getCommit = function(sha) {
+                return _git.getCommit(sha);
+              };
+              this.getCommits = function(options) {
+                if (options == null) {
+                  options = {};
+                }
+                options = _.extend({}, options);
+                return _getRef().then(function(branch) {
+                  options.sha = branch;
+                  return _git.getCommits(options);
+                });
+              };
+              this.createBranch = function(newBranchName) {
+                return _getRef().then((function(_this) {
+                  return function(branch) {
+                    return _git.getSha(branch, '').then(function(sha) {
+                      return _git.createRef({
+                        sha: sha,
+                        ref: "refs/heads/" + newBranchName
+                      });
+                    });
+                  };
+                })(this));
+              };
+              this.read = function(path, isBase64) {
+                return _getRef().then((function(_this) {
+                  return function(branch) {
+                    return _git.getSha(branch, path).then(function(sha) {
+                      return _git.getBlob(sha, isBase64).then(function(bytes) {
+                        return {
+                          sha: sha,
+                          content: bytes
+                        };
+                      });
+                    });
+                  };
+                })(this));
+              };
+              this.contents = function(path) {
+                return _getRef().then((function(_this) {
+                  return function(branch) {
+                    return _git.getSha(branch, '').then(function(sha) {
+                      return _git.getContents(path, sha).then(function(contents) {
+                        return contents;
+                      });
+                    });
+                  };
+                })(this));
+              };
+              this.remove = function(path, message, sha) {
+                if (message == null) {
+                  message = "Removed " + path;
+                }
+                if (sha == null) {
+                  sha = null;
+                }
+                return _getRef().then((function(_this) {
+                  return function(branch) {
+                    if (sha) {
+                      return _git.removeFile(path, message, sha, branch);
+                    } else {
+                      return _git.getSha(branch, path).then(function(sha) {
+                        return _git.removeFile(path, message, sha, branch);
+                      });
+                    }
+                  };
+                })(this));
+              };
+              this.move = function(path, newPath, message) {
+                if (message == null) {
+                  message = "Moved " + path;
+                }
+                return _getRef().then((function(_this) {
+                  return function(branch) {
+                    return _git._updateTree(branch).then(function(latestCommit) {
+                      return _git.getTree(latestCommit, {
+                        recursive: true
+                      }).then(function(tree) {
+                        _.each(tree, function(ref) {
+                          if (ref.path === path) {
+                            ref.path = newPath;
+                          }
+                          if (ref.type === 'tree') {
+                            return delete ref.sha;
+                          }
+                        });
+                        return _git.postTree(tree).then(function(rootTree) {
+                          return _git.commit(latestCommit, rootTree, message).then(function(commit) {
+                            return _git.updateHead(branch, commit).then(function(res) {
+                              return res;
+                            });
                           });
                         });
                       });
                     });
                   };
-                  if (parentCommitShas) {
-                    return afterParentCommitShas(parentCommitShas);
-                  } else {
-                    return _git._updateTree(branch).then(afterParentCommitShas);
-                  }
+                })(this));
+              };
+              this.write = function(path, content, message, isBase64, parentCommitSha) {
+                var contents;
+                if (message == null) {
+                  message = "Changed " + path;
+                }
+                if (parentCommitSha == null) {
+                  parentCommitSha = null;
+                }
+                contents = {};
+                contents[path] = {
+                  content: content,
+                  isBase64: isBase64
                 };
-              })(this)).promise();
-            };
-          }
+                return this.writeMany(contents, message, parentCommitSha);
+              };
+              this.writeMany = function(contents, message, parentCommitShas) {
+                if (message == null) {
+                  message = "Changed Multiple";
+                }
+                if (parentCommitShas == null) {
+                  parentCommitShas = null;
+                }
+                return _getRef().then((function(_this) {
+                  return function(branch) {
+                    var afterParentCommitShas;
+                    afterParentCommitShas = function(parentCommitShas) {
+                      var promises;
+                      promises = _.map(_.pairs(contents), function(_arg) {
+                        var content, data, isBase64, path;
+                        path = _arg[0], data = _arg[1];
+                        content = data.content || data;
+                        isBase64 = data.isBase64 || false;
+                        return _git.postBlob(content, isBase64).then((function(_this) {
+                          return function(blob) {
+                            return {
+                              path: path,
+                              mode: '100644',
+                              type: 'blob',
+                              sha: blob
+                            };
+                          };
+                        })(this));
+                      });
+                      return allPromises(promises).then(function(newTrees) {
+                        return _git.updateTreeMany(parentCommitShas, newTrees).then(function(tree) {
+                          return _git.commit(parentCommitShas, tree, message).then(function(commitSha) {
+                            return _git.updateHead(branch, commitSha).then(function(res) {
+                              return res.object;
+                            });
+                          });
+                        });
+                      });
+                    };
+                    if (parentCommitShas) {
+                      return afterParentCommitShas(parentCommitShas);
+                    } else {
+                      return _git._updateTree(branch).then(afterParentCommitShas);
+                    }
+                  };
+                })(this));
+              };
+            }
 
-          return Branch;
+            return Branch;
 
-        })();
-        Repository = (function() {
-          function Repository(options) {
-            var _repo, _user;
-            this.options = options;
-            _user = this.options.user;
-            _repo = this.options.name;
-            this.git = new GitRepo(_user, _repo);
-            this.repoPath = "/repos/" + _user + "/" + _repo;
-            this.currentTree = {
-              branch: null,
-              sha: null
-            };
-            this.updateInfo = function(options) {
-              return _request('PATCH', this.repoPath, options);
-            };
-            this.getBranches = function() {
-              return this.git.getBranches();
-            };
-            this.getBranch = function(branchName) {
-              var getRef;
-              if (branchName == null) {
-                branchName = null;
-              }
-              if (branchName) {
+          })();
+          Repository = (function() {
+            function Repository(options) {
+              var _repo, _user;
+              this.options = options;
+              _user = this.options.user;
+              _repo = this.options.name;
+              this.git = new GitRepo(_user, _repo);
+              this.repoPath = "/repos/" + _user + "/" + _repo;
+              this.currentTree = {
+                branch: null,
+                sha: null
+              };
+              this.updateInfo = function(options) {
+                return _request('PATCH', this.repoPath, options);
+              };
+              this.getBranches = function() {
+                return this.git.getBranches();
+              };
+              this.getBranch = function(branchName) {
+                var getRef;
+                if (branchName == null) {
+                  branchName = null;
+                }
+                if (branchName) {
+                  getRef = (function(_this) {
+                    return function() {
+                      return Promise.resolve(branchName);
+                    };
+                  })(this);
+                  return new Branch(this.git, getRef);
+                } else {
+                  return this.getDefaultBranch();
+                }
+              };
+              this.getDefaultBranch = function() {
+                var getRef;
                 getRef = (function(_this) {
                   return function() {
-                    var deferred;
-                    deferred = new jQuery.Deferred();
-                    deferred.resolve(branchName);
-                    return deferred;
+                    return _this.getInfo().then(function(info) {
+                      return info.default_branch;
+                    });
                   };
                 })(this);
                 return new Branch(this.git, getRef);
-              } else {
-                return this.getDefaultBranch();
-              }
-            };
-            this.getDefaultBranch = function() {
-              var getRef;
-              getRef = (function(_this) {
-                return function() {
-                  return _this.getInfo().then(function(info) {
-                    return info.master_branch;
-                  });
-                };
-              })(this);
-              return new Branch(this.git, getRef);
-            };
-            this.setDefaultBranch = function(branchName) {
-              return this.updateInfo({
-                name: _repo,
-                default_branch: branchName
-              });
-            };
-            this.getInfo = function() {
-              return _request('GET', this.repoPath, null);
-            };
-            this.getContents = function(branch, path) {
-              return _request('GET', "" + this.repoPath + "/contents?ref=" + branch, {
-                path: path
-              });
-            };
-            this.fork = function(organization) {
-              if (organization) {
-                return _request('POST', "" + this.repoPath + "/forks", {
-                  organization: organization
+              };
+              this.setDefaultBranch = function(branchName) {
+                return this.updateInfo({
+                  name: _repo,
+                  default_branch: branchName
                 });
-              } else {
-                return _request('POST', "" + this.repoPath + "/forks", null);
-              }
-            };
-            this.createPullRequest = function(options) {
-              return _request('POST', "" + this.repoPath + "/pulls", options);
-            };
-            this.getCommits = function(options) {
-              return this.git.getCommits(options);
-            };
-            this.getEvents = function() {
-              return _request('GET', "" + this.repoPath + "/events", null);
-            };
-            this.getIssueEvents = function() {
-              return _request('GET', "" + this.repoPath + "/issues/events", null);
-            };
-            this.getNetworkEvents = function() {
-              return _request('GET', "/networks/" + _user + "/" + _repo + "/events", null);
-            };
-            this.getNotifications = function(options) {
-              var getDate, queryString;
-              if (options == null) {
-                options = {};
-              }
-              getDate = function(time) {
-                if (Date === time.constructor) {
-                  return time.toISOString();
+              };
+              this.getInfo = function() {
+                return _request('GET', this.repoPath, null);
+              };
+              this.getContents = function(branch, path) {
+                return _request('GET', "" + this.repoPath + "/contents?ref=" + branch, {
+                  path: path
+                });
+              };
+              this.fork = function(organization) {
+                if (organization) {
+                  return _request('POST', "" + this.repoPath + "/forks", {
+                    organization: organization
+                  });
+                } else {
+                  return _request('POST', "" + this.repoPath + "/forks", null);
                 }
-                return time;
               };
-              if (options.since) {
-                options.since = getDate(options.since);
-              }
-              queryString = toQueryString(options);
-              return _request('GET', "" + this.repoPath + "/notifications" + queryString, null);
-            };
-            this.getCollaborators = function() {
-              return _request('GET', "" + this.repoPath + "/collaborators", null);
-            };
-            this.addCollaborator = function(username) {
-              if (!username) {
-                throw new Error('BUG: username is required');
-              }
-              return _request('PUT', "" + this.repoPath + "/collaborators/" + username, null, {
-                isBoolean: true
-              });
-            };
-            this.removeCollaborator = function(username) {
-              if (!username) {
-                throw new Error('BUG: username is required');
-              }
-              return _request('DELETE', "" + this.repoPath + "/collaborators/" + username, null, {
-                isBoolean: true
-              });
-            };
-            this.isCollaborator = function(username) {
-              if (username == null) {
-                username = null;
-              }
-              if (!username) {
-                throw new Error('BUG: username is required');
-              }
-              return _request('GET', "" + this.repoPath + "/collaborators/" + username, null, {
-                isBoolean: true
-              });
-            };
-            this.canCollaborate = function() {
-              if (!(clientOptions.password || clientOptions.token)) {
-                return (new jQuery.Deferred()).resolve(false);
-              }
-              return _client.getLogin().then((function(_this) {
-                return function(login) {
-                  if (!login) {
-                    return false;
-                  } else {
-                    return _this.isCollaborator(login);
+              this.createPullRequest = function(options) {
+                return _request('POST', "" + this.repoPath + "/pulls", options);
+              };
+              this.getCommits = function(options) {
+                return this.git.getCommits(options);
+              };
+              this.getEvents = function() {
+                return _request('GET', "" + this.repoPath + "/events", null);
+              };
+              this.getIssueEvents = function() {
+                return _request('GET', "" + this.repoPath + "/issues/events", null);
+              };
+              this.getNetworkEvents = function() {
+                return _request('GET', "/networks/" + _user + "/" + _repo + "/events", null);
+              };
+              this.getNotifications = function(options) {
+                var getDate, queryString;
+                if (options == null) {
+                  options = {};
+                }
+                getDate = function(time) {
+                  if (Date === time.constructor) {
+                    return time.toISOString();
                   }
+                  return time;
                 };
-              })(this)).then(null, (function(_this) {
-                return function(err) {
-                  return false;
+                if (options.since) {
+                  options.since = getDate(options.since);
+                }
+                queryString = toQueryString(options);
+                return _request('GET', "" + this.repoPath + "/notifications" + queryString, null);
+              };
+              this.getCollaborators = function() {
+                return _request('GET', "" + this.repoPath + "/collaborators", null);
+              };
+              this.addCollaborator = function(username) {
+                if (!username) {
+                  throw new Error('BUG: username is required');
+                }
+                return _request('PUT', "" + this.repoPath + "/collaborators/" + username, null, {
+                  isBoolean: true
+                });
+              };
+              this.removeCollaborator = function(username) {
+                if (!username) {
+                  throw new Error('BUG: username is required');
+                }
+                return _request('DELETE', "" + this.repoPath + "/collaborators/" + username, null, {
+                  isBoolean: true
+                });
+              };
+              this.isCollaborator = function(username) {
+                if (username == null) {
+                  username = null;
+                }
+                if (!username) {
+                  throw new Error('BUG: username is required');
+                }
+                return _request('GET', "" + this.repoPath + "/collaborators/" + username, null, {
+                  isBoolean: true
+                });
+              };
+              this.canCollaborate = function() {
+                if (!(clientOptions.password || clientOptions.token)) {
+                  return Promise.resolve(false);
+                }
+                return _client.getLogin().then((function(_this) {
+                  return function(login) {
+                    if (!login) {
+                      return false;
+                    } else {
+                      return _this.isCollaborator(login);
+                    }
+                  };
+                })(this)).then(null, (function(_this) {
+                  return function(err) {
+                    return false;
+                  };
+                })(this));
+              };
+              this.getHooks = function() {
+                return _request('GET', "" + this.repoPath + "/hooks", null);
+              };
+              this.getHook = function(id) {
+                return _request('GET', "" + this.repoPath + "/hooks/" + id, null);
+              };
+              this.createHook = function(name, config, events, active) {
+                var data;
+                if (events == null) {
+                  events = ['push'];
+                }
+                if (active == null) {
+                  active = true;
+                }
+                data = {
+                  name: name,
+                  config: config,
+                  events: events,
+                  active: active
                 };
-              })(this));
-            };
-            this.getHooks = function() {
-              return _request('GET', "" + this.repoPath + "/hooks", null);
-            };
-            this.getHook = function(id) {
-              return _request('GET', "" + this.repoPath + "/hooks/" + id, null);
-            };
-            this.createHook = function(name, config, events, active) {
-              var data;
-              if (events == null) {
-                events = ['push'];
-              }
-              if (active == null) {
-                active = true;
-              }
-              data = {
-                name: name,
-                config: config,
-                events: events,
-                active: active
+                return _request('POST', "" + this.repoPath + "/hooks", data);
               };
-              return _request('POST', "" + this.repoPath + "/hooks", data);
-            };
-            this.editHook = function(id, config, events, addEvents, removeEvents, active) {
-              var data;
-              if (config == null) {
-                config = null;
-              }
-              if (events == null) {
-                events = null;
-              }
-              if (addEvents == null) {
-                addEvents = null;
-              }
-              if (removeEvents == null) {
-                removeEvents = null;
-              }
-              if (active == null) {
-                active = null;
-              }
-              data = {};
-              if (config !== null) {
-                data.config = config;
-              }
-              if (events !== null) {
-                data.events = events;
-              }
-              if (addEvents !== null) {
-                data.add_events = addEvents;
-              }
-              if (removeEvents !== null) {
-                data.remove_events = removeEvents;
-              }
-              if (active !== null) {
-                data.active = active;
-              }
-              return _request('PATCH', "" + this.repoPath + "/hooks/" + id, data);
-            };
-            this.testHook = function(id) {
-              return _request('POST', "" + this.repoPath + "/hooks/" + id + "/tests", null);
-            };
-            this.deleteHook = function(id) {
-              return _request('DELETE', "" + this.repoPath + "/hooks/" + id, null);
-            };
-            this.getLanguages = function() {
-              return _request('GET', "" + this.repoPath + "/languages", null);
-            };
-            this.getReleases = function() {
-              return _request('GET', "" + this.repoPath + "/releases", null);
-            };
-          }
-
-          return Repository;
-
-        })();
-        Gist = (function() {
-          function Gist(options) {
-            var id, _gistPath;
-            this.options = options;
-            id = this.options.id;
-            _gistPath = "/gists/" + id;
-            this.read = function() {
-              return _request('GET', _gistPath, null);
-            };
-            this.create = function(files, isPublic, description) {
-              if (isPublic == null) {
-                isPublic = false;
-              }
-              if (description == null) {
-                description = null;
-              }
-              options = {
-                isPublic: isPublic,
-                files: files
+              this.editHook = function(id, config, events, addEvents, removeEvents, active) {
+                var data;
+                if (config == null) {
+                  config = null;
+                }
+                if (events == null) {
+                  events = null;
+                }
+                if (addEvents == null) {
+                  addEvents = null;
+                }
+                if (removeEvents == null) {
+                  removeEvents = null;
+                }
+                if (active == null) {
+                  active = null;
+                }
+                data = {};
+                if (config !== null) {
+                  data.config = config;
+                }
+                if (events !== null) {
+                  data.events = events;
+                }
+                if (addEvents !== null) {
+                  data.add_events = addEvents;
+                }
+                if (removeEvents !== null) {
+                  data.remove_events = removeEvents;
+                }
+                if (active !== null) {
+                  data.active = active;
+                }
+                return _request('PATCH', "" + this.repoPath + "/hooks/" + id, data);
               };
-              if (description != null) {
-                options.description = description;
-              }
-              return _request('POST', "/gists", options);
-            };
-            this["delete"] = function() {
-              return _request('DELETE', _gistPath, null);
-            };
-            this.fork = function() {
-              return _request('POST', "" + _gistPath + "/forks", null);
-            };
-            this.update = function(files, description) {
-              if (description == null) {
-                description = null;
-              }
-              options = {
-                files: files
+              this.testHook = function(id) {
+                return _request('POST', "" + this.repoPath + "/hooks/" + id + "/tests", null);
               };
-              if (description != null) {
-                options.description = description;
-              }
-              return _request('PATCH', _gistPath, options);
-            };
-            this.star = function() {
-              return _request('PUT', "" + _gistPath + "/star");
-            };
-            this.unstar = function() {
-              return _request('DELETE', "" + _gistPath + "/star");
-            };
-            this.isStarred = function() {
-              return _request('GET', "" + _gistPath, null, {
-                isBoolean: true
-              });
-            };
-          }
+              this.deleteHook = function(id) {
+                return _request('DELETE', "" + this.repoPath + "/hooks/" + id, null);
+              };
+              this.getLanguages = function() {
+                return _request('GET', "" + this.repoPath + "/languages", null);
+              };
+              this.getReleases = function() {
+                return _request('GET', "" + this.repoPath + "/releases", null);
+              };
+            }
 
-          return Gist;
+            return Repository;
 
-        })();
-        this.getRepo = function(user, repo) {
-          if (!user) {
-            throw new Error('BUG! user argument is required');
-          }
-          if (!repo) {
-            throw new Error('BUG! repo argument is required');
-          }
-          return new Repository({
-            user: user,
-            name: repo
-          });
-        };
-        this.getOrg = function(name) {
-          return new Organization(name);
-        };
-        this.getUser = function(login) {
-          if (login == null) {
-            login = null;
-          }
-          if (login) {
-            return new User(login);
-          } else if (clientOptions.password || clientOptions.token) {
-            return new AuthenticatedUser();
-          } else {
-            return null;
-          }
-        };
-        this.getGist = function(id) {
-          return new Gist({
-            id: id
-          });
-        };
-        this.getLogin = function() {
-          var ret;
-          if (clientOptions.password || clientOptions.token) {
-            return new User().getInfo().then(function(info) {
-              return info.login;
+          })();
+          Gist = (function() {
+            function Gist(options) {
+              var id, _gistPath;
+              this.options = options;
+              id = this.options.id;
+              _gistPath = "/gists/" + id;
+              this.read = function() {
+                return _request('GET', _gistPath, null);
+              };
+              this.create = function(files, isPublic, description) {
+                if (isPublic == null) {
+                  isPublic = false;
+                }
+                if (description == null) {
+                  description = null;
+                }
+                options = {
+                  isPublic: isPublic,
+                  files: files
+                };
+                if (description != null) {
+                  options.description = description;
+                }
+                return _request('POST', "/gists", options);
+              };
+              this["delete"] = function() {
+                return _request('DELETE', _gistPath, null);
+              };
+              this.fork = function() {
+                return _request('POST', "" + _gistPath + "/forks", null);
+              };
+              this.update = function(files, description) {
+                if (description == null) {
+                  description = null;
+                }
+                options = {
+                  files: files
+                };
+                if (description != null) {
+                  options.description = description;
+                }
+                return _request('PATCH', _gistPath, options);
+              };
+              this.star = function() {
+                return _request('PUT', "" + _gistPath + "/star");
+              };
+              this.unstar = function() {
+                return _request('DELETE', "" + _gistPath + "/star");
+              };
+              this.isStarred = function() {
+                return _request('GET', "" + _gistPath, null, {
+                  isBoolean: true
+                });
+              };
+            }
+
+            return Gist;
+
+          })();
+          this.getRepo = function(user, repo) {
+            if (!user) {
+              throw new Error('BUG! user argument is required');
+            }
+            if (!repo) {
+              throw new Error('BUG! repo argument is required');
+            }
+            return new Repository({
+              user: user,
+              name: repo
             });
-          } else {
-            ret = new jQuery.Deferred();
-            ret.resolve(null);
-            return ret;
-          }
-        };
-      }
+          };
+          this.getOrg = function(name) {
+            return new Organization(name);
+          };
+          this.getUser = function(login) {
+            if (login == null) {
+              login = null;
+            }
+            if (login) {
+              return new User(login);
+            } else if (clientOptions.password || clientOptions.token) {
+              return new AuthenticatedUser();
+            } else {
+              return null;
+            }
+          };
+          this.getGist = function(id) {
+            return new Gist({
+              id: id
+            });
+          };
+          this.getLogin = function() {
+            if (clientOptions.password || clientOptions.token) {
+              return new User().getInfo().then(function(info) {
+                return info.login;
+              });
+            } else {
+              return Promise.resolve(null);
+            }
+          };
+        }
 
+        return Octokit;
+
+      })();
       return Octokit;
+    };
+  })(this);
 
-    })();
-    return Octokit;
-  };
-})(this);
-
-if (typeof exports !== "undefined" && exports !== null) {
-  _ = require('underscore');
-  jQuery = require('jquery-deferred');
-  najax = require('najax');
-  jQuery.ajax = najax;
-  encode = function(str) {
-    var buffer;
-    buffer = new Buffer(str, 'binary');
-    return buffer.toString('base64');
-  };
-  Octokit = makeOctokit(_, jQuery, encode, 'octokit');
-  exports["new"] = function(options) {
-    return new Octokit(options);
-  };
-} else if (this.define != null) {
-  _ref = ['github', 'octokit'];
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    moduleName = _ref[_i];
-    if (this.btoa) {
-      this.define(moduleName, ['underscore', 'jquery'], function(_, jQuery) {
-        return makeOctokit(_, jQuery, this.btoa);
-      });
-    } else {
-      this.define(moduleName, ['underscore', 'jquery', 'base64'], function(_, jQuery, Base64) {
-        return makeOctokit(_, jQuery, Base64.encode);
-      });
-    }
-  }
-} else if (this._ && this.jQuery && (this.btoa || this.Base64)) {
-  encode = this.btoa || this.Base64.encode;
-  Octokit = makeOctokit(this._, this.jQuery, encode);
-  this.Octokit = Octokit;
-  this.Github = Octokit;
-} else {
-  err = function(msg) {
-    if (typeof console !== "undefined" && console !== null) {
-      if (typeof console.error === "function") {
-        console.error(msg);
-      }
-    }
-    throw new Error(msg);
-  };
-  if (!this._) {
-    err('Underscore not included');
-  }
-  if (!this.jQuery) {
-    err('jQuery not included');
-  }
-  if (!(this.btoa || this.Base64)) {
-    err('Base64 not included');
-  }
-}
-
-var __slice = [].slice;
-
-$("<div id=\"mask\" data-toggle-menu></div>").appendTo($(document.body));
-
-$('[data-toggle-menu]').on('click', function() {
-  $(document.body).toggleClass('menu-open');
-});
-
-$(document.body).on("click", "a", function(e) {
-  var dest, el, target;
-  el = $(e.target).closest('a');
-  target = el.attr("target");
-  dest = el.attr("href");
-  if ((!target || target.toLowerCase() !== "_blank") && (dest != null)) {
-    $(document.body).removeClass();
-  }
-});
-
-angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsavedChanges', 'gitblog.templates']).config([
-  '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
-    $locationProvider.hashPrefix('!');
-    $routeProvider.when('/about', {
-      templateUrl: 'templates/about.html',
-      controller: 'AboutController'
-    }).when('/:user/:repo/:path*', {
-      templateUrl: 'templates/post.html',
-      controller: 'PostController',
-      reloadOnSearch: false
-    }).when('/:user/:repo', {
-      templateUrl: 'templates/list.html',
-      controller: 'ListController'
-    }).when('/', {
-      templateUrl: 'templates/index.html',
-      controller: 'IndexController'
-    }).otherwise({
-      redirectTo: '/'
-    });
-  }
-]).run([
-  '$rootScope', 'storage', "$location", "$filter", "$q", function($scope, storage, $location, $filter, $q) {
-    var gh, jekyllFilter, orgDefer, user, userDefer;
-    $(document.documentElement).removeClass("nojs").addClass("domready");
-    $scope.loading = true;
-    $scope.loadingText = 'Wait...';
-    $scope.token = storage.get('token');
-    $scope.reponame = storage.get('reponame');
-    try {
-      $scope.cache = storage.get('cache');
-    } catch (_error) {
-      $scope.cache = null;
-    }
-    storage.bind($scope, 'token');
-    storage.bind($scope, 'reponame');
-    storage.bind($scope, 'cache');
-    if ($scope.token !== "") {
-      jekyllFilter = $filter("jekyll");
-      $scope._gh = gh = new Octokit({
-        token: $scope.token
-      });
-      if ($scope.cache !== "") {
-        gh.setCache($scope.cache);
-      }
-      $scope.saveCache = function() {
-        return $scope.cache = $scope._gh.getCache();
-      };
-      $scope.clearCache = function() {
-        return $scope.cache = null;
-      };
-      $scope.repos = [];
-      user = gh.getUser();
-      userDefer = $q.defer();
-      user.getInfo().then(function(info) {
-        $scope.$apply(function() {
-          return $scope.username = info.login;
-        });
-        return user.getRepos();
-      }, function(err) {
-        return console.error(err);
-      }).then(function(repos) {
-        var repo, _i, _len;
-        repos = jekyllFilter(repos);
-        for (_i = 0, _len = repos.length; _i < _len; _i++) {
-          repo = repos[_i];
-          repo._repo = gh.getRepo(repo.owner.login, repo.name);
+  if (typeof exports !== "undefined" && exports !== null) {
+    Promise = this.Promise || require('es6-promise').Promise;
+    XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+    newPromise = function(fn) {
+      return new Promise(fn);
+    };
+    allPromises = function(promises) {
+      return Promise.all(promises);
+    };
+    encode = function(str) {
+      var buffer;
+      buffer = new Buffer(str, 'binary');
+      return buffer.toString('base64');
+    };
+    Octokit = makeOctokit(newPromise, allPromises, XMLHttpRequest, encode, 'octokit');
+    exports["new"] = function(options) {
+      return new Octokit(options);
+    };
+  } else {
+    createGlobalAndAMD = (function(_this) {
+      return function(newPromise, allPromises) {
+        if (_this.define != null) {
+          return _this.define('octokit', [], function() {
+            return makeOctokit(newPromise, allPromises, _this.XMLHttpRequest, _this.btoa);
+          });
+        } else {
+          Octokit = makeOctokit(newPromise, allPromises, _this.XMLHttpRequest, _this.btoa);
+          _this.Octokit = Octokit;
+          return _this.Github = Octokit;
         }
-        $scope.$apply(function() {
-          return $scope.repos = $scope.repos.concat(repos);
-        });
-        return userDefer.resolve();
-      }, function(err) {
-        return console.error(err);
-      });
-      orgDefer = $q.defer();
-      user.getOrgs().then(function(orgs) {
-        var index, org, orgUser, promise, promises, _i, _len;
-        promises = [];
-        for (index = _i = 0, _len = orgs.length; _i < _len; index = ++_i) {
-          org = orgs[index];
-          orgUser = gh.getUser(org.login);
-          promise = orgUser.getRepos();
-          promises.push(promise);
-        }
-        return $.when.apply(this, promises);
-      }, function(err) {
-        return console.error(err);
-      }).then(function() {
-        var resArrays;
-        resArrays = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        $scope.$apply(function() {
-          var repo, repos, res, _i, _j, _len, _len1, _results;
-          _results = [];
-          for (_i = 0, _len = resArrays.length; _i < _len; _i++) {
-            res = resArrays[_i];
-            repos = jekyllFilter(res[0]);
-            for (_j = 0, _len1 = repos.length; _j < _len1; _j++) {
-              repo = repos[_j];
-              repo._repo = gh.getRepo(repo.owner.login, repo.name);
-            }
-            _results.push($scope.repos = $scope.repos.concat(repos));
-          }
-          return _results;
-        });
-        return orgDefer.resolve();
-      }, function(err) {
-        return console.error(err);
-      });
-      $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
-      $scope.blogListReady.then(function() {
-        $scope.saveCache();
-        return $scope.getRepo = function(username, reponame) {
-          var repo, _i, _len, _ref;
-          _ref = $scope.repos;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            repo = _ref[_i];
-            if (repo.owner.login === username && repo.name === reponame) {
-              return repo;
-            }
-          }
-          return null;
+      };
+    })(this);
+    if (this.Promise) {
+      newPromise = (function(_this) {
+        return function(fn) {
+          return new _this.Promise(fn);
         };
-      }, function(err) {
-        return console.error(arguments);
+      })(this);
+      allPromises = this.Promise.all;
+      createGlobalAndAMD(newPromise, allPromises);
+    } else if (this.angular) {
+      injector = angular.injector(['ng']);
+      injector.invoke(function($q) {
+        newPromise = function(fn) {
+          var $promise, reject, resolve;
+          $promise = $q.defer();
+          resolve = function(val) {
+            return $promise.resolve(val);
+          };
+          reject = function(val) {
+            return $promise.reject(val);
+          };
+          fn(resolve, reject);
+          return $promise.promise;
+        };
+        allPromises = function(promises) {
+          return $q.all(promises);
+        };
+        return createGlobalAndAMD(newPromise, allPromises);
       });
+    } else if (this.jQuery) {
+      newPromise = (function(_this) {
+        return function(fn) {
+          var promise, reject, resolve;
+          promise = _this.jQuery.Deferred();
+          resolve = function(val) {
+            return promise.resolve(val);
+          };
+          reject = function(val) {
+            return promise.reject(val);
+          };
+          fn(resolve, reject);
+          return promise.promise();
+        };
+      })(this);
+      allPromises = (function(_this) {
+        return function(promises) {
+          var _ref;
+          return (_ref = _this.jQuery).when.apply(_ref, promises).then(function() {
+            var promises;
+            promises = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+            return promises;
+          });
+        };
+      })(this);
+      createGlobalAndAMD(newPromise, allPromises);
     } else {
-      window.location.replace('/');
+      err = function(msg) {
+        if (typeof console !== "undefined" && console !== null) {
+          if (typeof console.error === "function") {
+            console.error(msg);
+          }
+        }
+        throw new Error(msg);
+      };
+      err('A Promise API was not found. Supported libraries that have Promises are jQuery, angularjs, and https://github.com/jakearchibald/es6-promise');
     }
   }
-]);
 
-angular.module("gitblog").controller("IndexController", [
-  "$scope", function($scope) {
-    $scope.$root.loading = true;
-    return $scope.blogListReady.then(function() {
-      return $scope.$root.loading = false;
-    });
-  }
-]).controller("AboutController", [
-  "$scope", function($scope) {
-    $scope.$root.loading = true;
-    return $scope.blogListReady.then(function() {
-      return $scope.$root.loading = false;
-    });
-  }
-]).controller("ListController", [
-  "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
-    var reponame, username;
-    $scope.$root.loading = true;
-    username = $routeParams.user;
-    reponame = $routeParams.repo;
-    return $scope.blogListReady.then(function() {
-      var repo, _repo;
-      if (repo = $scope.getRepo(username, reponame)) {
-        _repo = repo._repo;
-        return _repo.git.getTree('master', {
-          recursive: true
-        }).then(function(tree) {
-          var configFileExists, configFileReg, file, postReg, posts, res, _i, _len;
+}).call(this);
+
+(function() {
+  $("<div id=\"mask\" data-toggle-menu></div>").appendTo($(document.body));
+
+  $('[data-toggle-menu]').on('click', function() {
+    $(document.body).toggleClass('menu-open');
+  });
+
+  $(document.body).on("click", "a", function(e) {
+    var dest, el, target;
+    el = $(e.target).closest('a');
+    target = el.attr("target");
+    dest = el.attr("href");
+    if ((!target || target.toLowerCase() !== "_blank") && (dest != null)) {
+      $(document.body).removeClass();
+    }
+  });
+
+  angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsavedChanges', 'gitblog.templates']).config([
+    '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+      $locationProvider.hashPrefix('!');
+      $routeProvider.when('/about', {
+        templateUrl: 'templates/about.html',
+        controller: 'AboutController'
+      }).when('/:user/:repo/:path*', {
+        templateUrl: 'templates/post.html',
+        controller: 'PostController',
+        reloadOnSearch: false
+      }).when('/:user/:repo', {
+        templateUrl: 'templates/list.html',
+        controller: 'ListController'
+      }).when('/', {
+        templateUrl: 'templates/index.html',
+        controller: 'IndexController'
+      }).otherwise({
+        redirectTo: '/'
+      });
+    }
+  ]).run([
+    '$rootScope', 'storage', "$location", "$filter", "$q", function($scope, storage, $location, $filter, $q) {
+      var gh, jekyllFilter, orgDefer, user, userDefer;
+      $(document.documentElement).removeClass("nojs").addClass("domready");
+      $scope.loading = true;
+      $scope.loadingText = 'Wait...';
+      $scope.token = storage.get('token');
+      $scope.reponame = storage.get('reponame');
+      try {
+        $scope.cache = storage.get('cache');
+      } catch (_error) {
+        $scope.cache = null;
+      }
+      storage.bind($scope, 'token');
+      storage.bind($scope, 'reponame');
+      storage.bind($scope, 'cache');
+      if ($scope.token !== "") {
+        jekyllFilter = $filter("jekyll");
+        $scope._gh = gh = new Octokit({
+          token: $scope.token
+        });
+        if ($scope.cache !== "") {
+          gh.setCache($scope.cache);
+        }
+        $scope.saveCache = function() {
+          return $scope.cache = $scope._gh.getCache();
+        };
+        $scope.clearCache = function() {
+          return $scope.cache = null;
+        };
+        $scope.repos = [];
+        user = gh.getUser();
+        userDefer = $q.defer();
+        user.getInfo().then(function(info) {
+          $scope.$apply(function() {
+            return $scope.username = info.login;
+          });
+          return user.getRepos();
+        }, function(err) {
+          return console.error(err);
+        }).then(function(repos) {
+          var repo, _i, _len;
+          repos = jekyllFilter(repos);
+          for (_i = 0, _len = repos.length; _i < _len; _i++) {
+            repo = repos[_i];
+            repo._repo = gh.getRepo(repo.owner.login, repo.name);
+          }
+          $scope.$apply(function() {
+            return $scope.repos = $scope.repos.concat(repos);
+          });
+          return userDefer.resolve();
+        }, function(err) {
+          return console.error(err);
+        });
+        orgDefer = $q.defer();
+        user.getOrgs().then(function(orgs) {
+          var index, org, orgUser, promise, promises, _i, _len;
+          promises = [];
+          for (index = _i = 0, _len = orgs.length; _i < _len; index = ++_i) {
+            org = orgs[index];
+            orgUser = gh.getUser(org.login);
+            promise = orgUser.getRepos();
+            promises.push(promise);
+          }
+          return $q.all(promises);
+        }, function(err) {
+          return console.error(err);
+        }).then(function(resArrays) {
+          $scope.$apply(function() {
+            var repo, repos, res, _i, _j, _len, _len1, _results;
+            _results = [];
+            for (_i = 0, _len = resArrays.length; _i < _len; _i++) {
+              res = resArrays[_i];
+              repos = jekyllFilter(res);
+              for (_j = 0, _len1 = repos.length; _j < _len1; _j++) {
+                repo = repos[_j];
+                repo._repo = gh.getRepo(repo.owner.login, repo.name);
+              }
+              _results.push($scope.repos = $scope.repos.concat(repos));
+            }
+            return _results;
+          });
+          return orgDefer.resolve();
+        }, function(err) {
+          return console.error(err);
+        });
+        $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
+        $scope.blogListReady.then(function() {
           $scope.saveCache();
-          posts = [];
-          configFileExists = false;
-          postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
-          configFileReg = /^_config.yml$/;
-          for (_i = 0, _len = tree.length; _i < _len; _i++) {
-            file = tree[_i];
-            if (file.type !== 'blob') {
-              continue;
+          return $scope.getRepo = function(username, reponame) {
+            var repo, _i, _len, _ref;
+            _ref = $scope.repos;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              repo = _ref[_i];
+              if (repo.owner.login === username && repo.name === reponame) {
+                return repo;
+              }
             }
-            if (res = file.path.match(postReg)) {
-              posts.push({
-                user: username,
-                repo: reponame,
-                type: res[1],
-                date: new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10)),
-                urlTitle: res[5],
-                info: file
-              });
-            } else if (configFileReg.test(file.path)) {
-              configFileExists = true;
-            }
-          }
-          if (configFileExists) {
-            return $scope.$apply(function() {
-              $scope.$root.loading = false;
-              $scope.reponame = reponame;
-              $scope.username = username;
-              return $scope.posts = posts;
-            });
-          }
+            return null;
+          };
+        }, function(err) {
+          return console.error(arguments);
         });
       } else {
-        console.error("blog do not exist");
-        return $location.path('/').replace();
+        window.location.replace('/');
       }
-    });
-  }
-]).controller("PostController", [
-  "$scope", "$routeParams", "$location", "$timeout", "uploader", function($scope, $routeParams, $location, $timeout, uploader) {
-    var path, reponame, sha, username;
-    $scope.$root.loading = true;
-    username = $routeParams.user;
-    reponame = $routeParams.repo;
-    path = $routeParams.path;
-    sha = $routeParams.sha;
-    $scope.username = username;
-    $scope.reponame = reponame;
-    $scope.filepath = path;
-    return $scope.blogListReady.then(function() {
-      var deleteFunc, newPost, repo, save, searchAndShow, show, _repo;
-      if (repo = $scope.getRepo(username, reponame)) {
-        _repo = repo._repo;
-        $scope.uploader = uploader.call($scope, _repo);
-        save = function() {
-          var branch, message, promise;
-          $scope.$root.loading = true;
-          branch = 　_repo.getBranch("master");
-          message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
-          promise = branch.write(path, $scope.post, message, false);
-          promise.then(function(res) {
-            return $scope.$evalAsync(function() {
-              $scope.$root.loading = false;
-              return $scope.postForm.$setPristine();
-            });
-          }, function(err) {
-            $scope.$root.loading = false;
-            return console.error(err);
+    }
+  ]);
+
+}).call(this);
+
+(function() {
+  angular.module("gitblog").controller("IndexController", [
+    "$scope", function($scope) {
+      $scope.$root.loading = true;
+      return $scope.blogListReady.then(function() {
+        return $scope.$root.loading = false;
+      });
+    }
+  ]).controller("AboutController", [
+    "$scope", function($scope) {
+      $scope.$root.loading = true;
+      return $scope.blogListReady.then(function() {
+        return $scope.$root.loading = false;
+      });
+    }
+  ]).controller("ListController", [
+    "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
+      var reponame, username;
+      $scope.$root.loading = true;
+      username = $routeParams.user;
+      reponame = $routeParams.repo;
+      return $scope.blogListReady.then(function() {
+        var repo, _repo;
+        if (repo = $scope.getRepo(username, reponame)) {
+          _repo = repo._repo;
+          return _repo.git.getTree('master', {
+            recursive: true
+          }).then(function(tree) {
+            var configFileExists, configFileReg, file, postReg, posts, res, _i, _len;
+            $scope.saveCache();
+            posts = [];
+            configFileExists = false;
+            postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
+            configFileReg = /^_config.yml$/;
+            for (_i = 0, _len = tree.length; _i < _len; _i++) {
+              file = tree[_i];
+              if (file.type !== 'blob') {
+                continue;
+              }
+              if (res = file.path.match(postReg)) {
+                posts.push({
+                  user: username,
+                  repo: reponame,
+                  type: res[1],
+                  date: new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10)),
+                  urlTitle: res[5],
+                  info: file
+                });
+              } else if (configFileReg.test(file.path)) {
+                configFileExists = true;
+              }
+            }
+            if (configFileExists) {
+              return $scope.$apply(function() {
+                $scope.$root.loading = false;
+                $scope.reponame = reponame;
+                $scope.username = username;
+                return $scope.posts = posts;
+              });
+            }
           });
-          return promise;
-        };
-        deleteFunc = function() {
-          var branch, message, promise;
-          if (window.confirm("Are you sure to delete " + $scope.filepath + "?")) {
+        } else {
+          console.error("blog do not exist");
+          return $location.path('/').replace();
+        }
+      });
+    }
+  ]).controller("PostController", [
+    "$scope", "$routeParams", "$location", "$timeout", "uploader", function($scope, $routeParams, $location, $timeout, uploader) {
+      var path, reponame, sha, username;
+      $scope.$root.loading = true;
+      username = $routeParams.user;
+      reponame = $routeParams.repo;
+      path = $routeParams.path;
+      sha = $routeParams.sha;
+      $scope.username = username;
+      $scope.reponame = reponame;
+      $scope.filepath = path;
+      return $scope.blogListReady.then(function() {
+        var deleteFunc, newPost, repo, save, searchAndShow, show, _repo;
+        if (repo = $scope.getRepo(username, reponame)) {
+          _repo = repo._repo;
+          $scope.uploader = uploader.call($scope, _repo);
+          save = function() {
+            var branch, message, promise;
             $scope.$root.loading = true;
             branch = 　_repo.getBranch("master");
             message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
-            promise = branch.remove(path, message);
+            promise = branch.write(path, $scope.post, message, false);
             promise.then(function(res) {
-              $scope.$evalAsync(function() {
-                return $scope.$root.loadingText = "Redirecting to list...";
+              return $scope.$evalAsync(function() {
+                $scope.$root.loading = false;
+                return $scope.postForm.$setPristine();
               });
-              return $timeout(function() {
-                return $location.path("/" + username + "/" + reponame).replace();
-              }, 1500);
             }, function(err) {
               $scope.$root.loading = false;
               return console.error(err);
             });
             return promise;
-          }
-        };
-        show = function() {
-          return _repo.git.getBlob(sha).then(function(post) {
-            $scope.saveCache();
-            return $scope.$apply(function() {
-              $scope.$root.loading = false;
-              $scope.post = post;
-              $scope.save = save;
-              return $scope["delete"] = deleteFunc;
-            });
-          }, function(err) {
-            if (err.status === 404) {
-              return searchAndShow();
-            } else {
-              $scope.$root.loading = false;
-              return console.error(err.error);
-            }
-          });
-        };
-        searchAndShow = function() {
-          return _repo.git.getTree('master', {
-            recursive: true
-          }).then(function(tree) {
-            var blob;
-            $scope.saveCache();
-            blob = _.findWhere(tree, {
-              path: path
-            });
-            if (blob != null) {
-              sha = blob.sha;
-              return show();
-            } else {
-              $scope.$root.loading = false;
-              return console.error("file path not found");
-            }
-          });
-        };
-        newPost = "---\nlayout: post\ntitle:\ntagline:\ncategory: null\ntags: []\npublished: true\n---\n";
-        if (sha == null) {
-          if (path === "new") {
-            $scope["new"] = true;
-            $scope.$root.loading = false;
-            $scope.post = newPost;
-            return $scope.save = function() {
-              var d, date, m, name, y;
-              date = new Date();
-              y = date.getFullYear();
-              m = date.getMonth();
-              m = m >= 10 ? m + 1 : "0" + (m + 1);
-              d = date.getDate();
-              d = d >= 10 ? d : "0" + d;
-              name = $scope.frontMatter.title.replace(/\s/g, '-');
-              path = "_posts/" + y + "-" + m + "-" + d + "-" + name + ".md";
-              return save().then(function(res) {
+          };
+          deleteFunc = function() {
+            var branch, message, promise;
+            if (window.confirm("Are you sure to delete " + $scope.filepath + "?")) {
+              $scope.$root.loading = true;
+              branch = 　_repo.getBranch("master");
+              message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
+              promise = branch.remove(path, message);
+              promise.then(function(res) {
                 $scope.$evalAsync(function() {
-                  $scope.$root.loading = true;
-                  return $scope.$root.loadingText = "Redirecting to saved post..";
+                  return $scope.$root.loadingText = "Redirecting to list...";
                 });
                 return $timeout(function() {
-                  return $location.path("/" + username + "/" + reponame + "/" + path).replace();
+                  return $location.path("/" + username + "/" + reponame).replace();
                 }, 1500);
+              }, function(err) {
+                $scope.$root.loading = false;
+                return console.error(err);
               });
-            };
+              return promise;
+            }
+          };
+          show = function() {
+            return _repo.git.getBlob(sha).then(function(post) {
+              $scope.saveCache();
+              return $scope.$apply(function() {
+                $scope.$root.loading = false;
+                $scope.post = post;
+                $scope.save = save;
+                return $scope["delete"] = deleteFunc;
+              });
+            }, function(err) {
+              if (err.status === 404) {
+                return searchAndShow();
+              } else {
+                $scope.$root.loading = false;
+                return console.error(err.error);
+              }
+            });
+          };
+          searchAndShow = function() {
+            return _repo.git.getTree('master', {
+              recursive: true
+            }).then(function(tree) {
+              var blob;
+              $scope.saveCache();
+              blob = _.findWhere(tree, {
+                path: path
+              });
+              if (blob != null) {
+                sha = blob.sha;
+                return show();
+              } else {
+                $scope.$root.loading = false;
+                return console.error("file path not found");
+              }
+            });
+          };
+          newPost = "---\nlayout: post\ntitle:\ntagline:\ncategory: null\ntags: []\npublished: true\n---\n";
+          if (sha == null) {
+            if (path === "new") {
+              $scope["new"] = true;
+              $scope.$root.loading = false;
+              $scope.post = newPost;
+              return $scope.save = function() {
+                var d, date, m, name, y;
+                date = new Date();
+                y = date.getFullYear();
+                m = date.getMonth();
+                m = m >= 10 ? m + 1 : "0" + (m + 1);
+                d = date.getDate();
+                d = d >= 10 ? d : "0" + d;
+                name = $scope.frontMatter.title.replace(/\s/g, '-');
+                path = "_posts/" + y + "-" + m + "-" + d + "-" + name + ".md";
+                return save().then(function(res) {
+                  $scope.$evalAsync(function() {
+                    $scope.$root.loading = true;
+                    return $scope.$root.loadingText = "Redirecting to saved post..";
+                  });
+                  return $timeout(function() {
+                    return $location.path("/" + username + "/" + reponame + "/" + path).replace();
+                  }, 1500);
+                });
+              };
+            } else {
+              return searchAndShow();
+            }
           } else {
-            return searchAndShow();
+            return show();
           }
         } else {
-          return show();
+          console.error("blog do not exist");
+          return $location.path('/').replace();
         }
-      } else {
-        console.error("blog do not exist");
-        return $location.path('/').replace();
-      }
-    });
-  }
-]);
+      });
+    }
+  ]);
 
-angular.module("gitblog").directive("blogList", [
-  function() {
-    return {
-      restrict: "A",
-      templateUrl: "templates/blog-list.html"
-    };
-  }
-]).directive("post", [
-  "$timeout", function($timeout) {
-    return {
-      restrict: "A",
-      templateUrl: "templates/editor.html",
-      require: "?ngModel",
-      link: function($scope, $element, $attr, ngModel) {
-        var promise, update, ymlReg;
-        if (ngModel == null) {
-          return;
-        }
-        ymlReg = /^(?:---\r?\n)((?:.|\r?\n)*?)\r?\n---\r?\n/;
-        ngModel.$formatters.push(function(modelValue) {
-          var content, frontMatter;
-          if (modelValue != null) {
-            frontMatter = null;
-            content = modelValue.replace(ymlReg, function(match, yml) {
-              var e;
-              try {
-                frontMatter = jsyaml.safeLoad(yml);
-                if (frontMatter.published == null) {
-                  frontMatter.published = true;
-                }
-              } catch (_error) {
-                e = _error;
-                console.error(e);
-              }
-              return '';
-            });
-            $scope.$evalAsync(function() {
-              $scope.frontMatter = frontMatter;
-              return $scope.content = content;
-            });
+}).call(this);
+
+(function() {
+  angular.module("gitblog").directive("blogList", [
+    function() {
+      return {
+        restrict: "A",
+        templateUrl: "templates/blog-list.html"
+      };
+    }
+  ]).directive("post", [
+    "$timeout", function($timeout) {
+      return {
+        restrict: "A",
+        templateUrl: "templates/editor.html",
+        require: "?ngModel",
+        link: function($scope, $element, $attr, ngModel) {
+          var promise, update, ymlReg;
+          if (ngModel == null) {
+            return;
           }
-          return modelValue;
-        });
-        update = function() {
-          var content, frontMatter, viewValue, yml;
-          yml = jsyaml.safeDump($scope.frontMatter, {
-            skipInvalid: true
+          ymlReg = /^(?:---\r?\n)((?:.|\r?\n)*?)\r?\n---\r?\n/;
+          ngModel.$formatters.push(function(modelValue) {
+            var content, frontMatter;
+            if (modelValue != null) {
+              frontMatter = null;
+              content = modelValue.replace(ymlReg, function(match, yml) {
+                var e;
+                try {
+                  frontMatter = jsyaml.safeLoad(yml);
+                  if (frontMatter.published == null) {
+                    frontMatter.published = true;
+                  }
+                } catch (_error) {
+                  e = _error;
+                  console.error(e);
+                }
+                return '';
+              });
+              $scope.$evalAsync(function() {
+                $scope.frontMatter = frontMatter;
+                return $scope.content = content;
+              });
+            }
+            return modelValue;
           });
-          frontMatter = "---\n" + yml + "---\n";
-          content = $scope.content;
-          viewValue = frontMatter + content;
-          ngModel.$setViewValue(viewValue);
-          return $scope.$apply();
-        };
-        promise = null;
-        $scope.$watch('content', function(data, oldData) {
-          if ((data != null) && (oldData != null) && data !== oldData) {
-            if (promise != null) {
-              $timeout.cancel(promise);
-            }
-            return promise = $timeout(update, 10);
-          }
-        });
-        $scope.$watchCollection('frontMatter', function(data, oldData) {
-          if ((data != null) && (oldData != null)) {
-            if (promise != null) {
-              $timeout.cancel(promise);
-            }
-            return promise = $timeout(update, 200);
-          }
-        });
-        $(window).on("keydown", function(event) {
-          if (event.ctrlKey || event.metaKey) {
-            switch (String.fromCharCode(event.which).toLowerCase()) {
-              case "s":
-                event.preventDefault();
-                if ($scope.postForm.$dirty) {
-                  return $scope.$apply(function() {
-                    return $scope.save();
-                  });
-                }
-            }
-          }
-        });
-      }
-    };
-  }
-]).directive('editor', [
-  "$timeout", "UUID", function($timeout, UUID) {
-    return {
-      restrict: "EA",
-      require: "?ngModel",
-      link: function($scope, $element, $attrs, ngModel) {
-        var editor, groups, loaded, onChange, opts, promise, session, update;
-        if (ngModel == null) {
-          return;
-        }
-        window.ace.config.set('basePath', '/assets/js/ace');
-        editor = window.ace.edit($element[0]);
-        editor.setFontSize(16);
-        editor.setOptions({
-          maxLines: Infinity
-        });
-        editor.setShowPrintMargin(false);
-        editor.setHighlightActiveLine(false);
-        editor.renderer.setShowGutter(false);
-        editor.setTheme('ace/theme/tomorrow-markdown');
-        session = editor.getSession();
-        session.setUseWrapMode(true);
-        session.setUseSoftTabs(true);
-        session.setTabSize(2);
-        session.setMode("ace/mode/markdown");
-        ngModel.$formatters.push(function(value) {
-          if (angular.isUndefined(value) || value === null || value === "") {
-            $element.addClass("placeholder");
-            return "";
-          } else if (angular.isObject(value) || angular.isArray(value)) {
-            throw new Error("ace cannot use an object or an array as a model");
-          } else {
-            $element.removeClass("placeholder");
-          }
-          return value;
-        });
-        ngModel.$render = function() {
-          session.setValue(ngModel.$viewValue);
-        };
-        loaded = false;
-        update = function() {
-          var viewValue;
-          viewValue = session.getValue();
-          ngModel.$setViewValue(viewValue);
-          if (!loaded) {
-            $scope.postForm.$setPristine();
-            return loaded = true;
-          }
-        };
-        promise = null;
-        onChange = function() {
-          if (promise != null) {
-            $timeout.cancel(promise);
-          }
-          return promise = $timeout(update, 190, true);
-        };
-        session.on("change", onChange);
-        editor.on("focus", function() {
-          return $element.removeClass("placeholder");
-        });
-        editor.on("blur", function() {
-          if (session.getValue() === "") {
-            return $element.addClass("placeholder");
-          }
-        });
-        $element.on("$destroy", function() {
-          editor.session.$stopWorker();
-          editor.destroy();
-        });
-        editor.commands.addCommand({
-          name: "save",
-          bindKey: {
-            win: "Ctrl-S",
-            mac: "Command-S"
-          },
-          exec: function(editor) {
-            if ($scope.postForm.$dirty) {
-              return $scope.$apply(function() {
-                return $scope.save();
-              });
-            }
-          }
-        });
-        groups = [];
-        opts = {
-          dragClass: "drag",
-          accept: 'image/*',
-          readAsMap: {
-            "image/*": "BinaryString"
-          },
-          readAsDefault: "BinaryString",
-          on: {
-            beforestart: function(e, file) {},
-            load: function(e, file) {
-              var groupID, path, position, postdate, text, uuid;
-              uuid = UUID();
-              text = "![image](<uploading-" + uuid + ">)";
-              position = editor.getCursorPosition();
-              if (position.column !== 0) {
-                text = '\n' + text + '\n';
-              } else {
-                text = text + '\n';
+          update = function() {
+            var content, frontMatter, viewValue, yml;
+            yml = jsyaml.safeDump($scope.frontMatter, {
+              skipInvalid: true
+            });
+            frontMatter = "---\n" + yml + "---\n";
+            content = $scope.content;
+            viewValue = frontMatter + content;
+            ngModel.$setViewValue(viewValue);
+            return $scope.$apply();
+          };
+          promise = null;
+          $scope.$watch('content', function(data, oldData) {
+            if ((data != null) && (oldData != null) && data !== oldData) {
+              if (promise != null) {
+                $timeout.cancel(promise);
               }
-              editor.insert(text);
-              postdate = $scope.filepath.match(/\d{4}-\d{2}-\d{2}/);
-              path = "assets/post-images/" + postdate + '-' + uuid + '.' + file.extra.extension;
-              groupID = file.extra.groupID;
-              groups[groupID].files[path] = {
-                isBase64: true,
-                content: e.target.result
-              };
-              return groups[groupID].uuids[uuid] = path;
-            },
-            error: function(e, file) {
-              return console.errpr(file.name + " error: " + e.toString());
-            },
-            skip: function(file) {
-              return console.warn(file.name + " skipped");
-            },
-            groupstart: function(group) {
-              return groups[group.groupID] = {
-                files: {},
-                uuids: {}
-              };
-            },
-            groupend: function(group) {
-              $scope.uploader.add(groups[group.groupID]).then(function(uuids) {
-                var path, position, reg, uuid;
-                position = editor.getCursorPosition();
-                for (uuid in uuids) {
-                  path = uuids[uuid];
-                  reg = new RegExp("!\\[(\\w*)\\]\\(<uploading-" + uuid + ">\\)");
-                  editor.replace("![$1](" + path + ")", {
-                    needle: reg
-                  });
-                }
-                editor.clearSelection();
-                return editor.moveCursorToPosition(position);
-              }, function(err) {
-                var path, position, reg, uuid, uuids;
-                console.error(err);
-                uuids = err.uuids;
-                position = editor.getCursorPosition();
-                for (uuid in uuids) {
-                  path = uuids[uuid];
-                  reg = new RegExp("!\\[(\\w*)\\]\\(<uploading-" + uuid + ">\\)");
-                  editor.replace("(!image upload failed)", {
-                    needle: reg
-                  });
-                }
-                editor.clearSelection();
-                return editor.moveCursorToPosition(position);
-              });
-              return groups[group.id] = null;
+              return promise = $timeout(update, 10);
             }
+          });
+          $scope.$watchCollection('frontMatter', function(data, oldData) {
+            if ((data != null) && (oldData != null)) {
+              if (promise != null) {
+                $timeout.cancel(promise);
+              }
+              return promise = $timeout(update, 200);
+            }
+          });
+          $(window).on("keydown", function(event) {
+            if (event.ctrlKey || event.metaKey) {
+              switch (String.fromCharCode(event.which).toLowerCase()) {
+                case "s":
+                  event.preventDefault();
+                  if ($scope.postForm.$dirty) {
+                    return $scope.$apply(function() {
+                      return $scope.save();
+                    });
+                  }
+              }
+            }
+          });
+        }
+      };
+    }
+  ]).directive('editor', [
+    "$timeout", "UUID", function($timeout, UUID) {
+      return {
+        restrict: "EA",
+        require: "?ngModel",
+        link: function($scope, $element, $attrs, ngModel) {
+          var editor, groups, loaded, onChange, opts, promise, session, update;
+          if (ngModel == null) {
+            return;
           }
-        };
-        $(document.body).fileReaderJS(opts);
-        $element.fileClipboard(opts);
-        (function(self) {
-          var checkLine, customWorker;
-          checkLine = function(currentLine) {
-            var line;
-            line = self.lines[currentLine];
-            if (line.length !== 0) {
-              if (line[0].type.indexOf("markup.heading.multi") === 0) {
-                self.lines[currentLine - 1].forEach(function(previousLineObject) {
-                  previousLineObject.type = "markup.heading";
+          window.ace.config.set('basePath', '/assets/js/ace');
+          editor = window.ace.edit($element[0]);
+          editor.setFontSize(16);
+          editor.setOptions({
+            maxLines: Infinity
+          });
+          editor.setShowPrintMargin(false);
+          editor.setHighlightActiveLine(false);
+          editor.renderer.setShowGutter(false);
+          editor.setTheme('ace/theme/tomorrow-markdown');
+          session = editor.getSession();
+          session.setUseWrapMode(true);
+          session.setUseSoftTabs(true);
+          session.setTabSize(2);
+          session.setMode("ace/mode/markdown");
+          ngModel.$formatters.push(function(value) {
+            if (angular.isUndefined(value) || value === null || value === "") {
+              $element.addClass("placeholder");
+              return "";
+            } else if (angular.isObject(value) || angular.isArray(value)) {
+              throw new Error("ace cannot use an object or an array as a model");
+            } else {
+              $element.removeClass("placeholder");
+            }
+            return value;
+          });
+          ngModel.$render = function() {
+            session.setValue(ngModel.$viewValue);
+          };
+          loaded = false;
+          update = function() {
+            var viewValue;
+            viewValue = session.getValue();
+            ngModel.$setViewValue(viewValue);
+            if (!loaded) {
+              $scope.postForm.$setPristine();
+              return loaded = true;
+            }
+          };
+          promise = null;
+          onChange = function() {
+            if (promise != null) {
+              $timeout.cancel(promise);
+            }
+            return promise = $timeout(update, 190, true);
+          };
+          session.on("change", onChange);
+          editor.on("focus", function() {
+            return $element.removeClass("placeholder");
+          });
+          editor.on("blur", function() {
+            if (session.getValue() === "") {
+              return $element.addClass("placeholder");
+            }
+          });
+          $element.on("$destroy", function() {
+            editor.session.$stopWorker();
+            editor.destroy();
+          });
+          editor.commands.addCommand({
+            name: "save",
+            bindKey: {
+              win: "Ctrl-S",
+              mac: "Command-S"
+            },
+            exec: function(editor) {
+              if ($scope.postForm.$dirty) {
+                return $scope.$apply(function() {
+                  return $scope.save();
                 });
               }
             }
+          });
+          groups = [];
+          opts = {
+            dragClass: "drag",
+            accept: 'image/*',
+            readAsMap: {
+              "image/*": "BinaryString"
+            },
+            readAsDefault: "BinaryString",
+            on: {
+              beforestart: function(e, file) {},
+              load: function(e, file) {
+                var groupID, path, position, postdate, text, uuid;
+                uuid = UUID();
+                text = "![image](<uploading-" + uuid + ">)";
+                position = editor.getCursorPosition();
+                if (position.column !== 0) {
+                  text = '\n' + text + '\n';
+                } else {
+                  text = text + '\n';
+                }
+                editor.insert(text);
+                postdate = $scope.filepath.match(/\d{4}-\d{2}-\d{2}/);
+                path = "assets/post-images/" + postdate + '-' + uuid + '.' + file.extra.extension;
+                groupID = file.extra.groupID;
+                groups[groupID].files[path] = {
+                  isBase64: true,
+                  content: e.target.result
+                };
+                return groups[groupID].uuids[uuid] = path;
+              },
+              error: function(e, file) {
+                return console.errpr(file.name + " error: " + e.toString());
+              },
+              skip: function(file) {
+                return console.warn(file.name + " skipped");
+              },
+              groupstart: function(group) {
+                return groups[group.groupID] = {
+                  files: {},
+                  uuids: {}
+                };
+              },
+              groupend: function(group) {
+                $scope.uploader.add(groups[group.groupID]).then(function(uuids) {
+                  var path, position, reg, uuid;
+                  position = editor.getCursorPosition();
+                  for (uuid in uuids) {
+                    path = uuids[uuid];
+                    reg = new RegExp("!\\[(\\w*)\\]\\(<uploading-" + uuid + ">\\)");
+                    editor.replace("![$1](" + path + ")", {
+                      needle: reg
+                    });
+                  }
+                  editor.clearSelection();
+                  return editor.moveCursorToPosition(position);
+                }, function(err) {
+                  var path, position, reg, uuid, uuids;
+                  console.error(err);
+                  uuids = err.uuids;
+                  position = editor.getCursorPosition();
+                  for (uuid in uuids) {
+                    path = uuids[uuid];
+                    reg = new RegExp("!\\[(\\w*)\\]\\(<uploading-" + uuid + ">\\)");
+                    editor.replace("(!image upload failed)", {
+                      needle: reg
+                    });
+                  }
+                  editor.clearSelection();
+                  return editor.moveCursorToPosition(position);
+                });
+                return groups[group.id] = null;
+              }
+            }
           };
-          customWorker = function() {
-            var currentLine, doc, endLine, len, processedLines, startLine, workerStart;
-            if (!self.running) {
-              return;
-            }
-            workerStart = new Date();
-            currentLine = self.currentLine;
-            endLine = -1;
-            doc = self.doc;
-            while (self.lines[currentLine]) {
-              currentLine++;
-            }
-            startLine = currentLine;
-            len = doc.getLength();
-            processedLines = 0;
-            self.running = false;
-            while (currentLine < len) {
-              self.$tokenizeRow(currentLine);
-              endLine = currentLine;
-              while (true) {
-                checkLine(currentLine);
-                currentLine++;
-                if (!self.lines[currentLine]) {
-                  break;
+          $(document.body).fileReaderJS(opts);
+          $element.fileClipboard(opts);
+          (function(self) {
+            var checkLine, customWorker;
+            checkLine = function(currentLine) {
+              var line;
+              line = self.lines[currentLine];
+              if (line.length !== 0) {
+                if (line[0].type.indexOf("markup.heading.multi") === 0) {
+                  self.lines[currentLine - 1].forEach(function(previousLineObject) {
+                    previousLineObject.type = "markup.heading";
+                  });
                 }
               }
-              processedLines++;
-              if ((processedLines % 5 === 0) && (new Date() - workerStart) > 20) {
-                self.running = setTimeout(customWorker, 20);
-                self.currentLine = currentLine;
+            };
+            customWorker = function() {
+              var currentLine, doc, endLine, len, processedLines, startLine, workerStart;
+              if (!self.running) {
                 return;
               }
-            }
-            self.currentLine = currentLine;
-            if (startLine <= endLine) {
-              self.fireUpdateEvent(startLine, endLine);
-            }
-          };
-          self.$worker = function() {
-            self.lines.splice(0, self.lines.length);
-            self.states.splice(0, self.states.length);
-            self.currentLine = 0;
-            customWorker();
-          };
-        })(editor.session.bgTokenizer);
-      }
-    };
-  }
-]).directive("customInput", [
-  function() {
-    return {
-      restrict: "A",
-      require: "?ngModel",
-      link: function($scope, $element, $attrs, ngModel) {
-        if (ngModel == null) {
-          return;
+              workerStart = new Date();
+              currentLine = self.currentLine;
+              endLine = -1;
+              doc = self.doc;
+              while (self.lines[currentLine]) {
+                currentLine++;
+              }
+              startLine = currentLine;
+              len = doc.getLength();
+              processedLines = 0;
+              self.running = false;
+              while (currentLine < len) {
+                self.$tokenizeRow(currentLine);
+                endLine = currentLine;
+                while (true) {
+                  checkLine(currentLine);
+                  currentLine++;
+                  if (!self.lines[currentLine]) {
+                    break;
+                  }
+                }
+                processedLines++;
+                if ((processedLines % 5 === 0) && (new Date() - workerStart) > 20) {
+                  self.running = setTimeout(customWorker, 20);
+                  self.currentLine = currentLine;
+                  return;
+                }
+              }
+              self.currentLine = currentLine;
+              if (startLine <= endLine) {
+                self.fireUpdateEvent(startLine, endLine);
+              }
+            };
+            self.$worker = function() {
+              self.lines.splice(0, self.lines.length);
+              self.states.splice(0, self.states.length);
+              self.currentLine = 0;
+              customWorker();
+            };
+          })(editor.session.bgTokenizer);
         }
-        $element.prop("contenteditable", true);
-        $element.prop("spellcheck", true);
-        ngModel.$render = function() {
-          $element.text(ngModel.$viewValue || '');
-        };
-        $element.on("keydown", function(e) {
-          if (e.keyCode === 13) {
-            e.preventDefault();
+      };
+    }
+  ]).directive("customInput", [
+    function() {
+      return {
+        restrict: "A",
+        require: "?ngModel",
+        link: function($scope, $element, $attrs, ngModel) {
+          if (ngModel == null) {
+            return;
           }
-        }).on("blur keyup change", function() {
-          return $scope.$apply();
-        }).on("input", function() {
-          ngModel.$setViewValue($element.text().replace(/[\n\r]/g, " "));
-        });
-      }
-    };
-  }
-]).directive("switch", [
-  function() {
-    return {
-      restrict: "E",
-      require: "?ngModel",
-      scope: {
-        value: '=ngModel'
-      },
-      replace: true,
-      template: "<div class=\"btn-group\">\n  <button type=\"button\" class=\"btn\" ng-click=\"value = false\" ng-class=\"{'btn-default':value, 'btn-primary active':!value}\">Draft</button>\n  <button type=\"button\" class=\"btn\" ng-click=\"value = true\" ng-class=\"{'btn-default':!value, 'btn-primary active':value}\">Public</button>\n</div>",
-      link: function($scope, $element, $attr, ngModel) {
-        $scope.$watch("value", function(value, old) {
-          if ((value != null) && (old != null) && value !== old) {
-            ngModel.$setViewValue(value);
-          }
-        });
-      }
-    };
-  }
-]);
+          $element.prop("contenteditable", true);
+          $element.prop("spellcheck", true);
+          ngModel.$render = function() {
+            $element.text(ngModel.$viewValue || '');
+          };
+          $element.on("keydown", function(e) {
+            if (e.keyCode === 13) {
+              e.preventDefault();
+            }
+          }).on("blur keyup change", function() {
+            return $scope.$apply();
+          }).on("input", function() {
+            ngModel.$setViewValue($element.text().replace(/[\n\r]/g, " "));
+          });
+        }
+      };
+    }
+  ]).directive("switch", [
+    function() {
+      return {
+        restrict: "E",
+        require: "?ngModel",
+        scope: {
+          value: '=ngModel'
+        },
+        replace: true,
+        template: "<div class=\"btn-group\">\n  <button type=\"button\" class=\"btn\" ng-click=\"value = false\" ng-class=\"{'btn-default':value, 'btn-primary active':!value}\">Draft</button>\n  <button type=\"button\" class=\"btn\" ng-click=\"value = true\" ng-class=\"{'btn-default':!value, 'btn-primary active':value}\">Public</button>\n</div>",
+        link: function($scope, $element, $attr, ngModel) {
+          $scope.$watch("value", function(value, old) {
+            if ((value != null) && (old != null) && value !== old) {
+              ngModel.$setViewValue(value);
+            }
+          });
+        }
+      };
+    }
+  ]);
 
-angular.module("gitblog").factory("utils", [
-  function() {
-    return {
-      filterRepos: function(repos, names) {}
-    };
-  }
-]).filter("jekyll", [
-  function() {
-    var userPage;
-    userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]+)\.github\.(?:io|com)/;
-    return function(repos) {
-      if (!(repos instanceof Array)) {
-        return null;
-      }
-      return _.filter(repos, function(repo) {
-        var res;
-        if (res = repo.full_name.match(userPage)) {
-          if (res[1] === res[2]) {
-            return true;
-          }
-        }
-        return false;
-      });
-    };
-  }
-]).factory("githubUpload", [
-  "$rootScope", "$q", function($rootScope, $q) {
-    return function(files, uuids, _repo) {
-      var d;
-      d = $q.defer();
+}).call(this);
+
+(function() {
+  angular.module("gitblog").factory("utils", [
+    function() {
       return {
-        promise: d.promise,
-        upload: function() {
-          var branch, message;
-          branch = _repo.getBranch('master');
-          message = "Upload image by gitblog-io.github.io at " + (new Date()).toLocaleString();
-          branch.writeMany(files, message).then(function(res) {
-            var uuid;
-            for (uuid in uuids) {
-              uuids[uuid] = '/' + uuids[uuid];
-            }
-            d.resolve(uuids, res);
-          }, function(err) {
-            err.uuids = uuids;
-            d.reject(err);
-          });
-          return d.promise;
-        }
+        filterRepos: function(repos, names) {}
       };
-    };
-  }
-]).factory("uploader", [
-  "githubUpload", function(githubUpload) {
-    var upload;
-    upload = githubUpload;
-    return function(_repo) {
-      var process, processing, queue, recurse, self;
-      self = this;
-      queue = [];
-      processing = false;
-      recurse = function() {
-        if (queue.length > 0) {
-          queue[0].upload().then(function() {
-            queue.shift();
-            recurse();
-          }, function(err) {
-            console.log(err);
-            queue.shift();
-            recurse();
-          });
-        } else {
-          processing = false;
+    }
+  ]).filter("jekyll", [
+    function() {
+      var userPage;
+      userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]+)\.github\.(?:io|com)/;
+      return function(repos) {
+        if (!(repos instanceof Array)) {
+          return null;
         }
-      };
-      process = function() {
-        if (!processing) {
-          processing = true;
-          recurse();
-        }
-      };
-      return {
-        add: function(group) {
+        return _.filter(repos, function(repo) {
           var res;
-          res = upload(group.files, group.uuids, _repo);
-          queue.push(res);
-          process();
-          return res.promise;
-        }
+          if (res = repo.full_name.match(userPage)) {
+            if (res[1] === res[2]) {
+              return true;
+            }
+          }
+          return false;
+        });
       };
-    };
-  }
-]).factory("UUID", [
-  function() {
-    return function() {
-      var d, uuid;
-      d = (new Date()).getTime();
-      return uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r;
-        r = (d + Math.random() * 16) % 16 | 0;
-        d = Math.floor(d / 16);
-        return (c === 'x' ? r : r & 0x7 | 0x8).toString(16);
-      });
-    };
-  }
-]);
+    }
+  ]).factory("githubUpload", [
+    "$rootScope", "$q", function($rootScope, $q) {
+      return function(files, uuids, _repo) {
+        var d;
+        d = $q.defer();
+        return {
+          promise: d.promise,
+          upload: function() {
+            var branch, message;
+            branch = _repo.getBranch('master');
+            message = "Upload image by gitblog-io.github.io at " + (new Date()).toLocaleString();
+            branch.writeMany(files, message).then(function(res) {
+              var uuid;
+              for (uuid in uuids) {
+                uuids[uuid] = '/' + uuids[uuid];
+              }
+              d.resolve(uuids, res);
+            }, function(err) {
+              err.uuids = uuids;
+              d.reject(err);
+            });
+            return d.promise;
+          }
+        };
+      };
+    }
+  ]).factory("uploader", [
+    "githubUpload", function(githubUpload) {
+      var upload;
+      upload = githubUpload;
+      return function(_repo) {
+        var process, processing, queue, recurse, self;
+        self = this;
+        queue = [];
+        processing = false;
+        recurse = function() {
+          if (queue.length > 0) {
+            queue[0].upload().then(function() {
+              queue.shift();
+              recurse();
+            }, function(err) {
+              console.log(err);
+              queue.shift();
+              recurse();
+            });
+          } else {
+            processing = false;
+          }
+        };
+        process = function() {
+          if (!processing) {
+            processing = true;
+            recurse();
+          }
+        };
+        return {
+          add: function(group) {
+            var res;
+            res = upload(group.files, group.uuids, _repo);
+            queue.push(res);
+            process();
+            return res.promise;
+          }
+        };
+      };
+    }
+  ]).factory("UUID", [
+    function() {
+      return function() {
+        var d, uuid;
+        d = (new Date()).getTime();
+        return uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r;
+          r = (d + Math.random() * 16) % 16 | 0;
+          d = Math.floor(d / 16);
+          return (c === 'x' ? r : r & 0x7 | 0x8).toString(16);
+        });
+      };
+    }
+  ]);
 
-angular.module("gitblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html', 'templates/about.html']);
+}).call(this);
 
-angular.module("templates/blog-list.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos track by repo.name\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n</li>");
-  }
-]);
+(function() {
+  angular.module("gitblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html', 'templates/about.html']);
 
-angular.module("templates/post.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/post.html", "<article post ng-model=\"post\"></article>");
-  }
-]);
+  angular.module("templates/blog-list.html", []).run([
+    "$templateCache", function($templateCache) {
+      return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos track by repo.name\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n</li>");
+    }
+  ]);
 
-angular.module("templates/editor.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/editor.html", "<form name=\"postForm\" unsaved-warning-form>\n  <div class=\"action text-right\">\n    <a class=\"btn btn-default\" ng-href=\"#!/{{username}}/{{reponame}}\">Back</a>\n    <button class=\"btn btn-danger\" ng-click=\"delete()\" ng-if=\"!new\">Delete</button>\n    <switch ng-model=\"frontMatter.published\"></switch>\n    <button ng-disabled=\"postForm.title.$invalid\" class=\"btn btn-success\" ng-click=\"save()\">Save</button>\n  </div>\n  <header class=\"page-header\">\n    <h1 name=\"title\" required custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 name=\"tagline\" custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <div class=\"drag-area\">Drop to upload</div>\n    <!--<textarea name=\"content\" class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>-->\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Your story\"></div>\n  </div>\n</form>");
-  }
-]);
+  angular.module("templates/post.html", []).run([
+    "$templateCache", function($templateCache) {
+      return $templateCache.put("templates/post.html", "<article post ng-model=\"post\"></article>");
+    }
+  ]);
 
-angular.module("templates/list.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/list.html", "<div class=\"action text-right\">\n  <a class=\"btn btn-success\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>\n<div class=\"page-header text-center\">\n  <h1>Posts</h1>\n  <small class=\"text-muted\" ng-bind-template=\"in {{reponame}}\"></small>\n</div>\n<div class=\"list-item\" ng-repeat=\"post in posts | orderBy : 'date' : true\">\n  <h3>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h3>\n  <small><time class=\"text-muted\">{{post.date | date : 'MM/dd/yyyy'}}</time></small>\n</div>\n<div ng-show=\"!loading && !posts.length\" class=\"jumbotron text-center\">\n  <h3>No posts there.</h3>\n  <a class=\"btn btn-success btn-lg\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>");
-  }
-]);
+  angular.module("templates/editor.html", []).run([
+    "$templateCache", function($templateCache) {
+      return $templateCache.put("templates/editor.html", "<form name=\"postForm\" unsaved-warning-form>\n  <div class=\"action text-right\">\n    <a class=\"btn btn-default\" ng-href=\"#!/{{username}}/{{reponame}}\">Back</a>\n    <button class=\"btn btn-danger\" ng-click=\"delete()\" ng-if=\"!new\">Delete</button>\n    <switch ng-model=\"frontMatter.published\"></switch>\n    <button ng-disabled=\"postForm.title.$invalid\" class=\"btn btn-success\" ng-click=\"save()\">Save</button>\n  </div>\n  <header class=\"page-header\">\n    <h1 name=\"title\" required custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 name=\"tagline\" custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <div class=\"drag-area\">Drop to upload</div>\n    <!--<textarea name=\"content\" class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>-->\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Your story\"></div>\n  </div>\n</form>");
+    }
+  ]);
 
-angular.module("templates/index.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\">Create One</button>\n</div>");
-  }
-]);
+  angular.module("templates/list.html", []).run([
+    "$templateCache", function($templateCache) {
+      return $templateCache.put("templates/list.html", "<div class=\"action text-right\">\n  <a class=\"btn btn-success\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>\n<div class=\"page-header text-center\">\n  <h1>Posts</h1>\n  <small class=\"text-muted\" ng-bind-template=\"in {{reponame}}\"></small>\n</div>\n<div class=\"list-item\" ng-repeat=\"post in posts | orderBy : 'date' : true\">\n  <h3>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h3>\n  <small><time class=\"text-muted\">{{post.date | date : 'MM/dd/yyyy'}}</time></small>\n</div>\n<div ng-show=\"!loading && !posts.length\" class=\"jumbotron text-center\">\n  <h3>No posts there.</h3>\n  <a class=\"btn btn-success btn-lg\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>");
+    }
+  ]);
 
-angular.module("templates/about.html", []).run([
-  "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/about.html", "<div class=\"page-header text-center\">\n  <h1>About gitblog</h1>\n  <small class=\"text-muted\">The easiest way to post on Github Pages</small>\n</div>\n<div class=\"text-center\">\n  <h3>Project</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/gitblog/gitblog-io.github.io/\"><i class=\"icon-github-alt\"></i> Gitblog</a></p>\n\n  <h3>Author</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/hyspace\"><i class=\"icon-cat\"></i> hyspace</a></p>\n\n  <h3>Bug report</h3>\n  <p><a target=\"_blank\" href=\"https://github.com/gitblog/gitblog-io.github.io/issues\">Issues</a></p>\n\n  <h3>Opensouce projects used in gitblog</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"http://www.angularjs.org/\">Angular.js</a></li>\n    <li><a target=\"_blank\" href=\"http://ace.c9.io/\">Ace editor</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/philschatz/octokit.js\">Octokit.js</a></li>\n    <li><a target=\"_blank\" href=\"http://jquery.com/\">jQuery</a></li>\n    <li><a target=\"_blank\" href=\"http://getbootstrap.com/\">Bootstrap</a></li>\n    <li><a target=\"_blank\" href=\"http://lodash.com/\">lodash</a></li>\n    <li><a target=\"_blank\" href=\"http://nodeca.github.io/js-yaml/\">js-yaml</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/agrublev/angularLocalStorage\">angularLocalStorage</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/facultymatt/angular-unsavedChanges\">angular-unsavedChanges</a></li>\n  </ul>\n\n  <h3>Other projects</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"https://stackedit.io/\">stackedit</a></li>\n    <li><a target=\"_blank\" href=\"http://prose.io/\">prose</a></li>\n  </ul>\n</div>");
-  }
-]);
+  angular.module("templates/index.html", []).run([
+    "$templateCache", function($templateCache) {
+      return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\">Create One</button>\n</div>");
+    }
+  ]);
+
+  angular.module("templates/about.html", []).run([
+    "$templateCache", function($templateCache) {
+      return $templateCache.put("templates/about.html", "<div class=\"page-header text-center\">\n  <h1>About gitblog</h1>\n  <small class=\"text-muted\">The easiest way to post on Github Pages</small>\n</div>\n<div class=\"text-center\">\n  <h3>Project</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/gitblog/gitblog-io.github.io/\"><i class=\"icon-github-alt\"></i> Gitblog</a></p>\n\n  <h3>Author</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/hyspace\"><i class=\"icon-cat\"></i> hyspace</a></p>\n\n  <h3>Bug report</h3>\n  <p><a target=\"_blank\" href=\"https://github.com/gitblog/gitblog-io.github.io/issues\">Issues</a></p>\n\n  <h3>Opensouce projects used in gitblog</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"http://www.angularjs.org/\">Angular.js</a></li>\n    <li><a target=\"_blank\" href=\"http://ace.c9.io/\">Ace editor</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/philschatz/octokit.js\">Octokit.js</a></li>\n    <li><a target=\"_blank\" href=\"http://jquery.com/\">jQuery</a></li>\n    <li><a target=\"_blank\" href=\"http://getbootstrap.com/\">Bootstrap</a></li>\n    <li><a target=\"_blank\" href=\"http://lodash.com/\">lodash</a></li>\n    <li><a target=\"_blank\" href=\"http://nodeca.github.io/js-yaml/\">js-yaml</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/agrublev/angularLocalStorage\">angularLocalStorage</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/facultymatt/angular-unsavedChanges\">angular-unsavedChanges</a></li>\n  </ul>\n\n  <h3>Other projects</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"https://stackedit.io/\">stackedit</a></li>\n    <li><a target=\"_blank\" href=\"http://prose.io/\">prose</a></li>\n  </ul>\n</div>");
+    }
+  ]);
+
+}).call(this);

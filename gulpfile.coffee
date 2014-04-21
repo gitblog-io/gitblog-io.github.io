@@ -59,7 +59,7 @@ gulp.task "js", ->
   appQueue.queue(
     gulp.src COFFEE_FILES
       .pipe plumber()
-      .pipe coffee bare:true
+      .pipe coffee()
   )
 
   appQueue.done()

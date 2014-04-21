@@ -115,13 +115,13 @@ angular.module "gitblog", [
           orgUser = gh.getUser(org.login)
           promise = orgUser.getRepos()
           promises.push promise
-        $.when.apply @, promises
+        $q.all promises
       , (err)->
         console.error err
-      .then (resArrays...)->
+      .then (resArrays)->
         $scope.$apply ->
           for res in resArrays
-            repos = jekyllFilter(res[0])
+            repos = jekyllFilter(res)
             for repo in repos
               repo._repo = gh.getRepo(repo.owner.login, repo.name)
             $scope.repos = $scope.repos.concat repos
