@@ -67889,27 +67889,23 @@ See http://github.com/bgrins/filereader.js for documentation.
       $scope.loadingText = 'Wait...';
       $scope.token = storage.get('token');
       $scope.reponame = storage.get('reponame');
-      try {
-        $scope.cache = storage.get('cache');
-      } catch (_error) {
-        $scope.cache = null;
-      }
       storage.bind($scope, 'token');
       storage.bind($scope, 'reponame');
-      storage.bind($scope, 'cache');
       if ($scope.token !== "") {
         jekyllFilter = $filter("jekyll");
         $scope._gh = gh = new Octokit({
           token: $scope.token
         });
-        if ($scope.cache !== "") {
-          gh.setCache($scope.cache);
+        try {
+          gh.setCache(JSON.parse(sessionStorage.getItem('cache')) || {});
+        } catch (_error) {
+          sessionStorage.removeItem('cache');
         }
         $scope.saveCache = function() {
-          return $scope.cache = $scope._gh.getCache();
+          return sessionStorage.setItem('cache', JSON.stringify($scope._gh.getCache()));
         };
         $scope.clearCache = function() {
-          return $scope.cache = null;
+          return sessionStorage.removeItem('cache');
         };
         $scope.repos = [];
         user = gh.getUser();
