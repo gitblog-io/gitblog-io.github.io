@@ -134,7 +134,7 @@ angular.module "templates/about.html", []
         </div>
         <div class="text-center">
           <h3>Project</h3>
-          <p><a class="btn btn-primary" target="_blank" href="https://github.com/gitblog/gitblog-io.github.io/"><i class="icon-github-alt"></i> Gitblog</a></p>
+          <p><a class="btn btn-primary" target="_blank" href="https://github.com/gitblog-io/gitblog-io.github.io/"><i class="icon-github-alt"></i> Gitblog</a></p>
 
           <h3>Author</h3>
           <p><a class="btn btn-primary" target="_blank" href="https://github.com/hyspace"><i class="icon-cat"></i> hyspace</a></p>
