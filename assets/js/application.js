@@ -67883,7 +67883,7 @@ See http://github.com/bgrins/filereader.js for documentation.
     }
   ]).run([
     '$rootScope', 'storage', "$location", "$filter", "$q", function($scope, storage, $location, $filter, $q) {
-      var gh, jekyllFilter, orgDefer, user, userDefer;
+      var gh, jekyllFilter;
       $(document.documentElement).removeClass("nojs").addClass("domready");
       $scope.loading = true;
       $scope.loadingText = 'Wait...';
@@ -67907,79 +67907,84 @@ See http://github.com/bgrins/filereader.js for documentation.
         $scope.clearCache = function() {
           return sessionStorage.removeItem('cache');
         };
-        $scope.repos = [];
-        user = gh.getUser();
-        userDefer = $q.defer();
-        user.getInfo().then(function(info) {
-          $scope.$apply(function() {
-            return $scope.username = info.login;
-          });
-          return user.getRepos();
-        }, function(err) {
-          return console.error(err);
-        }).then(function(repos) {
-          var repo, _i, _len;
-          repos = jekyllFilter(repos);
-          for (_i = 0, _len = repos.length; _i < _len; _i++) {
-            repo = repos[_i];
-            repo._repo = gh.getRepo(repo.owner.login, repo.name);
-          }
-          $scope.$apply(function() {
-            return $scope.repos = $scope.repos.concat(repos);
-          });
-          return userDefer.resolve();
-        }, function(err) {
-          return console.error(err);
-        });
-        orgDefer = $q.defer();
-        user.getOrgs().then(function(orgs) {
-          var index, org, orgUser, promise, promises, _i, _len;
-          promises = [];
-          for (index = _i = 0, _len = orgs.length; _i < _len; index = ++_i) {
-            org = orgs[index];
-            orgUser = gh.getOrg(org.login);
-            promise = orgUser.getRepos();
-            promises.push(promise);
-          }
-          return $q.all(promises);
-        }, function(err) {
-          return console.error(err);
-        }).then(function(resArrays) {
-          $scope.$apply(function() {
-            var repo, repos, res, _i, _j, _len, _len1, _results;
-            _results = [];
-            for (_i = 0, _len = resArrays.length; _i < _len; _i++) {
-              res = resArrays[_i];
-              repos = jekyllFilter(res);
-              for (_j = 0, _len1 = repos.length; _j < _len1; _j++) {
-                repo = repos[_j];
-                repo._repo = gh.getRepo(repo.owner.login, repo.name);
-              }
-              _results.push($scope.repos = $scope.repos.concat(repos));
+        $scope.reset = function() {
+          var orgDefer, user, userDefer;
+          $scope.repos = [];
+          user = gh.getUser();
+          userDefer = $q.defer();
+          user.getInfo().then(function(info) {
+            $scope.$apply(function() {
+              return $scope.username = info.login;
+            });
+            return user.getRepos();
+          }, function(err) {
+            return console.error(err);
+          }).then(function(repos) {
+            var repo, _i, _len;
+            repos = jekyllFilter(repos);
+            for (_i = 0, _len = repos.length; _i < _len; _i++) {
+              repo = repos[_i];
+              repo._repo = gh.getRepo(repo.owner.login, repo.name);
             }
-            return _results;
+            $scope.$apply(function() {
+              return $scope.repos = $scope.repos.concat(repos);
+            });
+            return userDefer.resolve();
+          }, function(err) {
+            return console.error(err);
           });
-          return orgDefer.resolve();
-        }, function(err) {
-          return console.error(err);
-        });
-        $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
-        $scope.blogListReady.then(function() {
-          $scope.saveCache();
-          return $scope.getRepo = function(username, reponame) {
-            var repo, _i, _len, _ref;
-            _ref = $scope.repos;
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              repo = _ref[_i];
-              if (repo.owner.login === username && repo.name === reponame) {
-                return repo;
-              }
+          orgDefer = $q.defer();
+          user.getOrgs().then(function(orgs) {
+            var index, org, orgUser, promise, promises, _i, _len;
+            promises = [];
+            for (index = _i = 0, _len = orgs.length; _i < _len; index = ++_i) {
+              org = orgs[index];
+              orgUser = gh.getOrg(org.login);
+              promise = orgUser.getRepos();
+              promises.push(promise);
             }
-            return null;
-          };
-        }, function(err) {
-          return console.error(arguments);
-        });
+            return $q.all(promises);
+          }, function(err) {
+            return console.error(err);
+          }).then(function(resArrays) {
+            $scope.$apply(function() {
+              var repo, repos, res, _i, _j, _len, _len1, _results;
+              _results = [];
+              for (_i = 0, _len = resArrays.length; _i < _len; _i++) {
+                res = resArrays[_i];
+                repos = jekyllFilter(res);
+                for (_j = 0, _len1 = repos.length; _j < _len1; _j++) {
+                  repo = repos[_j];
+                  repo._repo = gh.getRepo(repo.owner.login, repo.name);
+                }
+                _results.push($scope.repos = $scope.repos.concat(repos));
+              }
+              return _results;
+            });
+            return orgDefer.resolve();
+          }, function(err) {
+            return console.error(err);
+          });
+          $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
+          return $scope.blogListReady.then(function() {
+            $scope.loading = false;
+            $scope.saveCache();
+            return $scope.getRepo = function(username, reponame) {
+              var repo, _i, _len, _ref;
+              _ref = $scope.repos;
+              for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                repo = _ref[_i];
+                if (repo.owner.login === username && repo.name === reponame) {
+                  return repo;
+                }
+              }
+              return null;
+            };
+          }, function(err) {
+            return console.error(arguments);
+          });
+        };
+        $scope.reset();
       } else {
         window.location.replace('/');
       }
@@ -67990,28 +67995,51 @@ See http://github.com/bgrins/filereader.js for documentation.
 
 (function() {
   angular.module("gitblog").controller("IndexController", [
-    "$scope", function($scope) {
-      $scope.$root.loading = true;
-      return $scope.blogListReady.then(function() {
-        return $scope.$root.loading = false;
-      });
+    "$scope", "$timeout", "$route", function($scope, $timeout, $route) {
+      return $scope.createBlog = function() {
+        var newRepo, repo;
+        $scope.$root.loading = true;
+        $scope.$root.loadingText = "Forking sample repo...";
+        repo = $scope.$root._gh.getRepo('gitblog-io', 'jekyll-bootstrap-for-fork');
+        newRepo = $scope.$root._gh.getRepo($scope.username, 'jekyll-bootstrap-for-fork');
+        repo.fork().then(function() {
+          var t;
+          $scope.$root.loadingText = "Checking if new repo is ready...";
+          t = $timeout(function() {
+            var caller;
+            caller = arguments.callee;
+            newRepo.getInfo().then(function() {
+              $scope.$evalAsync(function() {
+                return $scope.$root.loadingText = "Renaming the repo...";
+              });
+              newRepo.updateInfo({
+                name: "" + $scope.username + ".github.io"
+              }).then(function() {
+                $timeout.cancel(t);
+                $scope.$root.loading = false;
+                $scope.$root.loadingText = "Wait...";
+                $scope.$root.reset();
+              });
+            }, function() {
+              t = $timeout(caller, 5000);
+            });
+          }, 5000);
+        }, function() {
+          $scope.$root.loading = false;
+          return console.error('failed to fork');
+        });
+      };
     }
-  ]).controller("AboutController", [
-    "$scope", function($scope) {
-      $scope.$root.loading = true;
-      return $scope.blogListReady.then(function() {
-        return $scope.$root.loading = false;
-      });
-    }
-  ]).controller("ListController", [
+  ]).controller("AboutController", ["$scope", function($scope) {}]).controller("ListController", [
     "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
       var reponame, username;
-      $scope.$root.loading = true;
       username = $routeParams.user;
       reponame = $routeParams.repo;
       return $scope.blogListReady.then(function() {
         var repo, _repo;
         if (repo = $scope.getRepo(username, reponame)) {
+          $scope.$root.loading = true;
+          $scope.$root.loadingText = "Wait...";
           _repo = repo._repo;
           return _repo.git.getTree('master', {
             recursive: true
@@ -68058,7 +68086,6 @@ See http://github.com/bgrins/filereader.js for documentation.
   ]).controller("PostController", [
     "$scope", "$routeParams", "$location", "$timeout", "uploader", function($scope, $routeParams, $location, $timeout, uploader) {
       var path, reponame, sha, username;
-      $scope.$root.loading = true;
       username = $routeParams.user;
       reponame = $routeParams.repo;
       path = $routeParams.path;
@@ -68069,11 +68096,14 @@ See http://github.com/bgrins/filereader.js for documentation.
       return $scope.blogListReady.then(function() {
         var deleteFunc, newPost, repo, save, searchAndShow, show, _repo;
         if (repo = $scope.getRepo(username, reponame)) {
+          $scope.$root.loading = true;
+          $scope.$root.loadingText = "Wait...";
           _repo = repo._repo;
           $scope.uploader = uploader.call($scope, _repo);
           save = function() {
             var branch, message, promise;
             $scope.$root.loading = true;
+            $scope.$root.loadingText = "Saving...";
             branch = 　_repo.getBranch("master");
             message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
             promise = branch.write(path, $scope.post, message, false);
@@ -68092,6 +68122,7 @@ See http://github.com/bgrins/filereader.js for documentation.
             var branch, message, promise;
             if (window.confirm("Are you sure to delete " + $scope.filepath + "?")) {
               $scope.$root.loading = true;
+              $scope.$root.loadingText = "Deleting...";
               branch = 　_repo.getBranch("master");
               message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
               promise = branch.remove(path, message);
@@ -68682,7 +68713,7 @@ See http://github.com/bgrins/filereader.js for documentation.
 
   angular.module("templates/index.html", []).run([
     "$templateCache", function($templateCache) {
-      return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\">Create One</button>\n</div>");
+      return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\" ng-click=\"createBlog()\">Create One</button>\n</div>");
     }
   ]);
 

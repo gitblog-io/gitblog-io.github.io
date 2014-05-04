@@ -84,62 +84,66 @@ angular.module "gitblog", [
       $scope.clearCache = ->
         sessionStorage.removeItem('cache')
 
-      $scope.repos = []
+      $scope.reset = ->
+        $scope.repos = []
 
-      user = gh.getUser()
+        user = gh.getUser()
 
-      userDefer = $q.defer()
-      user.getInfo()
-      .then (info)->
-        $scope.$apply ->
-          $scope.username = info.login
-        user.getRepos()
-      , (err)->
-        console.error err
-      .then (repos)->
-        repos = jekyllFilter(repos)
-        for repo in repos
-          repo._repo = gh.getRepo(repo.owner.login, repo.name)
-        $scope.$apply ->
-          $scope.repos = $scope.repos.concat repos
-        userDefer.resolve()
-      , (err)->
-        console.error err
-
-      orgDefer = $q.defer()
-      user.getOrgs()
-      .then (orgs)->
-        promises = []
-        for org, index in orgs
-          orgUser = gh.getOrg(org.login)
-          promise = orgUser.getRepos()
-          promises.push promise
-        $q.all promises
-      , (err)->
-        console.error err
-      .then (resArrays)->
-        $scope.$apply ->
-          for res in resArrays
-            repos = jekyllFilter(res)
-            for repo in repos
-              repo._repo = gh.getRepo(repo.owner.login, repo.name)
+        userDefer = $q.defer()
+        user.getInfo()
+        .then (info)->
+          $scope.$apply ->
+            $scope.username = info.login
+          user.getRepos()
+        , (err)->
+          console.error err
+        .then (repos)->
+          repos = jekyllFilter(repos)
+          for repo in repos
+            repo._repo = gh.getRepo(repo.owner.login, repo.name)
+          $scope.$apply ->
             $scope.repos = $scope.repos.concat repos
-        orgDefer.resolve()
-      , (err)->
-        console.error err
+          userDefer.resolve()
+        , (err)->
+          console.error err
 
-      $scope.blogListReady = $q.all [userDefer.promise, orgDefer.promise]
-      $scope.blogListReady
-      .then ->
-        $scope.saveCache()
+        orgDefer = $q.defer()
+        user.getOrgs()
+        .then (orgs)->
+          promises = []
+          for org, index in orgs
+            orgUser = gh.getOrg(org.login)
+            promise = orgUser.getRepos()
+            promises.push promise
+          $q.all promises
+        , (err)->
+          console.error err
+        .then (resArrays)->
+          $scope.$apply ->
+            for res in resArrays
+              repos = jekyllFilter(res)
+              for repo in repos
+                repo._repo = gh.getRepo(repo.owner.login, repo.name)
+              $scope.repos = $scope.repos.concat repos
+          orgDefer.resolve()
+        , (err)->
+          console.error err
 
-        $scope.getRepo = (username, reponame)->
-          for repo in $scope.repos
-            if repo.owner.login == username and repo.name == reponame
-              return repo
-          return null
-      , (err)->
-        console.error arguments
+        $scope.blogListReady = $q.all [userDefer.promise, orgDefer.promise]
+        $scope.blogListReady
+        .then ->
+          $scope.loading = false
+          $scope.saveCache()
+
+          $scope.getRepo = (username, reponame)->
+            for repo in $scope.repos
+              if repo.owner.login == username and repo.name == reponame
+                return repo
+            return null
+        , (err)->
+          console.error arguments
+
+      $scope.reset()
 
     else
       window.location.replace('/');

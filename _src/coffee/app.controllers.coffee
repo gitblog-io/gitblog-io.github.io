@@ -2,18 +2,46 @@ angular.module "gitblog"
 
 .controller "IndexController", [
   "$scope"
-  ($scope)->
-    $scope.$root.loading = true
-    $scope.blogListReady.then ->
-      $scope.$root.loading = false
+  "$timeout"
+  "$route"
+  ($scope, $timeout, $route)->
+    $scope.createBlog = ->
+      $scope.$root.loading = true
+      $scope.$root.loadingText = "Forking sample repo..."
+      repo = $scope.$root._gh.getRepo('gitblog-io', 'jekyll-bootstrap-for-fork');
+      newRepo = $scope.$root._gh.getRepo($scope.username, 'jekyll-bootstrap-for-fork');
+      repo.fork().then ->
+        $scope.$root.loadingText = "Checking if new repo is ready..."
+        t = $timeout ->
+          caller = arguments.callee
+          newRepo.getInfo().then ->
+            $scope.$evalAsync ->
+              $scope.$root.loadingText = "Renaming the repo..."
+            newRepo.updateInfo(name:"#{$scope.username}.github.io")
+            .then ->
+              $timeout.cancel(t)
+              $scope.$root.loading = false
+              $scope.$root.loadingText = "Wait..."
+              $scope.$root.reset()
+              return
+            return
+          , ->
+            t = $timeout caller, 5000
+            return
+
+          return
+        , 5000
+        return
+      , ->
+        $scope.$root.loading = false
+        console.error 'failed to fork'
+      return
+
 ]
 
 .controller "AboutController", [
   "$scope"
   ($scope)->
-    $scope.$root.loading = true
-    $scope.blogListReady.then ->
-      $scope.$root.loading = false
 ]
 
 .controller "ListController", [
@@ -21,11 +49,12 @@ angular.module "gitblog"
   "$routeParams"
   "$location"
   ($scope, $routeParams, $location)->
-    $scope.$root.loading = true
     username = $routeParams.user
     reponame = $routeParams.repo
     $scope.blogListReady.then ->
       if repo = $scope.getRepo(username, reponame)
+        $scope.$root.loading = true
+        $scope.$root.loadingText = "Wait..."
         _repo = repo._repo
         _repo.git.getTree('master', recursive:true)
         .then (tree)->
@@ -67,7 +96,6 @@ angular.module "gitblog"
   "$timeout"
   "uploader"
   ($scope, $routeParams, $location, $timeout, uploader)->
-    $scope.$root.loading = true
     username = $routeParams.user
     reponame = $routeParams.repo
     path = $routeParams.path
@@ -78,11 +106,14 @@ angular.module "gitblog"
 
     $scope.blogListReady.then ->
       if repo = $scope.getRepo(username, reponame)
+        $scope.$root.loading = true
+        $scope.$root.loadingText = "Wait..."
         _repo = repo._repo
         $scope.uploader = uploader.call($scope, _repo)
 
         save = ->
           $scope.$root.loading = true
+          $scope.$root.loadingText = "Saving..."
           branch =　_repo.getBranch "master"
           message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString()
           promise = branch.write(path, $scope.post, message, false)
@@ -99,6 +130,7 @@ angular.module "gitblog"
         deleteFunc = ->
           if window.confirm("Are you sure to delete #{$scope.filepath}?")
             $scope.$root.loading = true
+            $scope.$root.loadingText = "Deleting..."
             branch =　_repo.getBranch "master"
             message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString()
             promise = branch.remove(path, message)

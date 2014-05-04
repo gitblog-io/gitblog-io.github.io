@@ -116,7 +116,7 @@ angular.module "templates/index.html", []
         </div>
         <div ng-show="!loading && !repos.length" class="jumbotron text-center">
           <h3>No blogs there.</h3>
-          <button class="btn btn-primary btn-lg">Create One</button>
+          <button class="btn btn-primary btn-lg" ng-click="createBlog()">Create One</button>
         </div>
         """
       )
