@@ -15,6 +15,6 @@ layout: default
   function oauth(){
     var state = Math.floor((new Date()).getTime()*Math.random()).toString()
     sessionStorage.setItem('state', state)
-    window.location.href = "https://github.com/login/oauth/authorize?client_id=e01393d04d6b30f08267&scope=repo&state=" + state
+    window.location.href = "https://github.com/login/oauth/authorize?client_id=e01393d04d6b30f08267&scope=public_repo&state=" + state
   }
 </script>
