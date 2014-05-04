@@ -1,6 +1,8 @@
 Gitblog
 ==================
 
+(www.gitblog.io)
+
 Gitblog is a tool for programmers to post articles to github pages easily.
 
 Functions:
