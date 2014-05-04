@@ -112,7 +112,7 @@ angular.module "gitblog", [
       .then (orgs)->
         promises = []
         for org, index in orgs
-          orgUser = gh.getUser(org.login)
+          orgUser = gh.getOrg(org.login)
           promise = orgUser.getRepos()
           promises.push promise
         $q.all promises

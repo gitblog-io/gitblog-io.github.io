@@ -106,6 +106,15 @@ makeOctokit = (newPromise, allPromises, XMLHttpRequest, base64encode, userAgent)
       xhr.send(options.data)
 
 
+  # Returns an always-resolved promise (like `Promise.resolve(val)` )
+  resolvedPromise = (val) ->
+    return newPromise (resolve, reject) -> resolve(val)
+
+  # Returns an always-rejected promise (like `Promise.reject(err)` )
+  rejectedPromise = (err) ->
+    return newPromise (resolve, reject) -> reject(err)
+
+
   class Octokit
 
     constructor: (clientOptions={}) ->
@@ -232,7 +241,7 @@ makeOctokit = (newPromise, allPromises, XMLHttpRequest, base64encode, userAgent)
               if jqXHR.responseText and 'json' == ajaxConfig.dataType
                 data = JSON.parse(jqXHR.responseText)
               else
-                data = jqXHR.responseText or firstArg # najax does not tack the responseText onto jqXHR
+                data = jqXHR.responseText
 
               # Convert the response to a Base64 encoded string
               if 'GET' == method and options.isBase64
@@ -391,7 +400,7 @@ makeOctokit = (newPromise, allPromises, XMLHttpRequest, base64encode, userAgent)
             _cachedInfo = null if force
 
             if _cachedInfo
-              return Promise.resolve(_cachedInfo)
+              return resolvedPromise(_cachedInfo)
 
             _request('GET', "#{_rootPath}", null)
             # Squirrel away the user info
@@ -702,7 +711,7 @@ makeOctokit = (newPromise, allPromises, XMLHttpRequest, base64encode, userAgent)
               return file?.sha if file?.sha
 
               # Return a promise that has failed if no sha was found
-              return Promise.reject {message: 'SHA_NOT_FOUND'}
+              return rejectedPromise {message: 'SHA_NOT_FOUND'}
 
 
           # Get contents (file/dir)
@@ -1052,7 +1061,7 @@ makeOctokit = (newPromise, allPromises, XMLHttpRequest, base64encode, userAgent)
           @getBranch = (branchName=null) ->
             if branchName
               getRef = () =>
-                return Promise.resolve(branchName)
+                return resolvedPromise(branchName)
               return new Branch(@git, getRef)
             else
               return @getDefaultBranch()
@@ -1177,7 +1186,7 @@ makeOctokit = (newPromise, allPromises, XMLHttpRequest, base64encode, userAgent)
           @canCollaborate = () ->
             # Short-circuit if no credentials provided
             if not (clientOptions.password or clientOptions.token)
-              return Promise.resolve(false)
+              return resolvedPromise(false)
 
             _client.getLogin()
             .then (login) =>
@@ -1384,7 +1393,7 @@ makeOctokit = (newPromise, allPromises, XMLHttpRequest, base64encode, userAgent)
           .then (info) ->
             return info.login
         else
-          return Promise.resolve(null)
+          return resolvedPromise(null)
 
 
 

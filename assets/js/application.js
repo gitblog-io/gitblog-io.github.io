@@ -36187,7 +36187,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 })(window, window.angular);
 
 /**
- * @license AngularJS v1.2.14
+ * @license AngularJS v1.2.15-build.2399+sha.ca4ddfa
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -66496,7 +66496,7 @@ See http://github.com/bgrins/filereader.js for documentation.
 
   makeOctokit = (function(_this) {
     return function(newPromise, allPromises, XMLHttpRequest, base64encode, userAgent) {
-      var Octokit, ajax;
+      var Octokit, ajax, rejectedPromise, resolvedPromise;
       ajax = function(options) {
         return newPromise(function(resolve, reject) {
           var name, value, xhr, _ref;
@@ -66530,6 +66530,16 @@ See http://github.com/bgrins/filereader.js for documentation.
             }
           };
           return xhr.send(options.data);
+        });
+      };
+      resolvedPromise = function(val) {
+        return newPromise(function(resolve, reject) {
+          return resolve(val);
+        });
+      };
+      rejectedPromise = function(err) {
+        return newPromise(function(resolve, reject) {
+          return reject(err);
         });
       };
       Octokit = (function() {
@@ -66660,7 +66670,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                   if (jqXHR.responseText && 'json' === ajaxConfig.dataType) {
                     data = JSON.parse(jqXHR.responseText);
                   } else {
-                    data = jqXHR.responseText || firstArg;
+                    data = jqXHR.responseText;
                   }
                   if ('GET' === method && options.isBase64) {
                     converted = '';
@@ -66817,7 +66827,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                   _cachedInfo = null;
                 }
                 if (_cachedInfo) {
-                  return Promise.resolve(_cachedInfo);
+                  return resolvedPromise(_cachedInfo);
                 }
                 return _request('GET', "" + _rootPath, null).then(function(info) {
                   return _cachedInfo = info;
@@ -67088,7 +67098,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                     if (file != null ? file.sha : void 0) {
                       return file != null ? file.sha : void 0;
                     }
-                    return Promise.reject({
+                    return rejectedPromise({
                       message: 'SHA_NOT_FOUND'
                     });
                   };
@@ -67428,7 +67438,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                 if (branchName) {
                   getRef = (function(_this) {
                     return function() {
-                      return Promise.resolve(branchName);
+                      return resolvedPromise(branchName);
                     };
                   })(this);
                   return new Branch(this.git, getRef);
@@ -67534,7 +67544,7 @@ See http://github.com/bgrins/filereader.js for documentation.
               };
               this.canCollaborate = function() {
                 if (!(clientOptions.password || clientOptions.token)) {
-                  return Promise.resolve(false);
+                  return resolvedPromise(false);
                 }
                 return _client.getLogin().then((function(_this) {
                   return function(login) {
@@ -67721,7 +67731,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                 return info.login;
               });
             } else {
-              return Promise.resolve(null);
+              return resolvedPromise(null);
             }
           };
         }
@@ -67931,7 +67941,7 @@ See http://github.com/bgrins/filereader.js for documentation.
           promises = [];
           for (index = _i = 0, _len = orgs.length; _i < _len; index = ++_i) {
             org = orgs[index];
-            orgUser = gh.getUser(org.login);
+            orgUser = gh.getOrg(org.login);
             promise = orgUser.getRepos();
             promises.push(promise);
           }
@@ -68682,7 +68692,7 @@ See http://github.com/bgrins/filereader.js for documentation.
 
   angular.module("templates/about.html", []).run([
     "$templateCache", function($templateCache) {
-      return $templateCache.put("templates/about.html", "<div class=\"page-header text-center\">\n  <h1>About gitblog</h1>\n  <small class=\"text-muted\">The easiest way to post on Github Pages</small>\n</div>\n<div class=\"text-center\">\n  <h3>Project</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/gitblog/gitblog-io.github.io/\"><i class=\"icon-github-alt\"></i> Gitblog</a></p>\n\n  <h3>Author</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/hyspace\"><i class=\"icon-cat\"></i> hyspace</a></p>\n\n  <h3>Bug report</h3>\n  <p><a target=\"_blank\" href=\"https://github.com/gitblog/gitblog-io.github.io/issues\">Issues</a></p>\n\n  <h3>Opensouce projects used in gitblog</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"http://www.angularjs.org/\">Angular.js</a></li>\n    <li><a target=\"_blank\" href=\"http://ace.c9.io/\">Ace editor</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/philschatz/octokit.js\">Octokit.js</a></li>\n    <li><a target=\"_blank\" href=\"http://jquery.com/\">jQuery</a></li>\n    <li><a target=\"_blank\" href=\"http://getbootstrap.com/\">Bootstrap</a></li>\n    <li><a target=\"_blank\" href=\"http://lodash.com/\">lodash</a></li>\n    <li><a target=\"_blank\" href=\"http://nodeca.github.io/js-yaml/\">js-yaml</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/agrublev/angularLocalStorage\">angularLocalStorage</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/facultymatt/angular-unsavedChanges\">angular-unsavedChanges</a></li>\n  </ul>\n\n  <h3>Other projects</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"https://stackedit.io/\">stackedit</a></li>\n    <li><a target=\"_blank\" href=\"http://prose.io/\">prose</a></li>\n  </ul>\n</div>");
+      return $templateCache.put("templates/about.html", "<div class=\"page-header text-center\">\n  <h1>About gitblog</h1>\n  <small class=\"text-muted\">The easiest way to post on Github Pages</small>\n</div>\n<div class=\"text-center\">\n  <h3>Project</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/gitblog-io/gitblog-io.github.io/\"><i class=\"icon-github-alt\"></i> Gitblog</a></p>\n\n  <h3>Author</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/hyspace\"><i class=\"icon-cat\"></i> hyspace</a></p>\n\n  <h3>Bug report</h3>\n  <p><a target=\"_blank\" href=\"https://github.com/gitblog/gitblog-io.github.io/issues\">Issues</a></p>\n\n  <h3>Opensouce projects used in gitblog</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"http://www.angularjs.org/\">Angular.js</a></li>\n    <li><a target=\"_blank\" href=\"http://ace.c9.io/\">Ace editor</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/philschatz/octokit.js\">Octokit.js</a></li>\n    <li><a target=\"_blank\" href=\"http://jquery.com/\">jQuery</a></li>\n    <li><a target=\"_blank\" href=\"http://getbootstrap.com/\">Bootstrap</a></li>\n    <li><a target=\"_blank\" href=\"http://lodash.com/\">lodash</a></li>\n    <li><a target=\"_blank\" href=\"http://nodeca.github.io/js-yaml/\">js-yaml</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/agrublev/angularLocalStorage\">angularLocalStorage</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/facultymatt/angular-unsavedChanges\">angular-unsavedChanges</a></li>\n  </ul>\n\n  <h3>Other projects</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"https://stackedit.io/\">stackedit</a></li>\n    <li><a target=\"_blank\" href=\"http://prose.io/\">prose</a></li>\n  </ul>\n</div>");
     }
   ]);
 
