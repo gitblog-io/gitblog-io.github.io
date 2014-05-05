@@ -68876,7 +68876,7 @@ angular.module("gitblog").factory("utils", [
 ]).filter("jekyll", [
   function() {
     var userPage;
-    userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]+)\.github\.(?:io|com)/;
+    userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]+)\.github\.(?:io|com)/i;
     return function(repos) {
       if (!(repos instanceof Array)) {
         return null;
@@ -68884,7 +68884,7 @@ angular.module("gitblog").factory("utils", [
       return _.filter(repos, function(repo) {
         var res;
         if (res = repo.full_name.match(userPage)) {
-          if (res[1] === res[2]) {
+          if (res[1].toLowerCase() === res[2].toLowerCase()) {
             return true;
           }
         }

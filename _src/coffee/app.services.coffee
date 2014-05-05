@@ -5,12 +5,12 @@ angular.module "gitblog"
 ]
 
 .filter "jekyll", [->
-  userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]+)\.github\.(?:io|com)/
+  userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]+)\.github\.(?:io|com)/i
   (repos)->
     return null unless repos instanceof Array
     _.filter repos, (repo)->
       if res = repo.full_name.match userPage
-        if res[1] == res[2]
+        if res[1].toLowerCase() == res[2].toLowerCase()
           return true
       return false
 ]
