@@ -32,9 +32,9 @@ angular.module "gitblog"
           return
         , 5000
         return
-      , ->
+      , (e)->
         $scope.$root.loading = false
-        console.error 'failed to fork'
+        window.logError 'failed to fork'
       return
 
 ]
@@ -85,7 +85,7 @@ angular.module "gitblog"
               $scope.username = username
               $scope.posts = posts
       else
-        console.error "blog do not exist"
+        window.logError "blog do not exist"
         $location.path('/').replace()
 ]
 
@@ -123,7 +123,7 @@ angular.module "gitblog"
               $scope.postForm.$setPristine()
           , (err)->
             $scope.$root.loading = false
-            console.error err
+            window.logError "save article failed"
 
           promise
 
@@ -144,7 +144,7 @@ angular.module "gitblog"
               , 1500
             , (err)->
               $scope.$root.loading = false
-              console.error err
+              window.logError "delete failed"
 
             promise
 
@@ -165,7 +165,7 @@ angular.module "gitblog"
               searchAndShow()
             else
               $scope.$root.loading = false
-              console.error err.error
+              window.logError err.error.toString()
 
         searchAndShow = ->
           _repo.git.getTree('master', recursive:true)
@@ -179,7 +179,7 @@ angular.module "gitblog"
               show()
             else
               $scope.$root.loading = false
-              console.error "file path not found"
+              window.logError "file path not found"
 
         newPost = """---
           layout: post
@@ -222,6 +222,6 @@ angular.module "gitblog"
         else
           show()
       else
-        console.error "blog do not exist"
+        window.logError "blog do not exist"
         $location.path('/').replace()
 ]

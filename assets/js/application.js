@@ -67861,6 +67861,18 @@ See http://github.com/bgrins/filereader.js for documentation.
     }
   });
 
+  window.logError = function(errorMsg, url, lineNumber) {
+    ga('send', 'event', "Global", "Exception", "" + url + "(" + lineNumber + "): " + errorMsg);
+    if ((url == null) && (lineNumber == null)) {
+      console.error(errorMsg);
+      alert(errorMsg);
+    }
+  };
+
+  $(window).on('error', function(e) {
+    return window.logError(e.originalEvent.message, e.originalEvent.filename, e.originalEvent.lineno);
+  });
+
   angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsavedChanges', 'gitblog.templates']).config([
     '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
       $locationProvider.hashPrefix('!');
@@ -67918,7 +67930,7 @@ See http://github.com/bgrins/filereader.js for documentation.
             });
             return user.getRepos();
           }, function(err) {
-            return console.error(err);
+            return window.logError("get user info failed");
           }).then(function(repos) {
             var repo, _i, _len;
             repos = jekyllFilter(repos);
@@ -67931,7 +67943,7 @@ See http://github.com/bgrins/filereader.js for documentation.
             });
             return userDefer.resolve();
           }, function(err) {
-            return console.error(err);
+            return window.logError("get user repo failed");
           });
           orgDefer = $q.defer();
           user.getOrgs().then(function(orgs) {
@@ -67945,7 +67957,7 @@ See http://github.com/bgrins/filereader.js for documentation.
             }
             return $q.all(promises);
           }, function(err) {
-            return console.error(err);
+            return window.logError("get org info failed");
           }).then(function(resArrays) {
             $scope.$apply(function() {
               var repo, repos, res, _i, _j, _len, _len1, _results;
@@ -67963,7 +67975,7 @@ See http://github.com/bgrins/filereader.js for documentation.
             });
             return orgDefer.resolve();
           }, function(err) {
-            return console.error(err);
+            return window.logError("get org repo failed");
           });
           $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
           return $scope.blogListReady.then(function() {
@@ -67981,7 +67993,8 @@ See http://github.com/bgrins/filereader.js for documentation.
               return null;
             };
           }, function(err) {
-            return console.error(arguments);
+            $scope.loading = false;
+            return window.logError("get blog list failed");
           });
         };
         $scope.reset();
@@ -68024,9 +68037,9 @@ See http://github.com/bgrins/filereader.js for documentation.
               t = $timeout(caller, 5000);
             });
           }, 5000);
-        }, function() {
+        }, function(e) {
           $scope.$root.loading = false;
-          return console.error('failed to fork');
+          return window.logError('failed to fork');
         });
       };
     }
@@ -68078,7 +68091,7 @@ See http://github.com/bgrins/filereader.js for documentation.
             }
           });
         } else {
-          console.error("blog do not exist");
+          window.logError("blog do not exist");
           return $location.path('/').replace();
         }
       });
@@ -68114,7 +68127,7 @@ See http://github.com/bgrins/filereader.js for documentation.
               });
             }, function(err) {
               $scope.$root.loading = false;
-              return console.error(err);
+              return window.logError("save article failed");
             });
             return promise;
           };
@@ -68135,7 +68148,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                 }, 1500);
               }, function(err) {
                 $scope.$root.loading = false;
-                return console.error(err);
+                return window.logError("delete failed");
               });
               return promise;
             }
@@ -68154,7 +68167,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                 return searchAndShow();
               } else {
                 $scope.$root.loading = false;
-                return console.error(err.error);
+                return window.logError(err.error.toString());
               }
             });
           };
@@ -68172,7 +68185,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                 return show();
               } else {
                 $scope.$root.loading = false;
-                return console.error("file path not found");
+                return window.logError("file path not found");
               }
             });
           };
@@ -68209,7 +68222,7 @@ See http://github.com/bgrins/filereader.js for documentation.
             return show();
           }
         } else {
-          console.error("blog do not exist");
+          window.logError("blog do not exist");
           return $location.path('/').replace();
         }
       });
@@ -68251,7 +68264,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                   }
                 } catch (_error) {
                   e = _error;
-                  console.error(e);
+                  window.logError(e.toString());
                 }
                 return '';
               });
@@ -68336,7 +68349,7 @@ See http://github.com/bgrins/filereader.js for documentation.
               $element.addClass("placeholder");
               return "";
             } else if (angular.isObject(value) || angular.isArray(value)) {
-              throw new Error("ace cannot use an object or an array as a model");
+              window.logError("ace cannot use an object or an array as a model");
             } else {
               $element.removeClass("placeholder");
             }
@@ -68420,7 +68433,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                 return groups[groupID].uuids[uuid] = path;
               },
               error: function(e, file) {
-                return console.errpr(file.name + " error: " + e.toString());
+                return console.error(file.name + " error: " + e.toString());
               },
               skip: function(file) {
                 return console.warn(file.name + " skipped");
@@ -68446,7 +68459,7 @@ See http://github.com/bgrins/filereader.js for documentation.
                   return editor.moveCursorToPosition(position);
                 }, function(err) {
                   var path, position, reg, uuid, uuids;
-                  console.error(err);
+                  window.logError("upload image failed");
                   uuids = err.uuids;
                   position = editor.getCursorPosition();
                   for (uuid in uuids) {

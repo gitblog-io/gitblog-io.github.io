@@ -14,6 +14,17 @@ $(document.body)
     $(document.body).removeClass()
   return
 
+window.logError = (errorMsg, url, lineNumber)->
+  ga('send', 'event', "Global", "Exception", "#{url}(#{lineNumber}): #{errorMsg}")
+  if !url? and !lineNumber?
+    console.error(errorMsg)
+    alert(errorMsg)
+  return
+
+$(window).on('error', (e)->
+  window.logError(e.originalEvent.message, e.originalEvent.filename, e.originalEvent.lineno)
+)
+
 angular.module "gitblog", [
   'ngRoute'
   'ngAnimate'
@@ -96,7 +107,7 @@ angular.module "gitblog", [
             $scope.username = info.login
           user.getRepos()
         , (err)->
-          console.error err
+          window.logError "get user info failed"
         .then (repos)->
           repos = jekyllFilter(repos)
           for repo in repos
@@ -105,7 +116,7 @@ angular.module "gitblog", [
             $scope.repos = $scope.repos.concat repos
           userDefer.resolve()
         , (err)->
-          console.error err
+          window.logError "get user repo failed"
 
         orgDefer = $q.defer()
         user.getOrgs()
@@ -117,7 +128,7 @@ angular.module "gitblog", [
             promises.push promise
           $q.all promises
         , (err)->
-          console.error err
+          window.logError "get org info failed"
         .then (resArrays)->
           $scope.$apply ->
             for res in resArrays
@@ -127,7 +138,7 @@ angular.module "gitblog", [
               $scope.repos = $scope.repos.concat repos
           orgDefer.resolve()
         , (err)->
-          console.error err
+          window.logError "get org repo failed"
 
         $scope.blogListReady = $q.all [userDefer.promise, orgDefer.promise]
         $scope.blogListReady
@@ -141,7 +152,8 @@ angular.module "gitblog", [
                 return repo
             return null
         , (err)->
-          console.error arguments
+          $scope.loading = false
+          window.logError "get blog list failed"
 
       $scope.reset()
 

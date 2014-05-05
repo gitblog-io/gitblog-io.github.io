@@ -24,7 +24,7 @@ angular.module "gitblog"
             frontMatter = jsyaml.safeLoad yml
             if !frontMatter.published? then frontMatter.published = true
           catch e
-            console.error e
+            window.logError e.toString()
 
           return ''
 
@@ -95,7 +95,7 @@ angular.module "gitblog"
         $element.addClass "placeholder"
         return ""
       else if angular.isObject(value) or angular.isArray(value)
-        throw new Error("ace cannot use an object or an array as a model")
+        window.logError("ace cannot use an object or an array as a model")
       else
         $element.removeClass "placeholder"
       value
@@ -184,7 +184,7 @@ angular.module "gitblog"
           groups[groupID].uuids[uuid] = path
 
         error: (e, file) ->
-          console.errpr file.name + " error: " + e.toString()
+          console.error file.name + " error: " + e.toString()
 
         skip: (file) ->
           console.warn file.name + " skipped"
@@ -206,7 +206,7 @@ angular.module "gitblog"
             editor.clearSelection()
             editor.moveCursorToPosition position
           , (err)->
-            console.error err
+            window.logError "upload image failed"
             uuids = err.uuids
             position = editor.getCursorPosition()
 
