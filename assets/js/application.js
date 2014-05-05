@@ -68402,7 +68402,7 @@ angular.module("gitblog").controller("IndexController", [
           $scope.$root.loading = true;
           $scope.$root.loadingText = "Saving...";
           branch = 　_repo.getBranch("master");
-          message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
+          message = "Update by gitblog.io at " + (new Date()).toLocaleString();
           promise = branch.write(path, $scope.post, message, false);
           promise.then(function(res) {
             return $scope.$evalAsync(function() {
@@ -68421,7 +68421,7 @@ angular.module("gitblog").controller("IndexController", [
             $scope.$root.loading = true;
             $scope.$root.loadingText = "Deleting...";
             branch = 　_repo.getBranch("master");
-            message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
+            message = "Update by gitblog.io at " + (new Date()).toLocaleString();
             promise = branch.remove(path, message);
             promise.then(function(res) {
               $scope.$evalAsync(function() {
@@ -68902,7 +68902,7 @@ angular.module("gitblog").factory("utils", [
         upload: function() {
           var branch, message;
           branch = _repo.getBranch('master');
-          message = "Upload image by gitblog-io.github.io at " + (new Date()).toLocaleString();
+          message = "Upload image by gitblog.io at " + (new Date()).toLocaleString();
           branch.writeMany(files, message).then(function(res) {
             var uuid;
             for (uuid in uuids) {

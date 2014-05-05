@@ -116,7 +116,7 @@ angular.module "gitblog"
           $scope.$root.loading = true
           $scope.$root.loadingText = "Saving..."
           branch =　_repo.getBranch "master"
-          message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString()
+          message = "Update by gitblog.io at " + (new Date()).toLocaleString()
           promise = branch.write(path, $scope.post, message, false)
           promise.then (res)->
             $scope.$evalAsync ->
@@ -133,7 +133,7 @@ angular.module "gitblog"
             $scope.$root.loading = true
             $scope.$root.loadingText = "Deleting..."
             branch =　_repo.getBranch "master"
-            message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString()
+            message = "Update by gitblog.io at " + (new Date()).toLocaleString()
             promise = branch.remove(path, message)
             promise.then (res)->
               $scope.$evalAsync ->
