@@ -140,7 +140,7 @@ angular.module "templates/about.html", []
           <p><a class="btn btn-primary" target="_blank" href="https://github.com/hyspace"><i class="icon-cat"></i> hyspace</a></p>
 
           <h3>Bug report</h3>
-          <p><a target="_blank" href="https://github.com/gitblog/gitblog-io.github.io/issues">Issues</a></p>
+          <p><a target="_blank" href="https://github.com/gitblog-io/gitblog-io.github.io/issues">Issues</a></p>
 
           <h3>Opensouce projects used in gitblog</h3>
           <ul class="list-unstyled">
