@@ -14091,7 +14091,7 @@ return jQuery;
 }));
 
 /**
- * @license AngularJS v1.2.15
+ * @license AngularJS v1.2.16
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -14160,7 +14160,7 @@ function minErr(module) {
       return match;
     });
 
-    message = message + '\nhttp://errors.angularjs.org/1.2.15/' +
+    message = message + '\nhttp://errors.angularjs.org/1.2.16/' +
       (module ? module + '/' : '') + code;
     for (i = 2; i < arguments.length; i++) {
       message = message + (i == 2 ? '?' : '&') + 'p' + (i-2) + '=' +
@@ -15447,7 +15447,7 @@ function angularInit(element, bootstrap) {
  * </file>
  * </example>
  *
- * @param {Element} element DOM element which is the root of angular application.
+ * @param {DOMElement} element DOM element which is the root of angular application.
  * @param {Array<String|Function|Array>=} modules an array of modules to load into the application.
  *     Each item in the array should be the name of a predefined module or a (DI annotated)
  *     function that will be invoked by the injector as a run block.
@@ -15681,8 +15681,8 @@ function setupModuleLoader(window) {
      * {@link angular.bootstrap} to simplify this process for you.
      *
      * @param {!string} name The name of the module to create or retrieve.
-     * @param {Array.<string>=} requires If specified then new module is being created. If
-     *        unspecified then the module is being retrieved for further configuration.
+<<<<<* @param {!Array.<string>=} requires If specified then new module is being created. If
+>>>>>*        unspecified then the module is being retrieved for further configuration.
      * @param {Function} configFn Optional configuration function for the module. Same as
      *        {@link angular.Module#config Module#config()}.
      * @returns {module} new module with the {@link angular.Module} api.
@@ -16011,11 +16011,11 @@ function setupModuleLoader(window) {
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '1.2.15',    // all of these placeholder strings will be replaced by grunt's
+  full: '1.2.16',    // all of these placeholder strings will be replaced by grunt's
   major: 1,    // package task
   minor: 2,
-  dot: 15,
-  codeName: 'beer-underestimating'
+  dot: 16,
+  codeName: 'badger-enumeration'
 };
 
 
@@ -16318,6 +16318,75 @@ function jqLitePatchJQueryRemove(name, dispatchThis, filterElems, getterIfNoArgu
   }
 }
 
+var SINGLE_TAG_REGEXP = /^<(\w+)\s*\/?>(?:<\/\1>|)$/;
+var HTML_REGEXP = /<|&#?\w+;/;
+var TAG_NAME_REGEXP = /<([\w:]+)/;
+var XHTML_TAG_REGEXP = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>]*)\/>/gi;
+
+var wrapMap = {
+  'option': [1, '<select multiple="multiple">', '</select>'],
+
+  'thead': [1, '<table>', '</table>'],
+  'col': [2, '<table><colgroup>', '</colgroup></table>'],
+  'tr': [2, '<table><tbody>', '</tbody></table>'],
+  'td': [3, '<table><tbody><tr>', '</tr></tbody></table>'],
+  '_default': [0, "", ""]
+};
+
+wrapMap.optgroup = wrapMap.option;
+wrapMap.tbody = wrapMap.tfoot = wrapMap.colgroup = wrapMap.caption = wrapMap.thead;
+wrapMap.th = wrapMap.td;
+
+function jqLiteIsTextNode(html) {
+  return !HTML_REGEXP.test(html);
+}
+
+function jqLiteBuildFragment(html, context) {
+  var elem, tmp, tag, wrap,
+      fragment = context.createDocumentFragment(),
+      nodes = [], i, j, jj;
+
+  if (jqLiteIsTextNode(html)) {
+    // Convert non-html into a text node
+    nodes.push(context.createTextNode(html));
+  } else {
+    tmp = fragment.appendChild(context.createElement('div'));
+    // Convert html into DOM nodes
+    tag = (TAG_NAME_REGEXP.exec(html) || ["", ""])[1].toLowerCase();
+    wrap = wrapMap[tag] || wrapMap._default;
+    tmp.innerHTML = '<div>&#160;</div>' +
+      wrap[1] + html.replace(XHTML_TAG_REGEXP, "<$1></$2>") + wrap[2];
+    tmp.removeChild(tmp.firstChild);
+
+    // Descend through wrappers to the right content
+    i = wrap[0];
+    while (i--) {
+      tmp = tmp.lastChild;
+    }
+
+    for (j=0, jj=tmp.childNodes.length; j<jj; ++j) nodes.push(tmp.childNodes[j]);
+
+    tmp = fragment.firstChild;
+    tmp.textContent = "";
+  }
+
+  // Remove wrapper from fragment
+  fragment.textContent = "";
+  fragment.innerHTML = ""; // Clear inner HTML
+  return nodes;
+}
+
+function jqLiteParseHTML(html, context) {
+  context = context || document;
+  var parsed;
+
+  if ((parsed = SINGLE_TAG_REGEXP.exec(html))) {
+    return [context.createElement(parsed[1])];
+  }
+
+  return jqLiteBuildFragment(html, context);
+}
+
 /////////////////////////////////////////////
 function JQLite(element) {
   if (element instanceof JQLite) {
@@ -16334,14 +16403,9 @@ function JQLite(element) {
   }
 
   if (isString(element)) {
-    var div = document.createElement('div');
-    // Read about the NoScope elements here:
-    // http://msdn.microsoft.com/en-us/library/ms533897(VS.85).aspx
-    div.innerHTML = '<div>&#160;</div>' + element; // IE insanity to make NoScope elements work!
-    div.removeChild(div.firstChild); // remove the superfluous div
-    jqLiteAddNodes(this, div.childNodes);
+    jqLiteAddNodes(this, jqLiteParseHTML(element));
     var fragment = jqLite(document.createDocumentFragment());
-    fragment.append(this); // detach the elements from the temporary DOM div.
+    fragment.append(this);
   } else {
     jqLiteAddNodes(this, element);
   }
@@ -18667,7 +18731,8 @@ function $BrowserProvider(){
  * @name $cacheFactory
  *
  * @description
- * Factory that constructs cache objects and gives access to them.
+ * Factory that constructs {@link $cacheFactory.Cache Cache} objects and gives access to
+ * them.
  *
  * ```js
  *
@@ -18699,6 +18764,46 @@ function $BrowserProvider(){
  * - `{void}` `removeAll()` — Removes all cached values.
  * - `{void}` `destroy()` — Removes references to this cache from $cacheFactory.
  *
+ * @example
+   <example module="cacheExampleApp">
+     <file name="index.html">
+       <div ng-controller="CacheController">
+         <input ng-model="newCacheKey" placeholder="Key">
+         <input ng-model="newCacheValue" placeholder="Value">
+         <button ng-click="put(newCacheKey, newCacheValue)">Cache</button>
+
+         <p ng-if="keys.length">Cached Values</p>
+         <div ng-repeat="key in keys">
+           <span ng-bind="key"></span>
+           <span>: </span>
+           <b ng-bind="cache.get(key)"></b>
+         </div>
+
+         <p>Cache Info</p>
+         <div ng-repeat="(key, value) in cache.info()">
+           <span ng-bind="key"></span>
+           <span>: </span>
+           <b ng-bind="value"></b>
+         </div>
+       </div>
+     </file>
+     <file name="script.js">
+       angular.module('cacheExampleApp', []).
+         controller('CacheController', ['$scope', '$cacheFactory', function($scope, $cacheFactory) {
+           $scope.keys = [];
+           $scope.cache = $cacheFactory('cacheId');
+           $scope.put = function(key, value) {
+             $scope.cache.put(key, value);
+             $scope.keys.push(key);
+           };
+         }]);
+     </file>
+     <file name="style.css">
+       p {
+         margin: 10px 0 3px;
+       }
+     </file>
+   </example>
  */
 function $CacheFactoryProvider() {
 
@@ -18718,8 +18823,65 @@ function $CacheFactoryProvider() {
           freshEnd = null,
           staleEnd = null;
 
+      /**
+       * @ngdoc type
+       * @name $cacheFactory.Cache
+       *
+       * @description
+       * A cache object used to store and retrieve data, primarily used by
+       * {@link $http $http} and the {@link ng.directive:script script} directive to cache
+       * templates and other data.
+       *
+       * ```js
+       *  angular.module('superCache')
+       *    .factory('superCache', ['$cacheFactory', function($cacheFactory) {
+       *      return $cacheFactory('super-cache');
+       *    }]);
+       * ```
+       *
+       * Example test:
+       *
+       * ```js
+       *  it('should behave like a cache', inject(function(superCache) {
+       *    superCache.put('key', 'value');
+       *    superCache.put('another key', 'another value');
+       *
+       *    expect(superCache.info()).toEqual({
+       *      id: 'super-cache',
+       *      size: 2
+       *    });
+       *
+       *    superCache.remove('another key');
+       *    expect(superCache.get('another key')).toBeUndefined();
+       *
+       *    superCache.removeAll();
+       *    expect(superCache.info()).toEqual({
+       *      id: 'super-cache',
+       *      size: 0
+       *    });
+       *  }));
+       * ```
+       */
       return caches[cacheId] = {
 
+        /**
+         * @ngdoc method
+         * @name $cacheFactory.Cache#put
+         * @function
+         *
+         * @description
+         * Inserts a named entry into the {@link $cacheFactory.Cache Cache} object to be
+         * retrieved later, and incrementing the size of the cache if the key was not already
+         * present in the cache. If behaving like an LRU cache, it will also remove stale
+         * entries from the set.
+         *
+         * It will not insert undefined values into the cache.
+         *
+         * @param {string} key the key under which the cached data is stored.
+         * @param {*} value the value to store alongside the key. If it is undefined, the key
+         *    will not be stored.
+         * @returns {*} the value stored.
+         */
         put: function(key, value) {
           if (capacity < Number.MAX_VALUE) {
             var lruEntry = lruHash[key] || (lruHash[key] = {key: key});
@@ -18738,7 +18900,17 @@ function $CacheFactoryProvider() {
           return value;
         },
 
-
+        /**
+         * @ngdoc method
+         * @name $cacheFactory.Cache#get
+         * @function
+         *
+         * @description
+         * Retrieves named data stored in the {@link $cacheFactory.Cache Cache} object.
+         *
+         * @param {string} key the key of the data to be retrieved
+         * @returns {*} the value stored.
+         */
         get: function(key) {
           if (capacity < Number.MAX_VALUE) {
             var lruEntry = lruHash[key];
@@ -18752,6 +18924,16 @@ function $CacheFactoryProvider() {
         },
 
 
+        /**
+         * @ngdoc method
+         * @name $cacheFactory.Cache#remove
+         * @function
+         *
+         * @description
+         * Removes an entry from the {@link $cacheFactory.Cache Cache} object.
+         *
+         * @param {string} key the key of the entry to be removed
+         */
         remove: function(key) {
           if (capacity < Number.MAX_VALUE) {
             var lruEntry = lruHash[key];
@@ -18770,6 +18952,14 @@ function $CacheFactoryProvider() {
         },
 
 
+        /**
+         * @ngdoc method
+         * @name $cacheFactory.Cache#removeAll
+         * @function
+         *
+         * @description
+         * Clears the cache object of any entries.
+         */
         removeAll: function() {
           data = {};
           size = 0;
@@ -18778,6 +18968,15 @@ function $CacheFactoryProvider() {
         },
 
 
+        /**
+         * @ngdoc method
+         * @name $cacheFactory.Cache#destroy
+         * @function
+         *
+         * @description
+         * Destroys the {@link $cacheFactory.Cache Cache} object entirely,
+         * removing it from the {@link $cacheFactory $cacheFactory} set.
+         */
         destroy: function() {
           data = null;
           stats = null;
@@ -18786,6 +18985,22 @@ function $CacheFactoryProvider() {
         },
 
 
+        /**
+         * @ngdoc method
+         * @name $cacheFactory.Cache#info
+         * @function
+         *
+         * @description
+         * Retrieve information regarding a particular {@link $cacheFactory.Cache Cache}.
+         *
+         * @returns {object} an object with the following properties:
+         *   <ul>
+         *     <li>**id**: the id of the cache instance</li>
+         *     <li>**size**: the number of entries kept in the cache instance</li>
+         *     <li>**...**: any additional properties from the options object when creating the
+         *       cache.</li>
+         *   </ul>
+         */
         info: function() {
           return extend({}, stats, {size: size});
         }
@@ -18972,6 +19187,7 @@ function $TemplateCacheProvider() {
  *       restrict: 'A',
  *       scope: false,
  *       controller: function($scope, $element, $attrs, $transclude, otherInjectables) { ... },
+ *       controllerAs: 'stringAlias',
  *       require: 'siblingDirectiveName', // or // ['^parentDirectiveName', '?optionalDirectiveName', '?^optionalParent'],
  *       compile: function compile(tElement, tAttrs, transclude) {
  *         return {
@@ -19188,6 +19404,16 @@ function $TemplateCacheProvider() {
  * been cloned. For this reason it is **not** safe to do anything other than DOM transformations that
  * apply to all cloned DOM nodes within the compile function. Specifically, DOM listener registration
  * should be done in a linking function rather than in a compile function.
+ * </div>
+
+ * <div class="alert alert-warning">
+ * **Note:** The compile function cannot handle directives that recursively use themselves in their
+ * own templates or compile functions. Compiling these directives results in an infinite loop and a
+ * stack overflow errors.
+ *
+ * This can be avoided by manually using $compile in the postLink function to imperatively compile
+ * a directive's template instead of relying on automatic template compilation via `template` or
+ * `templateUrl` declaration or manual compilation inside the compile function.
  * </div>
  *
  * <div class="alert alert-error">
@@ -19410,8 +19636,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
   var hasDirectives = {},
       Suffix = 'Directive',
       COMMENT_DIRECTIVE_REGEXP = /^\s*directive\:\s*([\d\w\-_]+)\s+(.*)$/,
-      CLASS_DIRECTIVE_REGEXP = /(([\d\w\-_]+)(?:\:([^;]+))?;?)/,
-      TABLE_CONTENT_REGEXP = /^<\s*(tr|th|td|thead|tbody|tfoot)(\s+[^>]*)?>/i;
+      CLASS_DIRECTIVE_REGEXP = /(([\d\w\-_]+)(?:\:([^;]+))?;?)/;
 
   // Ref: http://developers.whatwg.org/webappapis.html#event-handler-idl-attributes
   // The assumption is that future DOM event attribute names will begin with
@@ -20153,7 +20378,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
           if (directive.replace) {
             replaceDirective = directive;
-            $template = directiveTemplateContents(directiveValue);
+            if (jqLiteIsTextNode(directiveValue)) {
+              $template = [];
+            } else {
+              $template = jqLite(directiveValue);
+            }
             compileNode = $template[0];
 
             if ($template.length != 1 || compileNode.nodeType !== 1) {
@@ -20552,27 +20781,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     }
 
 
-    function directiveTemplateContents(template) {
-      var type;
-      template = trim(template);
-      if ((type = TABLE_CONTENT_REGEXP.exec(template))) {
-        type = type[1].toLowerCase();
-        var table = jqLite('<table>' + template + '</table>');
-        if (/(thead|tbody|tfoot)/.test(type)) {
-          return table.children(type);
-        }
-        table = table.children('tbody');
-        if (type === 'tr') {
-          return table.children('tr');
-        }
-        return table.children('tr').contents();
-      }
-      return jqLite('<div>' +
-                      template +
-                    '</div>').contents();
-    }
-
-
     function compileTemplateUrl(directives, $compileNode, tAttrs,
         $rootElement, childTranscludeFn, preLinkFns, postLinkFns, previousCompileContext) {
       var linkQueue = [],
@@ -20597,7 +20805,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           content = denormalizeTemplate(content);
 
           if (origAsyncDirective.replace) {
-            $template = directiveTemplateContents(content);
+            if (jqLiteIsTextNode(content)) {
+              $template = [];
+            } else {
+              $template = jqLite(content);
+            }
             compileNode = $template[0];
 
             if ($template.length != 1 || compileNode.nodeType !== 1) {
@@ -21375,7 +21587,7 @@ function $HttpProvider() {
      *
      * ```
      * module.run(function($http) {
-     *   $http.defaults.headers.common.Authentication = 'Basic YmVlcDpib29w'
+     *   $http.defaults.headers.common.Authorization = 'Basic YmVlcDpib29w'
      * });
      * ```
      *
@@ -21669,6 +21881,7 @@ function $HttpProvider() {
      *   - **status** – `{number}` – HTTP status code of the response.
      *   - **headers** – `{function([headerName])}` – Header getter function.
      *   - **config** – `{Object}` – The configuration object that was used to generate the request.
+     *   - **statusText** – `{string}` – HTTP status text of the response.
      *
      * @property {Array.<Object>} pendingRequests Array of config objects for currently pending
      *   requests. This is primarily meant to be used for debugging purposes.
@@ -22043,9 +22256,9 @@ function $HttpProvider() {
           } else {
             // serving from cache
             if (isArray(cachedResp)) {
-              resolvePromise(cachedResp[1], cachedResp[0], copy(cachedResp[2]));
+              resolvePromise(cachedResp[1], cachedResp[0], copy(cachedResp[2]), cachedResp[3]);
             } else {
-              resolvePromise(cachedResp, 200, {});
+              resolvePromise(cachedResp, 200, {}, 'OK');
             }
           }
         } else {
@@ -22069,17 +22282,17 @@ function $HttpProvider() {
        *  - resolves the raw $http promise
        *  - calls $apply
        */
-      function done(status, response, headersString) {
+      function done(status, response, headersString, statusText) {
         if (cache) {
           if (isSuccess(status)) {
-            cache.put(url, [status, response, parseHeaders(headersString)]);
+            cache.put(url, [status, response, parseHeaders(headersString), statusText]);
           } else {
             // remove promise from the cache
             cache.remove(url);
           }
         }
 
-        resolvePromise(response, status, headersString);
+        resolvePromise(response, status, headersString, statusText);
         if (!$rootScope.$$phase) $rootScope.$apply();
       }
 
@@ -22087,7 +22300,7 @@ function $HttpProvider() {
       /**
        * Resolves the raw $http promise.
        */
-      function resolvePromise(response, status, headers) {
+      function resolvePromise(response, status, headers, statusText) {
         // normalize internal statuses to 0
         status = Math.max(status, 0);
 
@@ -22095,7 +22308,8 @@ function $HttpProvider() {
           data: response,
           status: status,
           headers: headersGetter(headers),
-          config: config
+          config: config,
+          statusText : statusText
         });
       }
 
@@ -22229,7 +22443,8 @@ function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDoc
           completeRequest(callback,
               status || xhr.status,
               response,
-              responseHeaders);
+              responseHeaders,
+              xhr.statusText || '');
         }
       };
 
@@ -22270,7 +22485,7 @@ function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDoc
       xhr && xhr.abort();
     }
 
-    function completeRequest(callback, status, response, headersString) {
+    function completeRequest(callback, status, response, headersString, statusText) {
       // cancel timeout and subsequent timeout promise resolution
       timeoutId && $browserDefer.cancel(timeoutId);
       jsonpDone = xhr = null;
@@ -22283,9 +22498,10 @@ function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDoc
       }
 
       // normalize IE bug (http://bugs.jquery.com/ticket/1450)
-      status = status == 1223 ? 204 : status;
+      status = status === 1223 ? 204 : status;
+      statusText = statusText || '';
 
-      callback(status, response, headersString);
+      callback(status, response, headersString, statusText);
       $browser.$$completeOutstandingRequest(noop);
     }
   };
@@ -23321,8 +23537,7 @@ function locationGetterSetter(property, preprocess) {
  *   - Clicks on a link.
  * - Represents the URL object as a set of methods (protocol, host, port, path, search, hash).
  *
- * For more information see {@link guide/dev_guide.services.$location Developer Guide: Angular
- * Services: Using $location}
+ * For more information see {@link guide/$location Developer Guide: Using $location}
  */
 
 /**
@@ -24058,7 +24273,11 @@ var Parser = function (lexer, $filter, options) {
   this.options = options;
 };
 
-Parser.ZERO = function () { return 0; };
+Parser.ZERO = extend(function () {
+  return 0;
+}, {
+  constant: true
+});
 
 Parser.prototype = {
   constructor: Parser,
@@ -25803,7 +26022,8 @@ function $RootScopeProvider(){
        *    - `function(newValue, oldValue, scope)`: called with current and previous values as
        *      parameters.
        *
-       * @param {boolean=} objectEquality Compare object for equality rather than for reference.
+       * @param {boolean=} objectEquality Compare for object equality using {@link angular.equals} instead of
+       *     comparing for reference equality.
        * @returns {function()} Returns a deregistration function for this listener.
        */
       $watch: function(watchExp, listener, objectEquality) {
@@ -26224,15 +26444,32 @@ function $RootScopeProvider(){
 
         forEach(this.$$listenerCount, bind(null, decrementListenerCount, this));
 
+        // sever all the references to parent scopes (after this cleanup, the current scope should
+        // not be retained by any of our references and should be eligible for garbage collection)
         if (parent.$$childHead == this) parent.$$childHead = this.$$nextSibling;
         if (parent.$$childTail == this) parent.$$childTail = this.$$prevSibling;
         if (this.$$prevSibling) this.$$prevSibling.$$nextSibling = this.$$nextSibling;
         if (this.$$nextSibling) this.$$nextSibling.$$prevSibling = this.$$prevSibling;
 
-        // This is bogus code that works around Chrome's GC leak
-        // see: https://github.com/angular/angular.js/issues/1313#issuecomment-10378451
+
+        // All of the code below is bogus code that works around V8's memory leak via optimized code
+        // and inline caches.
+        //
+        // see:
+        // - https://code.google.com/p/v8/issues/detail?id=2073#c26
+        // - https://github.com/angular/angular.js/issues/6794#issuecomment-38648909
+        // - https://github.com/angular/angular.js/issues/1313#issuecomment-10378451
+
         this.$parent = this.$$nextSibling = this.$$prevSibling = this.$$childHead =
-            this.$$childTail = null;
+            this.$$childTail = this.$root = null;
+
+        // don't reset these to null in case some async task tries to register a listener/watch/task
+        this.$$listeners = {};
+        this.$$watchers = this.$$asyncQueue = this.$$postDigestQueue = [];
+
+        // prevent NPEs since these methods have references to properties we nulled out
+        this.$destroy = this.$digest = this.$apply = noop;
+        this.$on = this.$watch = function() { return noop; };
       },
 
       /**
@@ -27201,7 +27438,7 @@ function $SceDelegateProvider() {
  * | `$sce.HTML`         | For HTML that's safe to source into the application.  The {@link ng.directive:ngBindHtml ngBindHtml} directive uses this context for bindings. |
  * | `$sce.CSS`          | For CSS that's safe to source into the application.  Currently unused.  Feel free to use it in your own directives. |
  * | `$sce.URL`          | For URLs that are safe to follow as links.  Currently unused (`<a href=` and `<img src=` sanitize their urls and don't constitute an SCE context. |
- * | `$sce.RESOURCE_URL` | For URLs that are not only safe to follow as links, but whose contens are also safe to include in your application.  Examples include `ng-include`, `src` / `ngSrc` bindings for tags other than `IMG` (e.g. `IFRAME`, `OBJECT`, etc.)  <br><br>Note that `$sce.RESOURCE_URL` makes a stronger statement about the URL than `$sce.URL` does and therefore contexts requiring values trusted for `$sce.RESOURCE_URL` can be used anywhere that values trusted for `$sce.URL` are required. |
+ * | `$sce.RESOURCE_URL` | For URLs that are not only safe to follow as links, but whose contents are also safe to include in your application.  Examples include `ng-include`, `src` / `ngSrc` bindings for tags other than `IMG` (e.g. `IFRAME`, `OBJECT`, etc.)  <br><br>Note that `$sce.RESOURCE_URL` makes a stronger statement about the URL than `$sce.URL` does and therefore contexts requiring values trusted for `$sce.RESOURCE_URL` can be used anywhere that values trusted for `$sce.URL` are required. |
  * | `$sce.JS`           | For JavaScript that is safe to execute in your application's context.  Currently unused.  Feel free to use it in your own directives. |
  *
  * ## Format of items in {@link ng.$sceDelegateProvider#resourceUrlWhitelist resourceUrlWhitelist}/{@link ng.$sceDelegateProvider#resourceUrlBlacklist Blacklist} <a name="resourceUrlPatternItem"></a>
@@ -29019,7 +29256,7 @@ function limitToFilter(){
  *    - `Array`: An array of function or string predicates. The first predicate in the array
  *      is used for sorting, but when two items are equivalent, the next predicate is used.
  *
- * @param {boolean=} reverse Reverse the order the array.
+ * @param {boolean=} reverse Reverse the order of the array.
  * @returns {Array} Sorted copy of the source array.
  *
  * @example
@@ -29784,6 +30021,10 @@ function FormController(element, attrs, $scope, $animate) {
  * does not allow nesting of form elements. It is useful to nest forms, for example if the validity of a
  * sub-group of controls needs to be determined.
  *
+ * Note: the purpose of `ngForm` is to group controls,
+ * but not to be a replacement for the `<form>` tag with all of its capabilities
+ * (e.g. posting to the server, ...).
+ *
  * @param {string=} ngForm|name Name of the form. If specified, the form controller will be published into
  *                       related scope, under this name.
  *
@@ -30440,7 +30681,6 @@ function addNativeHtml5Validators(ctrl, validatorName, element) {
       return value;
     };
     ctrl.$parsers.push(validator);
-    ctrl.$formatters.push(validator);
   }
 }
 
@@ -31767,7 +32007,7 @@ var ngBindHtmlDirective = ['$sce', '$parse', function($sce, $parse) {
 
 function classDirective(name, selector) {
   name = 'ngClass' + name;
-  return function() {
+  return ['$animate', function($animate) {
     return {
       restrict: 'AC',
       link: function(scope, element, attr) {
@@ -31785,46 +32025,100 @@ function classDirective(name, selector) {
             // jshint bitwise: false
             var mod = $index & 1;
             if (mod !== old$index & 1) {
-              var classes = flattenClasses(scope.$eval(attr[name]));
+              var classes = arrayClasses(scope.$eval(attr[name]));
               mod === selector ?
-                attr.$addClass(classes) :
-                attr.$removeClass(classes);
+                addClasses(classes) :
+                removeClasses(classes);
             }
           });
         }
 
+        function addClasses(classes) {
+          var newClasses = digestClassCounts(classes, 1);
+          attr.$addClass(newClasses);
+        }
+
+        function removeClasses(classes) {
+          var newClasses = digestClassCounts(classes, -1);
+          attr.$removeClass(newClasses);
+        }
+
+        function digestClassCounts (classes, count) {
+          var classCounts = element.data('$classCounts') || {};
+          var classesToUpdate = [];
+          forEach(classes, function (className) {
+            if (count > 0 || classCounts[className]) {
+              classCounts[className] = (classCounts[className] || 0) + count;
+              if (classCounts[className] === +(count > 0)) {
+                classesToUpdate.push(className);
+              }
+            }
+          });
+          element.data('$classCounts', classCounts);
+          return classesToUpdate.join(' ');
+        }
+
+        function updateClasses (oldClasses, newClasses) {
+          var toAdd = arrayDifference(newClasses, oldClasses);
+          var toRemove = arrayDifference(oldClasses, newClasses);
+          toRemove = digestClassCounts(toRemove, -1);
+          toAdd = digestClassCounts(toAdd, 1);
+
+          if (toAdd.length === 0) {
+            $animate.removeClass(element, toRemove);
+          } else if (toRemove.length === 0) {
+            $animate.addClass(element, toAdd);
+          } else {
+            $animate.setClass(element, toAdd, toRemove);
+          }
+        }
 
         function ngClassWatchAction(newVal) {
           if (selector === true || scope.$index % 2 === selector) {
-            var newClasses = flattenClasses(newVal || '');
-            if(!oldVal) {
-              attr.$addClass(newClasses);
-            } else if(!equals(newVal,oldVal)) {
-              attr.$updateClass(newClasses, flattenClasses(oldVal));
+            var newClasses = arrayClasses(newVal || []);
+            if (!oldVal) {
+              addClasses(newClasses);
+            } else if (!equals(newVal,oldVal)) {
+              var oldClasses = arrayClasses(oldVal);
+              updateClasses(oldClasses, newClasses);
             }
           }
           oldVal = copy(newVal);
         }
-
-
-        function flattenClasses(classVal) {
-          if(isArray(classVal)) {
-            return classVal.join(' ');
-          } else if (isObject(classVal)) {
-            var classes = [], i = 0;
-            forEach(classVal, function(v, k) {
-              if (v) {
-                classes.push(k);
-              }
-            });
-            return classes.join(' ');
-          }
-
-          return classVal;
-        }
       }
     };
-  };
+
+    function arrayDifference(tokens1, tokens2) {
+      var values = [];
+
+      outer:
+      for(var i = 0; i < tokens1.length; i++) {
+        var token = tokens1[i];
+        for(var j = 0; j < tokens2.length; j++) {
+          if(token == tokens2[j]) continue outer;
+        }
+        values.push(token);
+      }
+      return values;
+    }
+
+    function arrayClasses (classVal) {
+      if (isArray(classVal)) {
+        return classVal;
+      } else if (isString(classVal)) {
+        return classVal.split(' ');
+      } else if (isObject(classVal)) {
+        var classes = [], i = 0;
+        forEach(classVal, function(v, k) {
+          if (v) {
+            classes.push(k);
+          }
+        });
+        return classes;
+      }
+      return classVal;
+    }
+  }];
 }
 
 /**
@@ -32385,7 +32679,7 @@ var ngControllerDirective = [function() {
  * @element ANY
  * @priority 0
  * @param {expression} ngClick {@link guide/expression Expression} to evaluate upon
- * click. (Event object is available as `$event`)
+ * click. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -32466,7 +32760,7 @@ forEach(
  * @element ANY
  * @priority 0
  * @param {expression} ngMousedown {@link guide/expression Expression} to evaluate upon
- * mousedown. (Event object is available as `$event`)
+ * mousedown. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -32490,7 +32784,7 @@ forEach(
  * @element ANY
  * @priority 0
  * @param {expression} ngMouseup {@link guide/expression Expression} to evaluate upon
- * mouseup. (Event object is available as `$event`)
+ * mouseup. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -32513,7 +32807,7 @@ forEach(
  * @element ANY
  * @priority 0
  * @param {expression} ngMouseover {@link guide/expression Expression} to evaluate upon
- * mouseover. (Event object is available as `$event`)
+ * mouseover. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -32537,7 +32831,7 @@ forEach(
  * @element ANY
  * @priority 0
  * @param {expression} ngMouseenter {@link guide/expression Expression} to evaluate upon
- * mouseenter. (Event object is available as `$event`)
+ * mouseenter. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -32561,7 +32855,7 @@ forEach(
  * @element ANY
  * @priority 0
  * @param {expression} ngMouseleave {@link guide/expression Expression} to evaluate upon
- * mouseleave. (Event object is available as `$event`)
+ * mouseleave. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -32585,7 +32879,7 @@ forEach(
  * @element ANY
  * @priority 0
  * @param {expression} ngMousemove {@link guide/expression Expression} to evaluate upon
- * mousemove. (Event object is available as `$event`)
+ * mousemove. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -32652,7 +32946,8 @@ forEach(
  *
  * @element ANY
  * @param {expression} ngKeypress {@link guide/expression Expression} to evaluate upon
- * keypress. (Event object is available as `$event` and can be interrogated for keyCode, altKey, etc.)
+ * keypress. ({@link guide/expression#-event- Event object is available as `$event`}
+ * and can be interrogated for keyCode, altKey, etc.)
  *
  * @example
    <example>
@@ -32677,7 +32972,8 @@ forEach(
  *
  * @element form
  * @priority 0
- * @param {expression} ngSubmit {@link guide/expression Expression} to eval. (Event object is available as `$event`)
+ * @param {expression} ngSubmit {@link guide/expression Expression} to eval.
+ * ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -32728,7 +33024,7 @@ forEach(
  * @element window, input, select, textarea, a
  * @priority 0
  * @param {expression} ngFocus {@link guide/expression Expression} to evaluate upon
- * focus. (Event object is available as `$event`)
+ * focus. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
  * See {@link ng.directive:ngClick ngClick}
@@ -32744,7 +33040,7 @@ forEach(
  * @element window, input, select, textarea, a
  * @priority 0
  * @param {expression} ngBlur {@link guide/expression Expression} to evaluate upon
- * blur. (Event object is available as `$event`)
+ * blur. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
  * See {@link ng.directive:ngClick ngClick}
@@ -32760,7 +33056,7 @@ forEach(
  * @element window, input, select, textarea, a
  * @priority 0
  * @param {expression} ngCopy {@link guide/expression Expression} to evaluate upon
- * copy. (Event object is available as `$event`)
+ * copy. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -32781,7 +33077,7 @@ forEach(
  * @element window, input, select, textarea, a
  * @priority 0
  * @param {expression} ngCut {@link guide/expression Expression} to evaluate upon
- * cut. (Event object is available as `$event`)
+ * cut. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -32802,7 +33098,7 @@ forEach(
  * @element window, input, select, textarea, a
  * @priority 0
  * @param {expression} ngPaste {@link guide/expression Expression} to evaluate upon
- * paste. (Event object is available as `$event`)
+ * paste. ({@link guide/expression#-event- Event object is available as `$event`})
  *
  * @example
    <example>
@@ -34075,7 +34371,7 @@ var ngShowDirective = ['$animate', function($animate) {
  * in AngularJS and sets the display style to none (using an !important flag).
  * For CSP mode please add `angular-csp.css` to your html file (see {@link ng.directive:ngCsp ngCsp}).
  *
- * ```hrml
+ * ```html
  * <!-- when $scope.myValue is truthy (element is hidden) -->
  * <div ng-hide="myValue"></div>
  *
@@ -35259,7 +35555,7 @@ var styleDirective = valueFn({
 
 !angular.$$csp() && angular.element(document).find('head').prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide{display:none !important;}ng\\:form{display:block;}.ng-animate-block-transitions{transition:0s all!important;-webkit-transition:0s all!important;}</style>');
 /**
- * @license AngularJS v1.2.15
+ * @license AngularJS v1.2.16
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -36385,7 +36681,7 @@ angular.module('ngCookies', ['ng']).
 })(window, window.angular);
 
 /**
- * @license AngularJS v1.2.15
+ * @license AngularJS v1.2.16
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -36498,11 +36794,11 @@ angular.module('ngCookies', ['ng']).
  *   -webkit-animation: enter_sequence 1s linear; /&#42; Safari/Chrome &#42;/
  *   animation: enter_sequence 1s linear; /&#42; IE10+ and Future Browsers &#42;/
  * }
- * &#64-webkit-keyframes enter_sequence {
+ * @-webkit-keyframes enter_sequence {
  *   from { opacity:0; }
  *   to { opacity:1; }
  * }
- * &#64keyframes enter_sequence {
+ * @keyframes enter_sequence {
  *   from { opacity:0; }
  *   to { opacity:1; }
  * }
@@ -36724,9 +37020,12 @@ angular.module('ngAnimate', ['ng'])
           //operation which performs CSS transition and keyframe
           //animations sniffing. This is always included for each
           //element animation procedure if the browser supports
-          //transitions and/or keyframe animations
+          //transitions and/or keyframe animations. The default
+          //animation is added to the top of the list to prevent
+          //any previous animations from affecting the element styling
+          //prior to the element being animated.
           if ($sniffer.transitions || $sniffer.animations) {
-            classes.push('');
+            matches.push($injector.get(selectors['']));
           }
 
           for(var i=0; i < classes.length; i++) {
@@ -37501,7 +37800,7 @@ angular.module('ngAnimate', ['ng'])
 
         //but it may not need to cancel out the existing timeout
         //if the timestamp is less than the previous one
-        var futureTimestamp = Date.now() + (totalTime * 1000);
+        var futureTimestamp = Date.now() + totalTime;
         if(futureTimestamp <= closingTimestamp) {
           return;
         }
@@ -37600,7 +37899,7 @@ angular.module('ngAnimate', ['ng'])
           parentElement.data(NG_ANIMATE_PARENT_KEY, ++parentCounter);
           parentID = parentCounter;
         }
-        return parentID + '-' + extractElementNode(element).className;
+        return parentID + '-' + extractElementNode(element).getAttribute('class');
       }
 
       function animateSetup(animationEvent, element, className, calculationDecorator) {
@@ -37705,7 +38004,7 @@ angular.module('ngAnimate', ['ng'])
       function animateRun(animationEvent, element, className, activeAnimationComplete) {
         var node = extractElementNode(element);
         var elementData = element.data(NG_ANIMATE_CSS_DATA_KEY);
-        if(node.className.indexOf(className) == -1 || !elementData) {
+        if(node.getAttribute('class').indexOf(className) == -1 || !elementData) {
           activeAnimationComplete();
           return;
         }
@@ -66390,22 +66689,19 @@ See http://github.com/bgrins/filereader.js for documentation.
     FileReaderJS.enabled = true;
 
 })(this, document);
+var __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __slice = [].slice;
+
 (function() {
-  var Octokit, Promise, XMLHttpRequest, allPromises, createGlobalAndAMD, encode, err, injector, makeOctokit, newPromise, _,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __slice = [].slice;
-
+  var Octokit, Promise, XMLHttpRequest, allPromises, createGlobalAndAMD, encode, err, injector, makeOctokit, newPromise, _;
   _ = {};
-
   _.isEmpty = function(object) {
     return Object.keys(object).length === 0;
   };
-
   _.isArray = function(object) {
     return !!object.slice;
   };
-
   _.defaults = function(object, values) {
     var key, _i, _len, _ref, _results;
     _ref = Object.keys(values);
@@ -66418,7 +66714,6 @@ See http://github.com/bgrins/filereader.js for documentation.
     }
     return _results;
   };
-
   _.each = function(object, fn) {
     var arr, key, _i, _len, _ref, _results;
     if (_.isArray(object)) {
@@ -66435,7 +66730,6 @@ See http://github.com/bgrins/filereader.js for documentation.
     }
     return _results;
   };
-
   _.pairs = function(object) {
     var arr, key, _fn, _i, _len, _ref;
     arr = [];
@@ -66449,7 +66743,6 @@ See http://github.com/bgrins/filereader.js for documentation.
     }
     return arr;
   };
-
   _.map = function(object, fn) {
     var arr, key, _fn, _i, _len, _ref;
     if (_.isArray(object)) {
@@ -66466,17 +66759,14 @@ See http://github.com/bgrins/filereader.js for documentation.
     }
     return arr;
   };
-
   _.last = function(object, n) {
     var len;
     len = object.length;
     return object.slice(len - n, len);
   };
-
   _.select = function(object, fn) {
     return object.filter(fn);
   };
-
   _.extend = function(object, template) {
     var key, _i, _len, _ref, _results;
     _ref = Object.keys(template);
@@ -66489,11 +66779,9 @@ See http://github.com/bgrins/filereader.js for documentation.
     }
     return _results;
   };
-
   _.toArray = function(object) {
     return Array.prototype.slice.call(object);
   };
-
   makeOctokit = (function(_this) {
     return function(newPromise, allPromises, XMLHttpRequest, base64encode, userAgent) {
       var Octokit, ajax, rejectedPromise, resolvedPromise;
@@ -67742,7 +68030,6 @@ See http://github.com/bgrins/filereader.js for documentation.
       return Octokit;
     };
   })(this);
-
   if (typeof exports !== "undefined" && exports !== null) {
     Promise = this.Promise || require('es6-promise').Promise;
     XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
@@ -67758,7 +68045,7 @@ See http://github.com/bgrins/filereader.js for documentation.
       return buffer.toString('base64');
     };
     Octokit = makeOctokit(newPromise, allPromises, XMLHttpRequest, encode, 'octokit');
-    exports["new"] = function(options) {
+    return exports["new"] = function(options) {
       return new Octokit(options);
     };
   } else {
@@ -67782,10 +68069,10 @@ See http://github.com/bgrins/filereader.js for documentation.
         };
       })(this);
       allPromises = this.Promise.all;
-      createGlobalAndAMD(newPromise, allPromises);
+      return createGlobalAndAMD(newPromise, allPromises);
     } else if (this.angular) {
       injector = angular.injector(['ng']);
-      injector.invoke(function($q) {
+      return injector.invoke(function($q) {
         newPromise = function(fn) {
           var $promise, reject, resolve;
           $promise = $q.defer();
@@ -67828,7 +68115,7 @@ See http://github.com/bgrins/filereader.js for documentation.
           });
         };
       })(this);
-      createGlobalAndAMD(newPromise, allPromises);
+      return createGlobalAndAMD(newPromise, allPromises);
     } else {
       err = function(msg) {
         if (typeof console !== "undefined" && console !== null) {
@@ -67838,904 +68125,888 @@ See http://github.com/bgrins/filereader.js for documentation.
         }
         throw new Error(msg);
       };
-      err('A Promise API was not found. Supported libraries that have Promises are jQuery, angularjs, and https://github.com/jakearchibald/es6-promise');
+      return err('A Promise API was not found. Supported libraries that have Promises are jQuery, angularjs, and https://github.com/jakearchibald/es6-promise');
     }
   }
+})();
 
-}).call(this);
+$("<div id=\"mask\" data-toggle-menu></div>").appendTo($(document.body));
 
-(function() {
-  $("<div id=\"mask\" data-toggle-menu></div>").appendTo($(document.body));
+$('[data-toggle-menu]').on('click', function() {
+  $(document.body).toggleClass('menu-open');
+});
 
-  $('[data-toggle-menu]').on('click', function() {
-    $(document.body).toggleClass('menu-open');
-  });
+$(document.body).on("click", "a", function(e) {
+  var dest, el, target;
+  el = $(e.target).closest('a');
+  target = el.attr("target");
+  dest = el.attr("href");
+  if ((!target || target.toLowerCase() !== "_blank") && (dest != null)) {
+    $(document.body).removeClass();
+  }
+});
 
-  $(document.body).on("click", "a", function(e) {
-    var dest, el, target;
-    el = $(e.target).closest('a');
-    target = el.attr("target");
-    dest = el.attr("href");
-    if ((!target || target.toLowerCase() !== "_blank") && (dest != null)) {
-      $(document.body).removeClass();
-    }
-  });
+window.logError = function(errorMsg, url, lineNumber) {
+  if (typeof ga === "function") {
+    ga('send', 'event', "Global", "Exception", "" + url + "(" + lineNumber + "): " + errorMsg);
+  }
+  if ((url == null) && (lineNumber == null)) {
+    console.error(errorMsg);
+    alert(errorMsg);
+  }
+};
 
-  window.logError = function(errorMsg, url, lineNumber) {
-    if (typeof ga === "function") {
-      ga('send', 'event', "Global", "Exception", "" + url + "(" + lineNumber + "): " + errorMsg);
-    }
-    if ((url == null) && (lineNumber == null)) {
-      console.error(errorMsg);
-      alert(errorMsg);
-    }
-  };
+$(window).on('error', function(e) {
+  return window.logError(e.originalEvent.message, e.originalEvent.filename, e.originalEvent.lineno);
+});
 
-  $(window).on('error', function(e) {
-    return window.logError(e.originalEvent.message, e.originalEvent.filename, e.originalEvent.lineno);
-  });
-
-  angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsavedChanges', 'gitblog.templates']).config([
-    '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
-      $locationProvider.hashPrefix('!');
-      $routeProvider.when('/about', {
-        templateUrl: 'templates/about.html',
-        controller: 'AboutController'
-      }).when('/:user/:repo/:path*', {
-        templateUrl: 'templates/post.html',
-        controller: 'PostController',
-        reloadOnSearch: false
-      }).when('/:user/:repo', {
-        templateUrl: 'templates/list.html',
-        controller: 'ListController'
-      }).when('/', {
-        templateUrl: 'templates/index.html',
-        controller: 'IndexController'
-      }).otherwise({
-        redirectTo: '/'
+angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsavedChanges', 'gitblog.templates']).config([
+  '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+    $locationProvider.hashPrefix('!');
+    $routeProvider.when('/about', {
+      templateUrl: 'templates/about.html',
+      controller: 'AboutController'
+    }).when('/:user/:repo/:path*', {
+      templateUrl: 'templates/post.html',
+      controller: 'PostController',
+      reloadOnSearch: false
+    }).when('/:user/:repo', {
+      templateUrl: 'templates/list.html',
+      controller: 'ListController'
+    }).when('/', {
+      templateUrl: 'templates/index.html',
+      controller: 'IndexController'
+    }).otherwise({
+      redirectTo: '/'
+    });
+  }
+]).run([
+  '$rootScope', 'storage', "$location", "$filter", "$q", function($scope, storage, $location, $filter, $q) {
+    var gh, jekyllFilter;
+    $(document.documentElement).removeClass("nojs").addClass("domready");
+    $scope.loading = true;
+    $scope.loadingText = 'Wait...';
+    $scope.token = storage.get('token');
+    $scope.reponame = storage.get('reponame');
+    storage.bind($scope, 'token');
+    storage.bind($scope, 'reponame');
+    if ($scope.token !== "") {
+      jekyllFilter = $filter("jekyll");
+      $scope._gh = gh = new Octokit({
+        token: $scope.token
       });
-    }
-  ]).run([
-    '$rootScope', 'storage', "$location", "$filter", "$q", function($scope, storage, $location, $filter, $q) {
-      var gh, jekyllFilter;
-      $(document.documentElement).removeClass("nojs").addClass("domready");
-      $scope.loading = true;
-      $scope.loadingText = 'Wait...';
-      $scope.token = storage.get('token');
-      $scope.reponame = storage.get('reponame');
-      storage.bind($scope, 'token');
-      storage.bind($scope, 'reponame');
-      if ($scope.token !== "") {
-        jekyllFilter = $filter("jekyll");
-        $scope._gh = gh = new Octokit({
-          token: $scope.token
-        });
-        try {
-          gh.setCache(JSON.parse(sessionStorage.getItem('cache')) || {});
-        } catch (_error) {
-          sessionStorage.removeItem('cache');
-        }
-        $scope.saveCache = function() {
-          return sessionStorage.setItem('cache', JSON.stringify($scope._gh.getCache()));
-        };
-        $scope.clearCache = function() {
-          return sessionStorage.removeItem('cache');
-        };
-        $scope.reset = function() {
-          var orgDefer, user, userDefer;
-          $scope.repos = [];
-          user = gh.getUser();
-          userDefer = $q.defer();
-          user.getInfo().then(function(info) {
-            $scope.$apply(function() {
-              return $scope.username = info.login;
-            });
-            return user.getRepos();
-          }, function(err) {
-            return window.logError("get user info failed");
-          }).then(function(repos) {
-            var repo, _i, _len;
-            repos = jekyllFilter(repos);
-            for (_i = 0, _len = repos.length; _i < _len; _i++) {
-              repo = repos[_i];
-              repo._repo = gh.getRepo(repo.owner.login, repo.name);
-            }
-            $scope.$apply(function() {
-              return $scope.repos = $scope.repos.concat(repos);
-            });
-            return userDefer.resolve();
-          }, function(err) {
-            return window.logError("get user repo failed");
-          });
-          orgDefer = $q.defer();
-          user.getOrgs().then(function(orgs) {
-            var index, org, orgUser, promise, promises, _i, _len;
-            promises = [];
-            for (index = _i = 0, _len = orgs.length; _i < _len; index = ++_i) {
-              org = orgs[index];
-              orgUser = gh.getOrg(org.login);
-              promise = orgUser.getRepos();
-              promises.push(promise);
-            }
-            return $q.all(promises);
-          }, function(err) {
-            return window.logError("get org info failed");
-          }).then(function(resArrays) {
-            $scope.$apply(function() {
-              var repo, repos, res, _i, _j, _len, _len1, _results;
-              _results = [];
-              for (_i = 0, _len = resArrays.length; _i < _len; _i++) {
-                res = resArrays[_i];
-                repos = jekyllFilter(res);
-                for (_j = 0, _len1 = repos.length; _j < _len1; _j++) {
-                  repo = repos[_j];
-                  repo._repo = gh.getRepo(repo.owner.login, repo.name);
-                }
-                _results.push($scope.repos = $scope.repos.concat(repos));
-              }
-              return _results;
-            });
-            return orgDefer.resolve();
-          }, function(err) {
-            return window.logError("get org repo failed");
-          });
-          $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
-          return $scope.blogListReady.then(function() {
-            $scope.loading = false;
-            $scope.saveCache();
-            return $scope.getRepo = function(username, reponame) {
-              var repo, _i, _len, _ref;
-              _ref = $scope.repos;
-              for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                repo = _ref[_i];
-                if (repo.owner.login === username && repo.name === reponame) {
-                  return repo;
-                }
-              }
-              return null;
-            };
-          }, function(err) {
-            $scope.loading = false;
-            return window.logError("get blog list failed");
-          });
-        };
-        $scope.reset();
-      } else {
-        window.location.replace('/');
+      try {
+        gh.setCache(JSON.parse(sessionStorage.getItem('cache')) || {});
+      } catch (_error) {
+        sessionStorage.removeItem('cache');
       }
-    }
-  ]);
-
-}).call(this);
-
-(function() {
-  angular.module("gitblog").controller("IndexController", [
-    "$scope", "$timeout", "$route", function($scope, $timeout, $route) {
-      return $scope.createBlog = function() {
-        var newRepo, repo;
-        $scope.$root.loading = true;
-        $scope.$root.loadingText = "Forking sample repo...";
-        repo = $scope.$root._gh.getRepo('gitblog-io', 'jekyll-bootstrap-for-fork');
-        newRepo = $scope.$root._gh.getRepo($scope.username, 'jekyll-bootstrap-for-fork');
-        repo.fork().then(function() {
-          var t;
-          $scope.$root.loadingText = "Checking if new repo is ready...";
-          t = $timeout(function() {
-            var caller;
-            caller = arguments.callee;
-            newRepo.getInfo().then(function() {
-              $scope.$evalAsync(function() {
-                return $scope.$root.loadingText = "Renaming the repo...";
-              });
-              newRepo.updateInfo({
-                name: "" + $scope.username + ".github.io"
-              }).then(function() {
-                $timeout.cancel(t);
-                $scope.$root.loading = false;
-                $scope.$root.loadingText = "Wait...";
-                $scope.$root.reset();
-              });
-            }, function() {
-              t = $timeout(caller, 5000);
-            });
-          }, 5000);
-        }, function(e) {
-          $scope.$root.loading = false;
-          return window.logError('failed to fork');
+      $scope.saveCache = function() {
+        return sessionStorage.setItem('cache', JSON.stringify($scope._gh.getCache()));
+      };
+      $scope.clearCache = function() {
+        return sessionStorage.removeItem('cache');
+      };
+      $scope.reset = function() {
+        var orgDefer, user, userDefer;
+        $scope.repos = [];
+        user = gh.getUser();
+        userDefer = $q.defer();
+        user.getInfo().then(function(info) {
+          $scope.$evalAsync(function() {
+            return $scope.username = info.login;
+          });
+          return user.getRepos();
+        }, function(err) {
+          return window.logError("get user info failed");
+        }).then(function(repos) {
+          var repo, _i, _len;
+          repos = jekyllFilter(repos);
+          for (_i = 0, _len = repos.length; _i < _len; _i++) {
+            repo = repos[_i];
+            repo._repo = gh.getRepo(repo.owner.login, repo.name);
+          }
+          $scope.$evalAsync(function() {
+            return $scope.repos = $scope.repos.concat(repos);
+          });
+          return userDefer.resolve();
+        }, function(err) {
+          return window.logError("get user repo failed");
+        });
+        orgDefer = $q.defer();
+        user.getOrgs().then(function(orgs) {
+          var index, org, orgUser, promise, promises, _i, _len;
+          promises = [];
+          for (index = _i = 0, _len = orgs.length; _i < _len; index = ++_i) {
+            org = orgs[index];
+            orgUser = gh.getOrg(org.login);
+            promise = orgUser.getRepos();
+            promises.push(promise);
+          }
+          return $q.all(promises);
+        }, function(err) {
+          return window.logError("get org info failed");
+        }).then(function(resArrays) {
+          $scope.$evalAsync(function() {
+            var repo, repos, res, _i, _j, _len, _len1, _results;
+            _results = [];
+            for (_i = 0, _len = resArrays.length; _i < _len; _i++) {
+              res = resArrays[_i];
+              repos = jekyllFilter(res);
+              for (_j = 0, _len1 = repos.length; _j < _len1; _j++) {
+                repo = repos[_j];
+                repo._repo = gh.getRepo(repo.owner.login, repo.name);
+              }
+              _results.push($scope.repos = $scope.repos.concat(repos));
+            }
+            return _results;
+          });
+          return orgDefer.resolve();
+        }, function(err) {
+          return window.logError("get org repo failed");
+        });
+        $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
+        return $scope.blogListReady.then(function() {
+          $scope.loading = false;
+          $scope.saveCache();
+          return $scope.getRepo = function(username, reponame) {
+            var repo, _i, _len, _ref;
+            _ref = $scope.repos;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              repo = _ref[_i];
+              if (repo.owner.login === username && repo.name === reponame) {
+                return repo;
+              }
+            }
+            return null;
+          };
+        }, function(err) {
+          $scope.loading = false;
+          return window.logError("get blog list failed");
         });
       };
+      $scope.reset();
+    } else {
+      window.location.replace('/');
     }
-  ]).controller("AboutController", ["$scope", function($scope) {}]).controller("ListController", [
-    "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
-      var reponame, username;
-      username = $routeParams.user;
-      reponame = $routeParams.repo;
-      return $scope.blogListReady.then(function() {
-        var repo, _repo;
-        if (repo = $scope.getRepo(username, reponame)) {
+  }
+]);
+
+angular.module("gitblog").controller("IndexController", [
+  "$scope", "$timeout", "$route", function($scope, $timeout, $route) {
+    return $scope.createBlog = function() {
+      var newRepo, repo;
+      $scope.$root.loading = true;
+      $scope.$root.loadingText = "Forking sample repo...";
+      repo = $scope.$root._gh.getRepo('gitblog-io', 'jekyll-bootstrap-for-fork');
+      newRepo = $scope.$root._gh.getRepo($scope.username, 'jekyll-bootstrap-for-fork');
+      repo.fork().then(function() {
+        var t;
+        $scope.$root.loadingText = "Checking if new repo is ready...";
+        t = $timeout(function() {
+          var caller;
+          caller = arguments.callee;
+          newRepo.getInfo().then(function() {
+            $scope.$evalAsync(function() {
+              return $scope.$root.loadingText = "Renaming the repo...";
+            });
+            newRepo.updateInfo({
+              name: "" + $scope.username + ".github.io"
+            }).then(function() {
+              $timeout.cancel(t);
+              $scope.$root.loading = false;
+              $scope.$root.loadingText = "Wait...";
+              $scope.$root.reset();
+            });
+          }, function() {
+            t = $timeout(caller, 5000);
+          });
+        }, 5000);
+      }, function() {
+        $scope.$root.loading = false;
+        return window.logError('failed to fork');
+      });
+    };
+  }
+]).controller("AboutController", ["$scope", function($scope) {}]).controller("ListController", [
+  "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
+    var reponame, username;
+    username = $routeParams.user;
+    reponame = $routeParams.repo;
+    return $scope.blogListReady.then(function() {
+      var repo, _repo;
+      if (repo = $scope.getRepo(username, reponame)) {
+        $scope.$root.loading = true;
+        $scope.$root.loadingText = "Wait...";
+        _repo = repo._repo;
+        return _repo.git.getTree('master', {
+          recursive: true
+        }).then(function(tree) {
+          var configFileExists, configFileReg, file, postReg, posts, res, _i, _len;
+          $scope.saveCache();
+          posts = [];
+          configFileExists = false;
+          postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
+          configFileReg = /^_config.yml$/;
+          for (_i = 0, _len = tree.length; _i < _len; _i++) {
+            file = tree[_i];
+            if (file.type !== 'blob') {
+              continue;
+            }
+            if (res = file.path.match(postReg)) {
+              posts.push({
+                user: username,
+                repo: reponame,
+                type: res[1],
+                date: new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10)),
+                urlTitle: res[5],
+                info: file
+              });
+            } else if (configFileReg.test(file.path)) {
+              configFileExists = true;
+            }
+          }
+          if (configFileExists) {
+            return $scope.$evalAsync(function() {
+              $scope.$root.loading = false;
+              $scope.reponame = reponame;
+              $scope.username = username;
+              return $scope.posts = posts;
+            });
+          }
+        });
+      } else {
+        window.logError("blog do not exist");
+        return $location.path('/').replace();
+      }
+    });
+  }
+]).controller("PostController", [
+  "$scope", "$routeParams", "$location", "$timeout", "uploader", function($scope, $routeParams, $location, $timeout, uploader) {
+    var path, reponame, sha, username;
+    username = $routeParams.user;
+    reponame = $routeParams.repo;
+    path = $routeParams.path;
+    sha = $routeParams.sha;
+    $scope.username = username;
+    $scope.reponame = reponame;
+    $scope.filepath = path;
+    return $scope.blogListReady.then(function() {
+      var deleteFunc, newPost, repo, save, searchAndShow, show, _repo;
+      if (repo = $scope.getRepo(username, reponame)) {
+        $scope.$root.loading = true;
+        $scope.$root.loadingText = "Wait...";
+        _repo = repo._repo;
+        $scope.uploader = uploader.call($scope, _repo);
+        save = function() {
+          var branch, message, promise;
           $scope.$root.loading = true;
-          $scope.$root.loadingText = "Wait...";
-          _repo = repo._repo;
+          $scope.$root.loadingText = "Saving...";
+          branch = 　_repo.getBranch("master");
+          message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
+          promise = branch.write(path, $scope.post, message, false);
+          promise.then(function(res) {
+            return $scope.$evalAsync(function() {
+              $scope.$root.loading = false;
+              return $scope.postForm.$setPristine();
+            });
+          }, function(err) {
+            $scope.$root.loading = false;
+            return window.logError("save article failed");
+          });
+          return promise;
+        };
+        deleteFunc = function() {
+          var branch, message, promise;
+          if (window.confirm("Are you sure to delete " + $scope.filepath + "?")) {
+            $scope.$root.loading = true;
+            $scope.$root.loadingText = "Deleting...";
+            branch = 　_repo.getBranch("master");
+            message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
+            promise = branch.remove(path, message);
+            promise.then(function(res) {
+              $scope.$evalAsync(function() {
+                return $scope.$root.loadingText = "Redirecting to list...";
+              });
+              return $timeout(function() {
+                return $location.path("/" + username + "/" + reponame).replace();
+              }, 1500);
+            }, function(err) {
+              $scope.$root.loading = false;
+              return window.logError("delete failed");
+            });
+            return promise;
+          }
+        };
+        show = function() {
+          return _repo.git.getBlob(sha).then(function(post) {
+            $scope.saveCache();
+            return $scope.$evalAsync(function() {
+              $scope.$root.loading = false;
+              $scope.post = post;
+              $scope.save = save;
+              return $scope["delete"] = deleteFunc;
+            });
+          }, function(err) {
+            if (err.status === 404) {
+              return searchAndShow();
+            } else {
+              $scope.$root.loading = false;
+              return window.logError(err.error.toString());
+            }
+          });
+        };
+        searchAndShow = function() {
           return _repo.git.getTree('master', {
             recursive: true
           }).then(function(tree) {
-            var configFileExists, configFileReg, file, postReg, posts, res, _i, _len;
+            var blob;
             $scope.saveCache();
-            posts = [];
-            configFileExists = false;
-            postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
-            configFileReg = /^_config.yml$/;
-            for (_i = 0, _len = tree.length; _i < _len; _i++) {
-              file = tree[_i];
-              if (file.type !== 'blob') {
-                continue;
-              }
-              if (res = file.path.match(postReg)) {
-                posts.push({
-                  user: username,
-                  repo: reponame,
-                  type: res[1],
-                  date: new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10)),
-                  urlTitle: res[5],
-                  info: file
-                });
-              } else if (configFileReg.test(file.path)) {
-                configFileExists = true;
-              }
-            }
-            if (configFileExists) {
-              return $scope.$apply(function() {
-                $scope.$root.loading = false;
-                $scope.reponame = reponame;
-                $scope.username = username;
-                return $scope.posts = posts;
-              });
+            blob = _.findWhere(tree, {
+              path: path
+            });
+            if (blob != null) {
+              sha = blob.sha;
+              return show();
+            } else {
+              $scope.$root.loading = false;
+              return window.logError("file path not found");
             }
           });
-        } else {
-          window.logError("blog do not exist");
-          return $location.path('/').replace();
-        }
-      });
-    }
-  ]).controller("PostController", [
-    "$scope", "$routeParams", "$location", "$timeout", "uploader", function($scope, $routeParams, $location, $timeout, uploader) {
-      var path, reponame, sha, username;
-      username = $routeParams.user;
-      reponame = $routeParams.repo;
-      path = $routeParams.path;
-      sha = $routeParams.sha;
-      $scope.username = username;
-      $scope.reponame = reponame;
-      $scope.filepath = path;
-      return $scope.blogListReady.then(function() {
-        var deleteFunc, newPost, repo, save, searchAndShow, show, _repo;
-        if (repo = $scope.getRepo(username, reponame)) {
-          $scope.$root.loading = true;
-          $scope.$root.loadingText = "Wait...";
-          _repo = repo._repo;
-          $scope.uploader = uploader.call($scope, _repo);
-          save = function() {
-            var branch, message, promise;
-            $scope.$root.loading = true;
-            $scope.$root.loadingText = "Saving...";
-            branch = 　_repo.getBranch("master");
-            message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
-            promise = branch.write(path, $scope.post, message, false);
-            promise.then(function(res) {
-              return $scope.$evalAsync(function() {
-                $scope.$root.loading = false;
-                return $scope.postForm.$setPristine();
-              });
-            }, function(err) {
-              $scope.$root.loading = false;
-              return window.logError("save article failed");
-            });
-            return promise;
-          };
-          deleteFunc = function() {
-            var branch, message, promise;
-            if (window.confirm("Are you sure to delete " + $scope.filepath + "?")) {
-              $scope.$root.loading = true;
-              $scope.$root.loadingText = "Deleting...";
-              branch = 　_repo.getBranch("master");
-              message = "Update by gitblog-io.github.io at " + (new Date()).toLocaleString();
-              promise = branch.remove(path, message);
-              promise.then(function(res) {
+        };
+        newPost = "---\nlayout: post\ntitle:\ntagline:\ncategory: null\ntags: []\npublished: true\n---\n";
+        if (sha == null) {
+          if (path === "new") {
+            $scope["new"] = true;
+            $scope.$root.loading = false;
+            $scope.post = newPost;
+            return $scope.save = function() {
+              var d, date, m, name, y;
+              date = new Date();
+              y = date.getFullYear();
+              m = date.getMonth();
+              m = m >= 10 ? m + 1 : "0" + (m + 1);
+              d = date.getDate();
+              d = d >= 10 ? d : "0" + d;
+              name = $scope.frontMatter.title.replace(/\s/g, '-');
+              path = "_posts/" + y + "-" + m + "-" + d + "-" + name + ".md";
+              return save().then(function(res) {
                 $scope.$evalAsync(function() {
-                  return $scope.$root.loadingText = "Redirecting to list...";
+                  $scope.$root.loading = true;
+                  return $scope.$root.loadingText = "Redirecting to saved post..";
                 });
                 return $timeout(function() {
-                  return $location.path("/" + username + "/" + reponame).replace();
+                  return $location.path("/" + username + "/" + reponame + "/" + path).replace();
                 }, 1500);
-              }, function(err) {
-                $scope.$root.loading = false;
-                return window.logError("delete failed");
               });
-              return promise;
-            }
-          };
-          show = function() {
-            return _repo.git.getBlob(sha).then(function(post) {
-              $scope.saveCache();
-              return $scope.$apply(function() {
-                $scope.$root.loading = false;
-                $scope.post = post;
-                $scope.save = save;
-                return $scope["delete"] = deleteFunc;
-              });
-            }, function(err) {
-              if (err.status === 404) {
-                return searchAndShow();
-              } else {
-                $scope.$root.loading = false;
-                return window.logError(err.error.toString());
-              }
-            });
-          };
-          searchAndShow = function() {
-            return _repo.git.getTree('master', {
-              recursive: true
-            }).then(function(tree) {
-              var blob;
-              $scope.saveCache();
-              blob = _.findWhere(tree, {
-                path: path
-              });
-              if (blob != null) {
-                sha = blob.sha;
-                return show();
-              } else {
-                $scope.$root.loading = false;
-                return window.logError("file path not found");
-              }
-            });
-          };
-          newPost = "---\nlayout: post\ntitle:\ntagline:\ncategory: null\ntags: []\npublished: true\n---\n";
-          if (sha == null) {
-            if (path === "new") {
-              $scope["new"] = true;
-              $scope.$root.loading = false;
-              $scope.post = newPost;
-              return $scope.save = function() {
-                var d, date, m, name, y;
-                date = new Date();
-                y = date.getFullYear();
-                m = date.getMonth();
-                m = m >= 10 ? m + 1 : "0" + (m + 1);
-                d = date.getDate();
-                d = d >= 10 ? d : "0" + d;
-                name = $scope.frontMatter.title.replace(/\s/g, '-');
-                path = "_posts/" + y + "-" + m + "-" + d + "-" + name + ".md";
-                return save().then(function(res) {
-                  $scope.$evalAsync(function() {
-                    $scope.$root.loading = true;
-                    return $scope.$root.loadingText = "Redirecting to saved post..";
-                  });
-                  return $timeout(function() {
-                    return $location.path("/" + username + "/" + reponame + "/" + path).replace();
-                  }, 1500);
-                });
-              };
-            } else {
-              return searchAndShow();
-            }
+            };
           } else {
-            return show();
+            return searchAndShow();
           }
         } else {
-          window.logError("blog do not exist");
-          return $location.path('/').replace();
+          return show();
         }
-      });
-    }
-  ]);
+      } else {
+        window.logError("blog do not exist");
+        return $location.path('/').replace();
+      }
+    });
+  }
+]);
 
-}).call(this);
-
-(function() {
-  angular.module("gitblog").directive("blogList", [
-    function() {
-      return {
-        restrict: "A",
-        templateUrl: "templates/blog-list.html"
-      };
-    }
-  ]).directive("post", [
-    "$timeout", function($timeout) {
-      return {
-        restrict: "A",
-        templateUrl: "templates/editor.html",
-        require: "?ngModel",
-        link: function($scope, $element, $attr, ngModel) {
-          var promise, update, ymlReg;
-          if (ngModel == null) {
-            return;
-          }
-          ymlReg = /^(?:---\r?\n)((?:.|\r?\n)*?)\r?\n---\r?\n/;
-          ngModel.$formatters.push(function(modelValue) {
-            var content, frontMatter;
-            if (modelValue != null) {
-              frontMatter = null;
-              content = modelValue.replace(ymlReg, function(match, yml) {
-                var e;
-                try {
-                  frontMatter = jsyaml.safeLoad(yml);
-                  if (frontMatter.published == null) {
-                    frontMatter.published = true;
-                  }
-                } catch (_error) {
-                  e = _error;
-                  window.logError(e.toString());
+angular.module("gitblog").directive("blogList", [
+  function() {
+    return {
+      restrict: "A",
+      templateUrl: "templates/blog-list.html"
+    };
+  }
+]).directive("post", [
+  "$timeout", function($timeout) {
+    return {
+      restrict: "A",
+      templateUrl: "templates/editor.html",
+      require: "?ngModel",
+      link: function($scope, $element, $attr, ngModel) {
+        var promise, update, ymlReg;
+        if (ngModel == null) {
+          return;
+        }
+        ymlReg = /^(?:---\r?\n)((?:.|\r?\n)*?)\r?\n---\r?\n/;
+        ngModel.$formatters.push(function(modelValue) {
+          var content, frontMatter;
+          if (modelValue != null) {
+            frontMatter = null;
+            content = modelValue.replace(ymlReg, function(match, yml) {
+              var e;
+              try {
+                frontMatter = jsyaml.safeLoad(yml);
+                if (frontMatter.published == null) {
+                  frontMatter.published = true;
                 }
-                return '';
-              });
-              $scope.$evalAsync(function() {
-                $scope.frontMatter = frontMatter;
-                return $scope.content = content;
-              });
-            }
-            return modelValue;
-          });
-          update = function() {
-            var content, frontMatter, viewValue, yml;
-            yml = jsyaml.safeDump($scope.frontMatter, {
-              skipInvalid: true
+              } catch (_error) {
+                e = _error;
+                window.logError(e.toString());
+              }
+              return '';
             });
-            frontMatter = "---\n" + yml + "---\n";
-            content = $scope.content;
-            viewValue = frontMatter + content;
-            ngModel.$setViewValue(viewValue);
-            return $scope.$apply();
-          };
-          promise = null;
-          $scope.$watch('content', function(data, oldData) {
-            if ((data != null) && (oldData != null) && data !== oldData) {
-              if (promise != null) {
-                $timeout.cancel(promise);
-              }
-              return promise = $timeout(update, 10);
-            }
-          });
-          $scope.$watchCollection('frontMatter', function(data, oldData) {
-            if ((data != null) && (oldData != null)) {
-              if (promise != null) {
-                $timeout.cancel(promise);
-              }
-              return promise = $timeout(update, 200);
-            }
-          });
-          $(window).on("keydown", function(event) {
-            if (event.ctrlKey || event.metaKey) {
-              switch (String.fromCharCode(event.which).toLowerCase()) {
-                case "s":
-                  event.preventDefault();
-                  if ($scope.postForm.$dirty) {
-                    return $scope.$apply(function() {
-                      return $scope.save();
-                    });
-                  }
-              }
-            }
-          });
-        }
-      };
-    }
-  ]).directive('editor', [
-    "$timeout", "UUID", function($timeout, UUID) {
-      return {
-        restrict: "EA",
-        require: "?ngModel",
-        link: function($scope, $element, $attrs, ngModel) {
-          var editor, groups, loaded, onChange, opts, promise, session, update;
-          if (ngModel == null) {
-            return;
+            $scope.$evalAsync(function() {
+              $scope.frontMatter = frontMatter;
+              return $scope.content = content;
+            });
           }
-          window.ace.config.set('basePath', '/assets/js/ace');
-          editor = window.ace.edit($element[0]);
-          editor.setFontSize(16);
-          editor.setOptions({
-            maxLines: Infinity
+          return modelValue;
+        });
+        update = function() {
+          var content, frontMatter, viewValue, yml;
+          yml = jsyaml.safeDump($scope.frontMatter, {
+            skipInvalid: true
           });
-          editor.setShowPrintMargin(false);
-          editor.setHighlightActiveLine(false);
-          editor.renderer.setShowGutter(false);
-          editor.setTheme('ace/theme/tomorrow-markdown');
-          session = editor.getSession();
-          session.setUseWrapMode(true);
-          session.setUseSoftTabs(true);
-          session.setTabSize(2);
-          session.setMode("ace/mode/markdown");
-          ngModel.$formatters.push(function(value) {
-            if (angular.isUndefined(value) || value === null || value === "") {
-              $element.addClass("placeholder");
-              return "";
-            } else if (angular.isObject(value) || angular.isArray(value)) {
-              window.logError("ace cannot use an object or an array as a model");
-            } else {
-              $element.removeClass("placeholder");
-            }
-            return value;
-          });
-          ngModel.$render = function() {
-            session.setValue(ngModel.$viewValue);
-          };
-          loaded = false;
-          update = function() {
-            var viewValue;
-            viewValue = session.getValue();
-            ngModel.$setViewValue(viewValue);
-            if (!loaded) {
-              $scope.postForm.$setPristine();
-              return loaded = true;
-            }
-          };
-          promise = null;
-          onChange = function() {
+          frontMatter = "---\n" + yml + "---\n";
+          content = $scope.content;
+          viewValue = frontMatter + content;
+          ngModel.$setViewValue(viewValue);
+          return $scope.$evalAsync();
+        };
+        promise = null;
+        $scope.$watch('content', function(data, oldData) {
+          if ((data != null) && (oldData != null) && data !== oldData) {
             if (promise != null) {
               $timeout.cancel(promise);
             }
-            return promise = $timeout(update, 190, true);
-          };
-          session.on("change", onChange);
-          editor.on("focus", function() {
-            return $element.removeClass("placeholder");
-          });
-          editor.on("blur", function() {
-            if (session.getValue() === "") {
-              return $element.addClass("placeholder");
+            return promise = $timeout(update, 10);
+          }
+        });
+        $scope.$watchCollection('frontMatter', function(data, oldData) {
+          if ((data != null) && (oldData != null)) {
+            if (promise != null) {
+              $timeout.cancel(promise);
             }
-          });
-          $element.on("$destroy", function() {
-            editor.session.$stopWorker();
-            editor.destroy();
-          });
-          editor.commands.addCommand({
-            name: "save",
-            bindKey: {
-              win: "Ctrl-S",
-              mac: "Command-S"
-            },
-            exec: function(editor) {
-              if ($scope.postForm.$dirty) {
-                return $scope.$apply(function() {
-                  return $scope.save();
-                });
-              }
-            }
-          });
-          groups = [];
-          opts = {
-            dragClass: "drag",
-            accept: 'image/*',
-            readAsMap: {
-              "image/*": "BinaryString"
-            },
-            readAsDefault: "BinaryString",
-            on: {
-              beforestart: function(e, file) {},
-              load: function(e, file) {
-                var groupID, path, position, postdate, text, uuid;
-                uuid = UUID();
-                text = "![image](<uploading-" + uuid + ">)";
-                position = editor.getCursorPosition();
-                if (position.column !== 0) {
-                  text = '\n' + text + '\n';
-                } else {
-                  text = text + '\n';
-                }
-                editor.insert(text);
-                postdate = $scope.filepath.match(/\d{4}-\d{2}-\d{2}/);
-                path = "assets/post-images/" + postdate + '-' + uuid + '.' + file.extra.extension;
-                groupID = file.extra.groupID;
-                groups[groupID].files[path] = {
-                  isBase64: true,
-                  content: e.target.result
-                };
-                return groups[groupID].uuids[uuid] = path;
-              },
-              error: function(e, file) {
-                return console.error(file.name + " error: " + e.toString());
-              },
-              skip: function(file) {
-                return console.warn(file.name + " skipped");
-              },
-              groupstart: function(group) {
-                return groups[group.groupID] = {
-                  files: {},
-                  uuids: {}
-                };
-              },
-              groupend: function(group) {
-                $scope.uploader.add(groups[group.groupID]).then(function(uuids) {
-                  var path, position, reg, uuid;
-                  position = editor.getCursorPosition();
-                  for (uuid in uuids) {
-                    path = uuids[uuid];
-                    reg = new RegExp("!\\[(\\w*)\\]\\(<uploading-" + uuid + ">\\)");
-                    editor.replace("![$1](" + path + ")", {
-                      needle: reg
-                    });
-                  }
-                  editor.clearSelection();
-                  return editor.moveCursorToPosition(position);
-                }, function(err) {
-                  var path, position, reg, uuid, uuids;
-                  window.logError("upload image failed");
-                  uuids = err.uuids;
-                  position = editor.getCursorPosition();
-                  for (uuid in uuids) {
-                    path = uuids[uuid];
-                    reg = new RegExp("!\\[(\\w*)\\]\\(<uploading-" + uuid + ">\\)");
-                    editor.replace("(!image upload failed)", {
-                      needle: reg
-                    });
-                  }
-                  editor.clearSelection();
-                  return editor.moveCursorToPosition(position);
-                });
-                return groups[group.id] = null;
-              }
-            }
-          };
-          $(document.body).fileReaderJS(opts);
-          $element.fileClipboard(opts);
-          (function(self) {
-            var checkLine, customWorker;
-            checkLine = function(currentLine) {
-              var line;
-              line = self.lines[currentLine];
-              if (line.length !== 0) {
-                if (line[0].type.indexOf("markup.heading.multi") === 0) {
-                  self.lines[currentLine - 1].forEach(function(previousLineObject) {
-                    previousLineObject.type = "markup.heading";
+            return promise = $timeout(update, 200);
+          }
+        });
+        $(window).on("keydown", function(event) {
+          if (event.ctrlKey || event.metaKey) {
+            switch (String.fromCharCode(event.which).toLowerCase()) {
+              case "s":
+                event.preventDefault();
+                if ($scope.postForm.$dirty) {
+                  return $scope.$evalAsync(function() {
+                    return $scope.save();
                   });
                 }
+            }
+          }
+        });
+      }
+    };
+  }
+]).directive('editor', [
+  "$timeout", "UUID", function($timeout, UUID) {
+    return {
+      restrict: "EA",
+      require: "?ngModel",
+      link: function($scope, $element, $attrs, ngModel) {
+        var editor, groups, loaded, onChange, opts, promise, session, update;
+        if (ngModel == null) {
+          return;
+        }
+        window.ace.config.set('basePath', '/assets/js/ace');
+        editor = window.ace.edit($element[0]);
+        editor.setFontSize(16);
+        editor.setOptions({
+          maxLines: Infinity
+        });
+        editor.setShowPrintMargin(false);
+        editor.setHighlightActiveLine(false);
+        editor.renderer.setShowGutter(false);
+        editor.setTheme('ace/theme/tomorrow-markdown');
+        session = editor.getSession();
+        session.setUseWrapMode(true);
+        session.setUseSoftTabs(true);
+        session.setTabSize(2);
+        session.setMode("ace/mode/markdown");
+        ngModel.$formatters.push(function(value) {
+          if (angular.isUndefined(value) || value === null || value === "") {
+            $element.addClass("placeholder");
+            return "";
+          } else if (angular.isObject(value) || angular.isArray(value)) {
+            window.logError("ace cannot use an object or an array as a model");
+          } else {
+            $element.removeClass("placeholder");
+          }
+          return value;
+        });
+        ngModel.$render = function() {
+          session.setValue(ngModel.$viewValue);
+        };
+        loaded = false;
+        update = function() {
+          var viewValue;
+          viewValue = session.getValue();
+          ngModel.$setViewValue(viewValue);
+          if (!loaded) {
+            $scope.postForm.$setPristine();
+            return loaded = true;
+          }
+        };
+        promise = null;
+        onChange = function() {
+          if (promise != null) {
+            $timeout.cancel(promise);
+          }
+          return promise = $timeout(update, 190, true);
+        };
+        session.on("change", onChange);
+        editor.on("focus", function() {
+          return $element.removeClass("placeholder");
+        });
+        editor.on("blur", function() {
+          if (session.getValue() === "") {
+            return $element.addClass("placeholder");
+          }
+        });
+        $element.on("$destroy", function() {
+          editor.session.$stopWorker();
+          editor.destroy();
+        });
+        editor.commands.addCommand({
+          name: "save",
+          bindKey: {
+            win: "Ctrl-S",
+            mac: "Command-S"
+          },
+          exec: function(editor) {
+            if ($scope.postForm.$dirty) {
+              return $scope.$evalAsync(function() {
+                return $scope.save();
+              });
+            }
+          }
+        });
+        groups = [];
+        opts = {
+          dragClass: "drag",
+          accept: 'image/*',
+          readAsMap: {
+            "image/*": "BinaryString"
+          },
+          readAsDefault: "BinaryString",
+          on: {
+            beforestart: function(e, file) {},
+            load: function(e, file) {
+              var groupID, path, position, postdate, text, uuid;
+              uuid = UUID();
+              text = "![image](<uploading-" + uuid + ">)";
+              position = editor.getCursorPosition();
+              if (position.column !== 0) {
+                text = '\n' + text + '\n';
+              } else {
+                text = text + '\n';
               }
-            };
-            customWorker = function() {
-              var currentLine, doc, endLine, len, processedLines, startLine, workerStart;
-              if (!self.running) {
+              editor.insert(text);
+              postdate = $scope.filepath.match(/\d{4}-\d{2}-\d{2}/);
+              path = "assets/post-images/" + postdate + '-' + uuid + '.' + file.extra.extension;
+              groupID = file.extra.groupID;
+              groups[groupID].files[path] = {
+                isBase64: true,
+                content: e.target.result
+              };
+              return groups[groupID].uuids[uuid] = path;
+            },
+            error: function(e, file) {
+              return console.error(file.name + " error: " + e.toString());
+            },
+            skip: function(file) {
+              return console.warn(file.name + " skipped");
+            },
+            groupstart: function(group) {
+              return groups[group.groupID] = {
+                files: {},
+                uuids: {}
+              };
+            },
+            groupend: function(group) {
+              $scope.uploader.add(groups[group.groupID]).then(function(uuids) {
+                var path, position, reg, uuid;
+                position = editor.getCursorPosition();
+                for (uuid in uuids) {
+                  path = uuids[uuid];
+                  reg = new RegExp("!\\[(\\w*)\\]\\(<uploading-" + uuid + ">\\)");
+                  editor.replace("![$1](" + path + ")", {
+                    needle: reg
+                  });
+                }
+                editor.clearSelection();
+                return editor.moveCursorToPosition(position);
+              }, function(err) {
+                var path, position, reg, uuid, uuids;
+                window.logError("upload image failed");
+                uuids = err.uuids;
+                position = editor.getCursorPosition();
+                for (uuid in uuids) {
+                  path = uuids[uuid];
+                  reg = new RegExp("!\\[(\\w*)\\]\\(<uploading-" + uuid + ">\\)");
+                  editor.replace("(!image upload failed)", {
+                    needle: reg
+                  });
+                }
+                editor.clearSelection();
+                return editor.moveCursorToPosition(position);
+              });
+              return groups[group.id] = null;
+            }
+          }
+        };
+        $(document.body).fileReaderJS(opts);
+        $element.fileClipboard(opts);
+        (function(self) {
+          var checkLine, customWorker;
+          checkLine = function(currentLine) {
+            var line;
+            line = self.lines[currentLine];
+            if (line.length !== 0) {
+              if (line[0].type.indexOf("markup.heading.multi") === 0) {
+                self.lines[currentLine - 1].forEach(function(previousLineObject) {
+                  previousLineObject.type = "markup.heading";
+                });
+              }
+            }
+          };
+          customWorker = function() {
+            var currentLine, doc, endLine, len, processedLines, startLine, workerStart;
+            if (!self.running) {
+              return;
+            }
+            workerStart = new Date();
+            currentLine = self.currentLine;
+            endLine = -1;
+            doc = self.doc;
+            while (self.lines[currentLine]) {
+              currentLine++;
+            }
+            startLine = currentLine;
+            len = doc.getLength();
+            processedLines = 0;
+            self.running = false;
+            while (currentLine < len) {
+              self.$tokenizeRow(currentLine);
+              endLine = currentLine;
+              while (true) {
+                checkLine(currentLine);
+                currentLine++;
+                if (!self.lines[currentLine]) {
+                  break;
+                }
+              }
+              processedLines++;
+              if ((processedLines % 5 === 0) && (new Date() - workerStart) > 20) {
+                self.running = setTimeout(customWorker, 20);
+                self.currentLine = currentLine;
                 return;
               }
-              workerStart = new Date();
-              currentLine = self.currentLine;
-              endLine = -1;
-              doc = self.doc;
-              while (self.lines[currentLine]) {
-                currentLine++;
-              }
-              startLine = currentLine;
-              len = doc.getLength();
-              processedLines = 0;
-              self.running = false;
-              while (currentLine < len) {
-                self.$tokenizeRow(currentLine);
-                endLine = currentLine;
-                while (true) {
-                  checkLine(currentLine);
-                  currentLine++;
-                  if (!self.lines[currentLine]) {
-                    break;
-                  }
-                }
-                processedLines++;
-                if ((processedLines % 5 === 0) && (new Date() - workerStart) > 20) {
-                  self.running = setTimeout(customWorker, 20);
-                  self.currentLine = currentLine;
-                  return;
-                }
-              }
-              self.currentLine = currentLine;
-              if (startLine <= endLine) {
-                self.fireUpdateEvent(startLine, endLine);
-              }
-            };
-            self.$worker = function() {
-              self.lines.splice(0, self.lines.length);
-              self.states.splice(0, self.states.length);
-              self.currentLine = 0;
-              customWorker();
-            };
-          })(editor.session.bgTokenizer);
-        }
-      };
-    }
-  ]).directive("customInput", [
-    function() {
-      return {
-        restrict: "A",
-        require: "?ngModel",
-        link: function($scope, $element, $attrs, ngModel) {
-          if (ngModel == null) {
-            return;
-          }
-          $element.prop("contenteditable", true);
-          $element.prop("spellcheck", true);
-          ngModel.$render = function() {
-            $element.text(ngModel.$viewValue || '');
+            }
+            self.currentLine = currentLine;
+            if (startLine <= endLine) {
+              self.fireUpdateEvent(startLine, endLine);
+            }
           };
-          $element.on("keydown", function(e) {
-            if (e.keyCode === 13) {
-              e.preventDefault();
-            }
-          }).on("blur keyup change", function() {
-            return $scope.$apply();
-          }).on("input", function() {
-            ngModel.$setViewValue($element.text().replace(/[\n\r]/g, " "));
-          });
+          self.$worker = function() {
+            self.lines.splice(0, self.lines.length);
+            self.states.splice(0, self.states.length);
+            self.currentLine = 0;
+            customWorker();
+          };
+        })(editor.session.bgTokenizer);
+      }
+    };
+  }
+]).directive("customInput", [
+  function() {
+    return {
+      restrict: "A",
+      require: "?ngModel",
+      link: function($scope, $element, $attrs, ngModel) {
+        if (ngModel == null) {
+          return;
         }
-      };
-    }
-  ]).directive("switch", [
-    function() {
-      return {
-        restrict: "E",
-        require: "?ngModel",
-        scope: {
-          value: '=ngModel'
-        },
-        replace: true,
-        template: "<div class=\"btn-group\">\n  <button type=\"button\" class=\"btn\" ng-click=\"value = false\" ng-class=\"{'btn-default':value, 'btn-primary active':!value}\">Draft</button>\n  <button type=\"button\" class=\"btn\" ng-click=\"value = true\" ng-class=\"{'btn-default':!value, 'btn-primary active':value}\">Public</button>\n</div>",
-        link: function($scope, $element, $attr, ngModel) {
-          $scope.$watch("value", function(value, old) {
-            if ((value != null) && (old != null) && value !== old) {
-              ngModel.$setViewValue(value);
-            }
-          });
-        }
-      };
-    }
-  ]);
-
-}).call(this);
-
-(function() {
-  angular.module("gitblog").factory("utils", [
-    function() {
-      return {
-        filterRepos: function(repos, names) {}
-      };
-    }
-  ]).filter("jekyll", [
-    function() {
-      var userPage;
-      userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]+)\.github\.(?:io|com)/;
-      return function(repos) {
-        if (!(repos instanceof Array)) {
-          return null;
-        }
-        return _.filter(repos, function(repo) {
-          var res;
-          if (res = repo.full_name.match(userPage)) {
-            if (res[1] === res[2]) {
-              return true;
-            }
+        $element.prop("contenteditable", true);
+        $element.prop("spellcheck", true);
+        ngModel.$render = function() {
+          $element.text(ngModel.$viewValue || '');
+        };
+        $element.on("keydown", function(e) {
+          if (e.keyCode === 13) {
+            e.preventDefault();
           }
-          return false;
+        }).on("blur keyup change", function() {
+          return $scope.$evalAsync();
+        }).on("input", function() {
+          ngModel.$setViewValue($element.text().replace(/[\n\r]/g, " "));
         });
-      };
-    }
-  ]).factory("githubUpload", [
-    "$rootScope", "$q", function($rootScope, $q) {
-      return function(files, uuids, _repo) {
-        var d;
-        d = $q.defer();
-        return {
-          promise: d.promise,
-          upload: function() {
-            var branch, message;
-            branch = _repo.getBranch('master');
-            message = "Upload image by gitblog-io.github.io at " + (new Date()).toLocaleString();
-            branch.writeMany(files, message).then(function(res) {
-              var uuid;
-              for (uuid in uuids) {
-                uuids[uuid] = '/' + uuids[uuid];
-              }
-              d.resolve(uuids, res);
-            }, function(err) {
-              err.uuids = uuids;
-              d.reject(err);
-            });
-            return d.promise;
+      }
+    };
+  }
+]).directive("switch", [
+  function() {
+    return {
+      restrict: "E",
+      require: "?ngModel",
+      scope: {
+        value: '=ngModel'
+      },
+      replace: true,
+      template: "<div class=\"btn-group\">\n  <button type=\"button\" class=\"btn\" ng-click=\"value = false\" ng-class=\"{'btn-default':value, 'btn-primary active':!value}\">Draft</button>\n  <button type=\"button\" class=\"btn\" ng-click=\"value = true\" ng-class=\"{'btn-default':!value, 'btn-primary active':value}\">Public</button>\n</div>",
+      link: function($scope, $element, $attr, ngModel) {
+        $scope.$watch("value", function(value, old) {
+          if ((value != null) && (old != null) && value !== old) {
+            ngModel.$setViewValue(value);
           }
-        };
-      };
-    }
-  ]).factory("uploader", [
-    "githubUpload", function(githubUpload) {
-      var upload;
-      upload = githubUpload;
-      return function(_repo) {
-        var process, processing, queue, recurse, self;
-        self = this;
-        queue = [];
-        processing = false;
-        recurse = function() {
-          if (queue.length > 0) {
-            queue[0].upload().then(function() {
-              queue.shift();
-              recurse();
-            }, function(err) {
-              console.log(err);
-              queue.shift();
-              recurse();
-            });
-          } else {
-            processing = false;
+        });
+      }
+    };
+  }
+]);
+
+angular.module("gitblog").factory("utils", [
+  function() {
+    return {
+      filterRepos: function(repos, names) {}
+    };
+  }
+]).filter("jekyll", [
+  function() {
+    var userPage;
+    userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]+)\.github\.(?:io|com)/;
+    return function(repos) {
+      if (!(repos instanceof Array)) {
+        return null;
+      }
+      return _.filter(repos, function(repo) {
+        var res;
+        if (res = repo.full_name.match(userPage)) {
+          if (res[1] === res[2]) {
+            return true;
           }
-        };
-        process = function() {
-          if (!processing) {
-            processing = true;
+        }
+        return false;
+      });
+    };
+  }
+]).factory("githubUpload", [
+  "$rootScope", "$q", function($rootScope, $q) {
+    return function(files, uuids, _repo) {
+      var d;
+      d = $q.defer();
+      return {
+        promise: d.promise,
+        upload: function() {
+          var branch, message;
+          branch = _repo.getBranch('master');
+          message = "Upload image by gitblog-io.github.io at " + (new Date()).toLocaleString();
+          branch.writeMany(files, message).then(function(res) {
+            var uuid;
+            for (uuid in uuids) {
+              uuids[uuid] = '/' + uuids[uuid];
+            }
+            d.resolve(uuids, res);
+          }, function(err) {
+            err.uuids = uuids;
+            d.reject(err);
+          });
+          return d.promise;
+        }
+      };
+    };
+  }
+]).factory("uploader", [
+  "githubUpload", function(githubUpload) {
+    var upload;
+    upload = githubUpload;
+    return function(_repo) {
+      var process, processing, queue, recurse, self;
+      self = this;
+      queue = [];
+      processing = false;
+      recurse = function() {
+        if (queue.length > 0) {
+          queue[0].upload().then(function() {
+            queue.shift();
             recurse();
-          }
-        };
-        return {
-          add: function(group) {
-            var res;
-            res = upload(group.files, group.uuids, _repo);
-            queue.push(res);
-            process();
-            return res.promise;
-          }
-        };
+          }, function(err) {
+            console.log(err);
+            queue.shift();
+            recurse();
+          });
+        } else {
+          processing = false;
+        }
       };
-    }
-  ]).factory("UUID", [
-    function() {
-      return function() {
-        var d, uuid;
-        d = (new Date()).getTime();
-        return uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          var r;
-          r = (d + Math.random() * 16) % 16 | 0;
-          d = Math.floor(d / 16);
-          return (c === 'x' ? r : r & 0x7 | 0x8).toString(16);
-        });
+      process = function() {
+        if (!processing) {
+          processing = true;
+          recurse();
+        }
       };
-    }
-  ]);
+      return {
+        add: function(group) {
+          var res;
+          res = upload(group.files, group.uuids, _repo);
+          queue.push(res);
+          process();
+          return res.promise;
+        }
+      };
+    };
+  }
+]).factory("UUID", [
+  function() {
+    return function() {
+      var d, uuid;
+      d = (new Date()).getTime();
+      return uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r;
+        r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c === 'x' ? r : r & 0x7 | 0x8).toString(16);
+      });
+    };
+  }
+]);
 
-}).call(this);
+angular.module("gitblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html', 'templates/about.html']);
 
-(function() {
-  angular.module("gitblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html', 'templates/about.html']);
+angular.module("templates/blog-list.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos track by repo.name\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n</li>");
+  }
+]);
 
-  angular.module("templates/blog-list.html", []).run([
-    "$templateCache", function($templateCache) {
-      return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos track by repo.name\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n</li>");
-    }
-  ]);
+angular.module("templates/post.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/post.html", "<article post ng-model=\"post\"></article>");
+  }
+]);
 
-  angular.module("templates/post.html", []).run([
-    "$templateCache", function($templateCache) {
-      return $templateCache.put("templates/post.html", "<article post ng-model=\"post\"></article>");
-    }
-  ]);
+angular.module("templates/editor.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/editor.html", "<form name=\"postForm\" unsaved-warning-form>\n  <div class=\"action text-right\">\n    <a class=\"btn btn-default\" ng-href=\"#!/{{username}}/{{reponame}}\">Back</a>\n    <button class=\"btn btn-danger\" ng-click=\"delete()\" ng-if=\"!new\">Delete</button>\n    <switch ng-model=\"frontMatter.published\"></switch>\n    <button ng-disabled=\"postForm.title.$invalid\" class=\"btn btn-success\" ng-click=\"save()\">Save</button>\n  </div>\n  <header class=\"page-header\">\n    <h1 name=\"title\" required custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 name=\"tagline\" custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <div class=\"drag-area\">Drop to upload</div>\n    <!--<textarea name=\"content\" class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>-->\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Your story\"></div>\n  </div>\n</form>");
+  }
+]);
 
-  angular.module("templates/editor.html", []).run([
-    "$templateCache", function($templateCache) {
-      return $templateCache.put("templates/editor.html", "<form name=\"postForm\" unsaved-warning-form>\n  <div class=\"action text-right\">\n    <a class=\"btn btn-default\" ng-href=\"#!/{{username}}/{{reponame}}\">Back</a>\n    <button class=\"btn btn-danger\" ng-click=\"delete()\" ng-if=\"!new\">Delete</button>\n    <switch ng-model=\"frontMatter.published\"></switch>\n    <button ng-disabled=\"postForm.title.$invalid\" class=\"btn btn-success\" ng-click=\"save()\">Save</button>\n  </div>\n  <header class=\"page-header\">\n    <h1 name=\"title\" required custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 name=\"tagline\" custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <div class=\"drag-area\">Drop to upload</div>\n    <!--<textarea name=\"content\" class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>-->\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Your story\"></div>\n  </div>\n</form>");
-    }
-  ]);
+angular.module("templates/list.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/list.html", "<div class=\"action text-right\">\n  <a class=\"btn btn-success\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>\n<div class=\"page-header text-center\">\n  <h1>Posts</h1>\n  <small class=\"text-muted\" ng-bind-template=\"in {{reponame}}\"></small>\n</div>\n<div class=\"list-item\" ng-repeat=\"post in posts | orderBy : 'date' : true\">\n  <h3>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h3>\n  <small><time class=\"text-muted\">{{post.date | date : 'MM/dd/yyyy'}}</time></small>\n</div>\n<div ng-show=\"!loading && !posts.length\" class=\"jumbotron text-center\">\n  <h3>No posts there.</h3>\n  <a class=\"btn btn-success btn-lg\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>");
+  }
+]);
 
-  angular.module("templates/list.html", []).run([
-    "$templateCache", function($templateCache) {
-      return $templateCache.put("templates/list.html", "<div class=\"action text-right\">\n  <a class=\"btn btn-success\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>\n<div class=\"page-header text-center\">\n  <h1>Posts</h1>\n  <small class=\"text-muted\" ng-bind-template=\"in {{reponame}}\"></small>\n</div>\n<div class=\"list-item\" ng-repeat=\"post in posts | orderBy : 'date' : true\">\n  <h3>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h3>\n  <small><time class=\"text-muted\">{{post.date | date : 'MM/dd/yyyy'}}</time></small>\n</div>\n<div ng-show=\"!loading && !posts.length\" class=\"jumbotron text-center\">\n  <h3>No posts there.</h3>\n  <a class=\"btn btn-success btn-lg\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>");
-    }
-  ]);
+angular.module("templates/index.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\" ng-click=\"createBlog()\">Create One</button>\n</div>");
+  }
+]);
 
-  angular.module("templates/index.html", []).run([
-    "$templateCache", function($templateCache) {
-      return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\" ng-click=\"createBlog()\">Create One</button>\n</div>");
-    }
-  ]);
-
-  angular.module("templates/about.html", []).run([
-    "$templateCache", function($templateCache) {
-      return $templateCache.put("templates/about.html", "<div class=\"page-header text-center\">\n  <h1>About gitblog</h1>\n  <small class=\"text-muted\">The easiest way to post on Github Pages</small>\n</div>\n<div class=\"text-center\">\n  <h3>Project</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/gitblog-io/gitblog-io.github.io/\"><i class=\"icon-github-alt\"></i> Gitblog</a></p>\n\n  <h3>Author</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/hyspace\"><i class=\"icon-cat\"></i> hyspace</a></p>\n\n  <h3>Bug report</h3>\n  <p><a target=\"_blank\" href=\"https://github.com/gitblog/gitblog-io.github.io/issues\">Issues</a></p>\n\n  <h3>Opensouce projects used in gitblog</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"http://www.angularjs.org/\">Angular.js</a></li>\n    <li><a target=\"_blank\" href=\"http://ace.c9.io/\">Ace editor</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/philschatz/octokit.js\">Octokit.js</a></li>\n    <li><a target=\"_blank\" href=\"http://jquery.com/\">jQuery</a></li>\n    <li><a target=\"_blank\" href=\"http://getbootstrap.com/\">Bootstrap</a></li>\n    <li><a target=\"_blank\" href=\"http://lodash.com/\">lodash</a></li>\n    <li><a target=\"_blank\" href=\"http://nodeca.github.io/js-yaml/\">js-yaml</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/agrublev/angularLocalStorage\">angularLocalStorage</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/facultymatt/angular-unsavedChanges\">angular-unsavedChanges</a></li>\n  </ul>\n\n  <h3>Other projects</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"https://stackedit.io/\">stackedit</a></li>\n    <li><a target=\"_blank\" href=\"http://prose.io/\">prose</a></li>\n  </ul>\n</div>");
-    }
-  ]);
-
-}).call(this);
+angular.module("templates/about.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/about.html", "<div class=\"page-header text-center\">\n  <h1>About gitblog</h1>\n  <small class=\"text-muted\">The easiest way to post on Github Pages</small>\n</div>\n<div class=\"text-center\">\n  <h3>Project</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/gitblog-io/gitblog-io.github.io/\"><i class=\"icon-github-alt\"></i> Gitblog</a></p>\n\n  <h3>Author</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/hyspace\"><i class=\"icon-cat\"></i> hyspace</a></p>\n\n  <h3>Bug report</h3>\n  <p><a target=\"_blank\" href=\"https://github.com/gitblog/gitblog-io.github.io/issues\">Issues</a></p>\n\n  <h3>Opensouce projects used in gitblog</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"http://www.angularjs.org/\">Angular.js</a></li>\n    <li><a target=\"_blank\" href=\"http://ace.c9.io/\">Ace editor</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/philschatz/octokit.js\">Octokit.js</a></li>\n    <li><a target=\"_blank\" href=\"http://jquery.com/\">jQuery</a></li>\n    <li><a target=\"_blank\" href=\"http://getbootstrap.com/\">Bootstrap</a></li>\n    <li><a target=\"_blank\" href=\"http://lodash.com/\">lodash</a></li>\n    <li><a target=\"_blank\" href=\"http://nodeca.github.io/js-yaml/\">js-yaml</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/agrublev/angularLocalStorage\">angularLocalStorage</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/facultymatt/angular-unsavedChanges\">angular-unsavedChanges</a></li>\n  </ul>\n\n  <h3>Other projects</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"https://stackedit.io/\">stackedit</a></li>\n    <li><a target=\"_blank\" href=\"http://prose.io/\">prose</a></li>\n  </ul>\n</div>");
+  }
+]);

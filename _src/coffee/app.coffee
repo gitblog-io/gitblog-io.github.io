@@ -103,7 +103,7 @@ angular.module "gitblog", [
         userDefer = $q.defer()
         user.getInfo()
         .then (info)->
-          $scope.$apply ->
+          $scope.$evalAsync ->
             $scope.username = info.login
           user.getRepos()
         , (err)->
@@ -112,7 +112,7 @@ angular.module "gitblog", [
           repos = jekyllFilter(repos)
           for repo in repos
             repo._repo = gh.getRepo(repo.owner.login, repo.name)
-          $scope.$apply ->
+          $scope.$evalAsync ->
             $scope.repos = $scope.repos.concat repos
           userDefer.resolve()
         , (err)->
@@ -130,7 +130,7 @@ angular.module "gitblog", [
         , (err)->
           window.logError "get org info failed"
         .then (resArrays)->
-          $scope.$apply ->
+          $scope.$evalAsync ->
             for res in resArrays
               repos = jekyllFilter(res)
               for repo in repos

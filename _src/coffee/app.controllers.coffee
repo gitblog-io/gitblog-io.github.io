@@ -32,7 +32,7 @@ angular.module "gitblog"
           return
         , 5000
         return
-      , (e)->
+      , ->
         $scope.$root.loading = false
         window.logError 'failed to fork'
       return
@@ -42,6 +42,7 @@ angular.module "gitblog"
 .controller "AboutController", [
   "$scope"
   ($scope)->
+    return
 ]
 
 .controller "ListController", [
@@ -79,7 +80,7 @@ angular.module "gitblog"
               configFileExists = true
 
           if configFileExists
-            $scope.$apply ->
+            $scope.$evalAsync ->
               $scope.$root.loading = false
               $scope.reponame = reponame
               $scope.username = username
@@ -153,7 +154,7 @@ angular.module "gitblog"
           .then (post)->
             $scope.saveCache()
 
-            $scope.$apply ->
+            $scope.$evalAsync ->
               $scope.$root.loading = false
               $scope.post = post
 

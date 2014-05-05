@@ -40,7 +40,7 @@ angular.module "gitblog"
       content = $scope.content
       viewValue = frontMatter + content
       ngModel.$setViewValue(viewValue)
-      $scope.$apply()
+      $scope.$evalAsync()
 
     promise = null
     $scope.$watch 'content', (data, oldData)->
@@ -59,7 +59,7 @@ angular.module "gitblog"
           when "s"
             event.preventDefault()
             if $scope.postForm.$dirty
-              $scope.$apply ->
+              $scope.$evalAsync ->
                 $scope.save()
 
     return
@@ -141,7 +141,7 @@ angular.module "gitblog"
 
       exec: (editor) ->
         if $scope.postForm.$dirty
-          $scope.$apply ->
+          $scope.$evalAsync ->
             $scope.save()
 
 
@@ -295,7 +295,7 @@ angular.module "gitblog"
         e.preventDefault()
       return
     .on "blur keyup change", ->
-      $scope.$apply()
+      $scope.$evalAsync()
     .on "input", ->
       ngModel.$setViewValue($element.text().replace(/[\n\r]/g, " "))
       return

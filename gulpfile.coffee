@@ -59,7 +59,7 @@ gulp.task "js", ->
   appQueue.queue(
     gulp.src COFFEE_FILES
       .pipe plumber()
-      .pipe coffee()
+      .pipe coffee(bare:true)
   )
 
   appQueue.done()
@@ -67,7 +67,7 @@ gulp.task "js", ->
     .pipe concat "application.js"
     .pipe gulp.dest("#{DEST_PATH}/js")
     .pipe concat "application.min.js"
-    .pipe uglify()
+    .pipe uglify(mangle: false)
     .pipe gulp.dest("#{DEST_PATH}/js")
 
 gulp.task "watch", ["css", "js"], ->
