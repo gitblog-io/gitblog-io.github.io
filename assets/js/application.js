@@ -67862,7 +67862,9 @@ See http://github.com/bgrins/filereader.js for documentation.
   });
 
   window.logError = function(errorMsg, url, lineNumber) {
-    ga('send', 'event', "Global", "Exception", "" + url + "(" + lineNumber + "): " + errorMsg);
+    if (typeof ga === "function") {
+      ga('send', 'event', "Global", "Exception", "" + url + "(" + lineNumber + "): " + errorMsg);
+    }
     if ((url == null) && (lineNumber == null)) {
       console.error(errorMsg);
       alert(errorMsg);

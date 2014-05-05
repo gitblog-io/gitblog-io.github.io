@@ -15,7 +15,7 @@ $(document.body)
   return
 
 window.logError = (errorMsg, url, lineNumber)->
-  ga('send', 'event', "Global", "Exception", "#{url}(#{lineNumber}): #{errorMsg}")
+  ga?('send', 'event', "Global", "Exception", "#{url}(#{lineNumber}): #{errorMsg}")
   if !url? and !lineNumber?
     console.error(errorMsg)
     alert(errorMsg)
