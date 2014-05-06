@@ -28,7 +28,6 @@ gulp.task "css", ->
 
 
 COFFEE_FILES = [
-  "#{SRC_PATH}/coffee/octokit*.coffee"
   "#{SRC_PATH}/coffee/app*.coffee"
 ]
 
@@ -41,7 +40,7 @@ JS_FILES = [
   "#{BOWER_PATH}/angular-animate/angular-animate.js"
   "#{BOWER_PATH}/angularLocalStorage/src/angularLocalStorage.js"
   "#{BOWER_PATH}/angular-unsavedChanges/dist/unsavedChanges.js"
-  # "#{BOWER_PATH}/octokit/octokit.js"
+  "#{BOWER_PATH}/octokit/octokit.js"
   "#{BOWER_PATH}/js-yaml/js-yaml.js"
   "#{BOWER_PATH}/ace-builds/src-noconflict/ace.js"
   "#{SRC_PATH}/js/mode-markdown.js"
