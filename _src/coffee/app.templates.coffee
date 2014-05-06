@@ -47,15 +47,18 @@ angular.module "templates/editor.html", []
             <switch ng-model="frontMatter.published"></switch>
             <button ng-disabled="postForm.title.$invalid" class="btn btn-success" ng-click="save()">Save</button>
           </div>
-          <header class="page-header">
+          <header class="page-header" frontmatter-raw ng-model="frontMatterRaw">
             <h1 name="title" required custom-input class="post-title" data-placeholder="Title" ng-model="frontMatter.title"></h1>
             <h3 name="tagline" custom-input class="post-tagline" data-placeholder="Tagline" ng-model="frontMatter.tagline"></h3>
+            <p class="text-right"><a href="javascript:" class="text-muted" ng-click="advanced = !advanced">{{advanced ? "Hide" : "Show"}} advanced info</a></p>
+            <div ng-class="{hidden:!advanced}">
+              <div frontmatter-editor ng-model="frontMatterRaw"></div>
+            </div>
           </header>
           <br>
           <div class="page-content">
             <div class="drag-area">Drop to upload</div>
-            <!--<textarea name="content" class="form-control" placeholder="Story..." ng-model="post"></textarea>-->
-            <div class="placeholder" editor ng-model="content" data-placeholder="Your story"></div>
+            <div class="placeholder" post-editor ng-model="content" data-placeholder="Your story"></div>
           </div>
         </form>
         """
@@ -82,7 +85,7 @@ angular.module "templates/list.html", []
           </h3>
           <small><time class="text-muted">{{post.date | date : 'MM/dd/yyyy'}}</time></small>
         </div>
-        <div ng-show="!loading && !posts.length" class="jumbotron text-center">
+        <div ng-show="!loading && posts.length == 0" class="jumbotron text-center">
           <h3>No posts there.</h3>
           <a class="btn btn-success btn-lg" ng-href="#!/{{username}}/{{reponame}}/new">New Post</a>
         </div>

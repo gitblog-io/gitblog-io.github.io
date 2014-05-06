@@ -80,11 +80,12 @@ angular.module "gitblog"
               configFileExists = true
 
           if configFileExists
+            $scope.$eval ->
+              $scope.posts = posts
             $scope.$evalAsync ->
-              $scope.$root.loading = false
               $scope.reponame = reponame
               $scope.username = username
-              $scope.posts = posts
+              $scope.$root.loading = false
       else
         window.logError "blog do not exist"
         $location.path('/').replace()

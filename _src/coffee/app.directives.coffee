@@ -14,33 +14,26 @@ angular.module "gitblog"
 
     ymlReg = /^(?:---\r?\n)((?:.|\r?\n)*?)\r?\n---\r?\n/
 
+    $scope.advanced = false
+
     ngModel.$formatters.push (modelValue)->
 
       if modelValue?
-        frontMatter = null
+        frontMatterRaw = ""
 
         content = modelValue.replace ymlReg, (match, yml)->
-          try
-            frontMatter = jsyaml.safeLoad yml
-            if !frontMatter.published? then frontMatter.published = true
-          catch e
-            window.logError e.toString()
-
+          frontMatterRaw = yml
           return ''
 
         $scope.$evalAsync ->
-          $scope.frontMatter = frontMatter
+          $scope.frontMatterRaw = frontMatterRaw
           $scope.content = content
 
       return modelValue
 
     update = ->
-      yml = jsyaml.safeDump $scope.frontMatter, skipInvalid: true
-      frontMatter = "---\n#{yml}---\n"
-      content = $scope.content
-      viewValue = frontMatter + content
+      viewValue = "---\n#{$scope.frontMatterRaw}---\n" + $scope.content
       ngModel.$setViewValue(viewValue)
-      $scope.$evalAsync()
 
     promise = null
     $scope.$watch 'content', (data, oldData)->
@@ -48,10 +41,10 @@ angular.module "gitblog"
         $timeout.cancel promise if promise?
         promise = $timeout update, 10
 
-    $scope.$watchCollection 'frontMatter', (data, oldData)->
-      if data? and oldData?
+    $scope.$watch 'frontMatterRaw', (data, oldData)->
+      if data? and oldData? and data isnt oldData
         $timeout.cancel promise if promise?
-        promise = $timeout update, 200
+        promise = $timeout update, 10
 
     $(window).on "keydown", (event) ->
       if event.ctrlKey or event.metaKey
@@ -66,8 +59,111 @@ angular.module "gitblog"
 
 ]
 
-.directive 'editor', ["$timeout", "UUID", ($timeout, UUID)->
-  restrict:"EA"
+.directive "frontmatterRaw", ["$timeout", ($timeout)->
+  restrict: "A"
+  require: "?ngModel"
+  link:($scope, $element, $attr, ngModel)->
+    return unless ngModel?
+
+    ngModel.$formatters.push (modelValue)->
+
+      if modelValue?
+        frontMatter = null
+
+        try
+          frontMatter = jsyaml.safeLoad modelValue
+          if !frontMatter.published? then frontMatter.published = true
+        catch e
+          console.warn e.toString()
+
+        $scope.$evalAsync ->
+          $scope.frontMatter = frontMatter
+
+      return modelValue
+
+    update = ->
+      yml = jsyaml.safeDump $scope.frontMatter, skipInvalid: true
+      ngModel.$setViewValue(yml)
+
+    promise = null
+    $scope.$watchCollection 'frontMatter', (data, oldData)->
+      if data? and oldData? and data isnt oldData
+        $timeout.cancel promise if promise?
+        promise = $timeout update, 200
+
+    return
+
+]
+
+.directive 'frontmatterEditor', [
+  "$timeout"
+  ($timeout)->
+    restrict:"A"
+    require:"?ngModel"
+    link:($scope, $element, $attrs, ngModel)->
+      return unless ngModel?
+
+      window.ace.config.set('basePath', '/assets/js/ace')
+      editor = window.ace.edit($element[0])
+      editor.setFontSize 16
+      editor.setOptions
+        maxLines: Infinity
+      editor.setShowPrintMargin false
+      editor.setHighlightActiveLine false
+      editor.renderer.setShowGutter false
+      editor.setTheme('ace/theme/tomorrow-markdown')
+
+      session = editor.getSession()
+      session.setUseWrapMode true
+      session.setUseSoftTabs true
+      session.setTabSize 2
+      session.setMode "ace/mode/yaml"
+
+      ngModel.$formatters.push (value) ->
+        if angular.isUndefined(value) or value is null or value == ""
+          $element.addClass "placeholder"
+          return ""
+        else if angular.isObject(value) or angular.isArray(value)
+          window.logError("ace cannot use an object or an array as a model")
+        else
+          $element.removeClass "placeholder"
+        value
+
+      ngModel.$render = ->
+        session.setValue ngModel.$viewValue
+        return
+
+      loaded = false
+      update = ->
+        viewValue = session.getValue()
+        ngModel.$setViewValue(viewValue)
+        if !loaded
+          $scope.postForm.$setPristine()
+          loaded = true
+
+      promise = null
+      onChange = ->
+        $timeout.cancel promise if promise?
+        promise = $timeout update, 190, true
+
+      session.on "change", onChange
+
+      editor.on "focus", ->
+        $element.removeClass "placeholder"
+
+      editor.on "blur", ->
+        if session.getValue() == ""
+          $element.addClass "placeholder"
+
+      $element.on "$destroy", ->
+        editor.session.$stopWorker()
+        editor.destroy()
+        return
+
+]
+
+.directive 'postEditor', ["$timeout", "UUID", ($timeout, UUID)->
+  restrict:"A"
   require:"?ngModel"
   link:($scope, $element, $attrs, ngModel)->
     return unless ngModel?
