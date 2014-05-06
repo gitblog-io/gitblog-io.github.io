@@ -31,18 +31,17 @@ COFFEE_FILES = [
   "#{SRC_PATH}/coffee/app*.coffee"
 ]
 
-JS_FILES = [
-  "#{BOWER_PATH}/lodash/dist/lodash.underscore.js"
-  "#{BOWER_PATH}/jquery/dist/jquery.js"
-  "#{BOWER_PATH}/angular/angular.js"
-  "#{BOWER_PATH}/angular-route/angular-route.js"
-  "#{BOWER_PATH}/angular-cookies/angular-cookies.js"
-  "#{BOWER_PATH}/angular-animate/angular-animate.js"
+FRAMEWORK_FILES = [
+  "#{BOWER_PATH}/jquery/dist/jquery.min.js"
+  "#{BOWER_PATH}/angular/angular.min.js"
+  "#{BOWER_PATH}/angular-route/angular-route.min.js"
+  "#{BOWER_PATH}/angular-cookies/angular-cookies.min.js"
+  "#{BOWER_PATH}/angular-animate/angular-animate.min.js"
   "#{BOWER_PATH}/angularLocalStorage/src/angularLocalStorage.js"
   "#{BOWER_PATH}/angular-unsavedChanges/dist/unsavedChanges.js"
   "#{BOWER_PATH}/octokit/octokit.js"
-  "#{BOWER_PATH}/js-yaml/js-yaml.js"
-  "#{BOWER_PATH}/ace-builds/src-noconflict/ace.js"
+  "#{BOWER_PATH}/js-yaml/js-yaml.min.js"
+  "#{BOWER_PATH}/ace-builds/src-min-noconflict/ace.js"
   "#{SRC_PATH}/js/mode-markdown.js"
   "#{SRC_PATH}/js/ext-settings_menu.js"
   "#{SRC_PATH}/js/theme-tomorrow-markdown.js"
@@ -51,9 +50,6 @@ JS_FILES = [
 
 gulp.task "js", ->
   appQueue = streamqueue(objectMode: true)
-  appQueue.queue(
-    gulp.src JS_FILES
-  )
 
   appQueue.queue(
     gulp.src COFFEE_FILES
@@ -69,8 +65,15 @@ gulp.task "js", ->
     .pipe uglify(mangle: false)
     .pipe gulp.dest("#{DEST_PATH}/js")
 
+
+gulp.task "framework", ->
+  gulp.src FRAMEWORK_FILES
+    .pipe concat "framework.js"
+    .pipe gulp.dest("#{DEST_PATH}/js")
+
 gulp.task "watch", ["css", "js"], ->
   gulp.watch COFFEE_FILES, ["js"]
+  gulp.watch FRAMEWORK_FILES, ["framework"]
   gulp.watch "#{SRC_PATH}/less/*.less", ["css"]
 
 FILES =[
@@ -84,4 +87,4 @@ gulp.task "copy", ->
   gulp.src "#{BOWER_PATH}/ace-builds/src-min-noconflict/**/*.js"
     .pipe gulp.dest("#{DEST_PATH}/js/ace/")
 
-gulp.task "default", ["css", "js", "copy", "watch"]
+gulp.task "default", ["css", "js", "framework", "copy", "watch"]
