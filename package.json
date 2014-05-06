@@ -8,7 +8,8 @@
     "url": "git://github.com/gitblog/gitblog-io.github.io.git"
   },
   "scripts": {
-    "start": "rm -rf ./assets && ./node_modules/.bin/gulp --require coffee-script/register"
+    "start": "rm -rf ./assets && ./node_modules/.bin/gulp --require coffee-script/register",
+    "build": "rm -rf ./assets && ./node_modules/.bin/gulp production --require coffee-script/register"
   },
   "keywords": [
     "jekyll",
@@ -31,6 +32,7 @@
     "gulp-concat": "^2.1.7",
     "coffee-script": "^1.7.1",
     "streamqueue": "^0.0.5",
-    "gulp-uglify": "^0.2.1"
+    "gulp-uglify": "^0.2.1",
+    "gulp-rename": "^1.2.0"
   }
 }
