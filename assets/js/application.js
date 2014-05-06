@@ -331,8 +331,13 @@ angular.module("gitblog").controller("IndexController", [
           }).then(function(tree) {
             var blob;
             $scope.saveCache();
-            blob = _.findWhere(tree, {
-              path: path
+            blob = null;
+            tree.some(function(file) {
+              if (file.path === path) {
+                blob = file;
+                return true;
+              }
+              return false;
             });
             if (blob != null) {
               sha = blob.sha;
@@ -751,7 +756,7 @@ angular.module("gitblog").factory("utils", [
       if (!(repos instanceof Array)) {
         return null;
       }
-      return _.filter(repos, function(repo) {
+      return repos.filter(function(repo) {
         var res;
         if (res = repo.full_name.match(userPage)) {
           if (res[1].toLowerCase() === res[2].toLowerCase()) {
