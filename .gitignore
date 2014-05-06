@@ -4,3 +4,6 @@ bower_components
 
 *.log
 *.sublime*
+.idea/*
+
+.DS_Store
