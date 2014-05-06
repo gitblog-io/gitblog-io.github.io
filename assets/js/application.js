@@ -68266,7 +68266,9 @@ angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsav
         });
         $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
         return $scope.blogListReady.then(function() {
-          $scope.loading = false;
+          $scope.$evalAsync(function() {
+            return $scope.loading = false;
+          });
           $scope.saveCache();
           return $scope.getRepo = function(username, reponame) {
             var repo, _i, _len, _ref;

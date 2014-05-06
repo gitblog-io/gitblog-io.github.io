@@ -143,7 +143,8 @@ angular.module "gitblog", [
         $scope.blogListReady = $q.all [userDefer.promise, orgDefer.promise]
         $scope.blogListReady
         .then ->
-          $scope.loading = false
+          $scope.$evalAsync ->
+            $scope.loading = false
           $scope.saveCache()
 
           $scope.getRepo = (username, reponame)->
