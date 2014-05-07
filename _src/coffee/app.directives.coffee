@@ -110,7 +110,6 @@ angular.module "gitblog"
         maxLines: Infinity
       editor.setShowPrintMargin false
       editor.setHighlightActiveLine false
-      editor.renderer.setShowGutter false
       editor.setTheme('ace/theme/tomorrow-markdown')
 
       session = editor.getSession()
@@ -134,9 +133,30 @@ angular.module "gitblog"
         return
 
       loaded = false
-      update = ->
+      update = (setValue)->
         viewValue = session.getValue()
-        ngModel.$setViewValue(viewValue)
+        valid = true
+        try
+          frontMatter = jsyaml.safeLoad viewValue
+        catch e
+          valid = false
+          session.setAnnotations [
+            row: e.mark.line
+            column: e.mark.column
+            text: e.message
+            type: "error"
+          ]
+
+        ngModel.$setValidity("yaml", valid)
+
+        if valid
+          session.clearAnnotations()
+
+          if setValue is true
+            $scope.$evalAsync ->
+              ngModel.$setViewValue(viewValue)
+
+        # special situation for first load
         if !loaded
           $scope.postForm.$setPristine()
           loaded = true
@@ -154,6 +174,10 @@ angular.module "gitblog"
       editor.on "blur", ->
         if session.getValue() == ""
           $element.addClass "placeholder"
+
+        $timeout.cancel promise if promise?
+        update(true)
+
 
       $element.on "$destroy", ->
         editor.session.$stopWorker()

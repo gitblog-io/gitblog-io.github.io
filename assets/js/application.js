@@ -236,11 +236,13 @@ angular.module("gitblog").controller("IndexController", [
             }
           }
           if (configFileExists) {
+            $scope.$eval(function() {
+              return $scope.posts = posts;
+            });
             return $scope.$evalAsync(function() {
-              $scope.$root.loading = false;
               $scope.reponame = reponame;
               $scope.username = username;
-              return $scope.posts = posts;
+              return $scope.$root.loading = false;
             });
           }
         });
@@ -407,40 +409,26 @@ angular.module("gitblog").directive("blogList", [
           return;
         }
         ymlReg = /^(?:---\r?\n)((?:.|\r?\n)*?)\r?\n---\r?\n/;
+        $scope.advanced = false;
         ngModel.$formatters.push(function(modelValue) {
-          var content, frontMatter;
+          var content, frontMatterRaw;
           if (modelValue != null) {
-            frontMatter = null;
+            frontMatterRaw = "";
             content = modelValue.replace(ymlReg, function(match, yml) {
-              var e;
-              try {
-                frontMatter = jsyaml.safeLoad(yml);
-                if (frontMatter.published == null) {
-                  frontMatter.published = true;
-                }
-              } catch (_error) {
-                e = _error;
-                window.logError(e.toString());
-              }
+              frontMatterRaw = yml;
               return '';
             });
             $scope.$evalAsync(function() {
-              $scope.frontMatter = frontMatter;
+              $scope.frontMatterRaw = frontMatterRaw;
               return $scope.content = content;
             });
           }
           return modelValue;
         });
         update = function() {
-          var content, frontMatter, viewValue, yml;
-          yml = jsyaml.safeDump($scope.frontMatter, {
-            skipInvalid: true
-          });
-          frontMatter = "---\n" + yml + "---\n";
-          content = $scope.content;
-          viewValue = frontMatter + content;
-          ngModel.$setViewValue(viewValue);
-          return $scope.$evalAsync();
+          var viewValue;
+          viewValue = ("---\n" + $scope.frontMatterRaw + "---\n") + $scope.content;
+          return ngModel.$setViewValue(viewValue);
         };
         promise = null;
         $scope.$watch('content', function(data, oldData) {
@@ -451,12 +439,12 @@ angular.module("gitblog").directive("blogList", [
             return promise = $timeout(update, 10);
           }
         });
-        $scope.$watchCollection('frontMatter', function(data, oldData) {
-          if ((data != null) && (oldData != null)) {
+        $scope.$watch('frontMatterRaw', function(data, oldData) {
+          if ((data != null) && (oldData != null) && data !== oldData) {
             if (promise != null) {
               $timeout.cancel(promise);
             }
-            return promise = $timeout(update, 200);
+            return promise = $timeout(update, 10);
           }
         });
         $(window).on("keydown", function(event) {
@@ -475,10 +463,156 @@ angular.module("gitblog").directive("blogList", [
       }
     };
   }
-]).directive('editor', [
+]).directive("frontmatterRaw", [
+  "$timeout", function($timeout) {
+    return {
+      restrict: "A",
+      require: "?ngModel",
+      link: function($scope, $element, $attr, ngModel) {
+        var promise, update;
+        if (ngModel == null) {
+          return;
+        }
+        ngModel.$formatters.push(function(modelValue) {
+          var e, frontMatter;
+          if (modelValue != null) {
+            frontMatter = null;
+            try {
+              frontMatter = jsyaml.safeLoad(modelValue);
+              if (frontMatter.published == null) {
+                frontMatter.published = true;
+              }
+            } catch (_error) {
+              e = _error;
+              console.warn(e.toString());
+            }
+            $scope.$evalAsync(function() {
+              return $scope.frontMatter = frontMatter;
+            });
+          }
+          return modelValue;
+        });
+        update = function() {
+          var yml;
+          yml = jsyaml.safeDump($scope.frontMatter, {
+            skipInvalid: true
+          });
+          return ngModel.$setViewValue(yml);
+        };
+        promise = null;
+        $scope.$watchCollection('frontMatter', function(data, oldData) {
+          if ((data != null) && (oldData != null) && data !== oldData) {
+            if (promise != null) {
+              $timeout.cancel(promise);
+            }
+            return promise = $timeout(update, 200);
+          }
+        });
+      }
+    };
+  }
+]).directive('frontmatterEditor', [
+  "$timeout", function($timeout) {
+    return {
+      restrict: "A",
+      require: "?ngModel",
+      link: function($scope, $element, $attrs, ngModel) {
+        var editor, loaded, onChange, promise, session, update;
+        if (ngModel == null) {
+          return;
+        }
+        window.ace.config.set('basePath', '/assets/js/ace');
+        editor = window.ace.edit($element[0]);
+        editor.setFontSize(16);
+        editor.setOptions({
+          maxLines: Infinity
+        });
+        editor.setShowPrintMargin(false);
+        editor.setHighlightActiveLine(false);
+        editor.setTheme('ace/theme/tomorrow-markdown');
+        session = editor.getSession();
+        session.setUseWrapMode(true);
+        session.setUseSoftTabs(true);
+        session.setTabSize(2);
+        session.setMode("ace/mode/yaml");
+        ngModel.$formatters.push(function(value) {
+          if (angular.isUndefined(value) || value === null || value === "") {
+            $element.addClass("placeholder");
+            return "";
+          } else if (angular.isObject(value) || angular.isArray(value)) {
+            window.logError("ace cannot use an object or an array as a model");
+          } else {
+            $element.removeClass("placeholder");
+          }
+          return value;
+        });
+        ngModel.$render = function() {
+          session.setValue(ngModel.$viewValue);
+        };
+        loaded = false;
+        update = function(setValue) {
+          var e, frontMatter, valid, viewValue;
+          viewValue = session.getValue();
+          valid = true;
+          try {
+            frontMatter = jsyaml.safeLoad(viewValue);
+          } catch (_error) {
+            e = _error;
+            valid = false;
+            session.setAnnotations([
+              {
+                row: e.mark.line,
+                column: e.mark.column,
+                text: e.message,
+                type: "error"
+              }
+            ]);
+          }
+          ngModel.$setValidity("yaml", valid);
+          if (valid) {
+            session.clearAnnotations();
+            if (setValue === true) {
+              $scope.$evalAsync(function() {
+                return ngModel.$setViewValue(viewValue);
+              });
+            }
+          }
+          if (!loaded) {
+            $scope.postForm.$setPristine();
+            return loaded = true;
+          }
+        };
+        promise = null;
+        onChange = function() {
+          if (promise != null) {
+            $timeout.cancel(promise);
+          }
+          return promise = $timeout(update, 190, true);
+        };
+        session.on("change", onChange);
+        editor.on("focus", function() {
+          return $element.removeClass("placeholder");
+        });
+        editor.on("blur", function() {
+          if (session.getValue() === "") {
+            $element.addClass("placeholder");
+          }
+          if (promise != null) {
+            $timeout.cancel(promise);
+          }
+          return update(true);
+        });
+        return $element.on("$destroy", function() {
+          editor.session.$stopWorker();
+          editor.destroy();
+        });
+      }
+    };
+  }
+]).directive('postEditor', [
   "$timeout", "UUID", function($timeout, UUID) {
     return {
-      restrict: "EA",
+      restrict: "A",
       require: "?ngModel",
       link: function($scope, $element, $attrs, ngModel) {
         var editor, groups, loaded, onChange, opts, promise, session, update;
@@ -864,13 +998,13 @@ angular.module("templates/post.html", []).run([
 
 angular.module("templates/editor.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/editor.html", "<form name=\"postForm\" unsaved-warning-form>\n  <div class=\"action text-right\">\n    <a class=\"btn btn-default\" ng-href=\"#!/{{username}}/{{reponame}}\">Back</a>\n    <button class=\"btn btn-danger\" ng-click=\"delete()\" ng-if=\"!new\">Delete</button>\n    <switch ng-model=\"frontMatter.published\"></switch>\n    <button ng-disabled=\"postForm.title.$invalid\" class=\"btn btn-success\" ng-click=\"save()\">Save</button>\n  </div>\n  <header class=\"page-header\">\n    <h1 name=\"title\" required custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 name=\"tagline\" custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <div class=\"drag-area\">Drop to upload</div>\n    <!--<textarea name=\"content\" class=\"form-control\" placeholder=\"Story...\" ng-model=\"post\"></textarea>-->\n    <div class=\"placeholder\" editor ng-model=\"content\" data-placeholder=\"Your story\"></div>\n  </div>\n</form>");
+    return $templateCache.put("templates/editor.html", "<form name=\"postForm\" unsaved-warning-form>\n  <div class=\"action text-right\">\n    <a class=\"btn btn-default\" ng-href=\"#!/{{username}}/{{reponame}}\">Back</a>\n    <button class=\"btn btn-danger\" ng-click=\"delete()\" ng-if=\"!new\">Delete</button>\n    <switch name=\"published\" ng-model=\"frontMatter.published\"></switch>\n    <button ng-disabled=\"postForm.$invalid\" class=\"btn btn-success\" ng-click=\"save()\">Save</button>\n  </div>\n  <header class=\"page-header\" frontmatter-raw ng-model=\"frontMatterRaw\">\n    <h1 name=\"title\" required custom-input class=\"post-title\" data-placeholder=\"Title\" ng-model=\"frontMatter.title\"></h1>\n    <h3 name=\"tagline\" custom-input class=\"post-tagline\" data-placeholder=\"Tagline\" ng-model=\"frontMatter.tagline\"></h3>\n    <p class=\"text-right\"><a href=\"javascript:\" class=\"text-muted\" ng-click=\"advanced = !advanced\">{{advanced ? \"Hide\" : \"Edit\"}} raw frontmatter (advanded)</a></p>\n    <div ng-class=\"{hidden:!advanced}\">\n      <div name=\"frontmatter\" frontmatter-editor ng-model=\"frontMatterRaw\"></div>\n    </div>\n  </header>\n  <br>\n  <div class=\"page-content\">\n    <div class=\"drag-area\">Drop to upload</div>\n    <div class=\"placeholder\" post-editor ng-model=\"content\" data-placeholder=\"Your story\"></div>\n  </div>\n</form>");
   }
 ]);
 
 angular.module("templates/list.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/list.html", "<div class=\"action text-right\">\n  <a class=\"btn btn-success\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>\n<div class=\"page-header text-center\">\n  <h1>Posts</h1>\n  <small class=\"text-muted\" ng-bind-template=\"in {{reponame}}\"></small>\n</div>\n<div class=\"list-item\" ng-repeat=\"post in posts | orderBy : 'date' : true\">\n  <h3>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h3>\n  <small><time class=\"text-muted\">{{post.date | date : 'MM/dd/yyyy'}}</time></small>\n</div>\n<div ng-show=\"!loading && !posts.length\" class=\"jumbotron text-center\">\n  <h3>No posts there.</h3>\n  <a class=\"btn btn-success btn-lg\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>");
+    return $templateCache.put("templates/list.html", "<div class=\"action text-right\">\n  <a class=\"btn btn-success\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>\n<div class=\"page-header text-center\">\n  <h1>Posts</h1>\n  <small class=\"text-muted\" ng-bind-template=\"in {{reponame}}\"></small>\n</div>\n<div class=\"list-item\" ng-repeat=\"post in posts | orderBy : 'date' : true\">\n  <h3>\n    <a ng-href=\"#!/{{post.user}}/{{post.repo}}/{{post.info.path}}\">{{post.urlTitle}}</a>\n    <small ng-if=\"post.type=='_drafts'\">(draft)</small>\n  </h3>\n  <small><time class=\"text-muted\">{{post.date | date : 'MM/dd/yyyy'}}</time></small>\n</div>\n<div ng-show=\"!loading && posts.length == 0\" class=\"jumbotron text-center\">\n  <h3>No posts there.</h3>\n  <a class=\"btn btn-success btn-lg\" ng-href=\"#!/{{username}}/{{reponame}}/new\">New Post</a>\n</div>");
   }
 ]);
 

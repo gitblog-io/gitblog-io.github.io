@@ -44,15 +44,15 @@ angular.module "templates/editor.html", []
           <div class="action text-right">
             <a class="btn btn-default" ng-href="#!/{{username}}/{{reponame}}">Back</a>
             <button class="btn btn-danger" ng-click="delete()" ng-if="!new">Delete</button>
-            <switch ng-model="frontMatter.published"></switch>
-            <button ng-disabled="postForm.title.$invalid" class="btn btn-success" ng-click="save()">Save</button>
+            <switch name="published" ng-model="frontMatter.published"></switch>
+            <button ng-disabled="postForm.$invalid" class="btn btn-success" ng-click="save()">Save</button>
           </div>
           <header class="page-header" frontmatter-raw ng-model="frontMatterRaw">
             <h1 name="title" required custom-input class="post-title" data-placeholder="Title" ng-model="frontMatter.title"></h1>
             <h3 name="tagline" custom-input class="post-tagline" data-placeholder="Tagline" ng-model="frontMatter.tagline"></h3>
-            <p class="text-right"><a href="javascript:" class="text-muted" ng-click="advanced = !advanced">{{advanced ? "Hide" : "Show"}} advanced info</a></p>
+            <p class="text-right"><a href="javascript:" class="text-muted" ng-click="advanced = !advanced">{{advanced ? "Hide" : "Edit"}} raw frontmatter (advanded)</a></p>
             <div ng-class="{hidden:!advanced}">
-              <div frontmatter-editor ng-model="frontMatterRaw"></div>
+              <div name="frontmatter" frontmatter-editor ng-model="frontMatterRaw"></div>
             </div>
           </header>
           <br>
