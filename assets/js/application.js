@@ -211,12 +211,11 @@ angular.module("gitblog").controller("IndexController", [
         return _repo.git.getTree('master', {
           recursive: true
         }).then(function(tree) {
-          var configFileExists, configFileReg, file, postReg, posts, res, _i, _len;
+          var configFileExists, file, postReg, posts, res, _i, _len;
           $scope.saveCache();
           posts = [];
           configFileExists = false;
           postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/;
-          configFileReg = /^_config.yml$/;
           for (_i = 0, _len = tree.length; _i < _len; _i++) {
             file = tree[_i];
             if (file.type !== 'blob') {
@@ -231,20 +230,14 @@ angular.module("gitblog").controller("IndexController", [
                 urlTitle: res[5],
                 info: file
               });
-            } else if (configFileReg.test(file.path)) {
-              configFileExists = true;
             }
           }
-          if (configFileExists) {
-            $scope.$eval(function() {
-              return $scope.posts = posts;
-            });
-            return $scope.$evalAsync(function() {
-              $scope.reponame = reponame;
-              $scope.username = username;
-              return $scope.$root.loading = false;
-            });
-          }
+          return $scope.$evalAsync(function() {
+            $scope.posts = posts;
+            $scope.reponame = reponame;
+            $scope.username = username;
+            return $scope.$root.loading = false;
+          });
         });
       } else {
         window.logError("blog do not exist");
@@ -373,7 +366,7 @@ angular.module("gitblog").controller("IndexController", [
                 });
                 return $timeout(function() {
                   return $location.path("/" + username + "/" + reponame + "/" + path).replace();
-                }, 1500);
+                }, 2500);
               });
             };
           } else {

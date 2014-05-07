@@ -65,7 +65,7 @@ angular.module "gitblog"
           configFileExists = false
 
           postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/
-          configFileReg = /^_config.yml$/
+          # configFileReg = /^_config.yml$/
           for file in tree
             if file.type != 'blob' then continue
             if res = file.path.match postReg
@@ -76,16 +76,13 @@ angular.module "gitblog"
                 date:new Date(parseInt(res[2], 10), parseInt(res[3], 10) - 1, parseInt(res[4], 10))
                 urlTitle:res[5]
                 info:file
-            else if configFileReg.test file.path
-              configFileExists = true
 
-          if configFileExists
-            $scope.$eval ->
-              $scope.posts = posts
-            $scope.$evalAsync ->
-              $scope.reponame = reponame
-              $scope.username = username
-              $scope.$root.loading = false
+          $scope.$evalAsync ->
+            $scope.posts = posts
+            $scope.reponame = reponame
+            $scope.username = username
+            $scope.$root.loading = false
+
       else
         window.logError "blog do not exist"
         $location.path('/').replace()
@@ -222,7 +219,7 @@ angular.module "gitblog"
                 $timeout ->
                   $location.path("/#{username}/#{reponame}/#{path}")
                   .replace()
-                , 1500
+                , 2500
 
           else
             searchAndShow()
