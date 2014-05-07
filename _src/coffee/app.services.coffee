@@ -8,7 +8,7 @@ angular.module "gitblog"
   userPage = /([A-Za-z0-9][A-Za-z0-9-]*)\/([A-Za-z0-9][A-Za-z0-9-]+)\.github\.(?:io|com)/i
   (repos)->
     return null unless repos instanceof Array
-    _.filter repos, (repo)->
+    repos.filter (repo)->
       if res = repo.full_name.match userPage
         if res[1].toLowerCase() == res[2].toLowerCase()
           return true
