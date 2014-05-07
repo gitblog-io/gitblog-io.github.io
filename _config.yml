@@ -1,3 +1,4 @@
 name: Gitblog
 markdown: redcarpet
 exclude: ['_src', 'bower_components', 'node_modules', '*.json', '*.coffee', 'LICENSE', 'README.md']
+port: 80

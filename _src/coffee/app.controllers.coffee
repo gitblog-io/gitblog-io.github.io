@@ -174,8 +174,13 @@ angular.module "gitblog"
           .then (tree)->
             $scope.saveCache()
 
-            blob = _.findWhere tree,
-              path: path
+            blob = null
+            tree.some (file)->
+              if file.path == path
+                blob = file
+                return true
+              return false
+
             if blob?
               sha = blob.sha
               show()
