@@ -15,7 +15,7 @@ angular.module "templates/blog-list.html", []
         """
         <li ng-repeat="repo in repos track by repo.name">
           <a ng-href="#!/{{repo.full_name}}">
-            <img ng-src="{{repo.owner.avatar_url}}" class="avatar">
+            <img ng-src="{{repo.owner.avatar_url}}s=140" class="avatar">
             {{repo.owner.login}}
           </a>
         </li>
@@ -106,7 +106,7 @@ angular.module "templates/index.html", []
         <div class="index-wrap">
           <div class="media list-item" ng-repeat="repo in repos track by repo.name">
             <div class="pull-left">
-              <img ng-src="{{repo.owner.avatar_url}}" class="media-object avatar avatar-large">
+              <img ng-src="{{repo.owner.avatar_url}}s=140" class="media-object avatar avatar-large">
             </div>
             <div class="media-body">
               <h3 class="media-heading"><a ng-href="#!/{{repo.full_name}}">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>

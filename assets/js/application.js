@@ -979,7 +979,7 @@ angular.module("gitblog.templates", ['templates/editor.html', 'templates/list.ht
 
 angular.module("templates/blog-list.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos track by repo.name\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n</li>");
+    return $templateCache.put("templates/blog-list.html", "<li ng-repeat=\"repo in repos track by repo.name\">\n  <a ng-href=\"#!/{{repo.full_name}}\">\n    <img ng-src=\"{{repo.owner.avatar_url}}s=140\" class=\"avatar\">\n    {{repo.owner.login}}\n  </a>\n</li>");
   }
 ]);
 
@@ -1003,7 +1003,7 @@ angular.module("templates/list.html", []).run([
 
 angular.module("templates/index.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\" ng-click=\"createBlog()\">Create One</button>\n</div>");
+    return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}s=140\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\" ng-click=\"createBlog()\">Create One</button>\n</div>");
   }
 ]);
 
