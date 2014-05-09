@@ -21,7 +21,8 @@ layout: default
   // check localStorage in the homepage
   function loginRedirect()
   {
-      if(localStorage.getItem('token')){
+      var tokenReg = /\w{40}/
+      if(localStorage.getItem('token').match(tokenReg)){
           // if yes, redirect to /app/#!/
           window.location.href="/app/";
       }else{
