@@ -17,4 +17,19 @@ layout: default
     sessionStorage.setItem('state', state)
     window.location.href = "https://github.com/login/oauth/authorize?client_id=e01393d04d6b30f08267&scope=public_repo,read:org&state=" + state
   }
+
+  // check localStorage in the homepage
+  function loginRedirect()
+  {
+      var tokenReg = /\w{40}/
+      if(localStorage.getItem('token').match(tokenReg)){
+          // if yes, redirect to /app/#!/
+          window.location.href="/app/";
+      }else{
+          // do nothing
+      }
+  }
+
+  loginRedirect();
+
 </script>
