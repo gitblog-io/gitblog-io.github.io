@@ -5,6 +5,7 @@ angular.module "gitblog.templates", [
   'templates/blog-list.html'
   'templates/post.html'
   'templates/about.html'
+  'templates/blank.html'
 ]
 
 angular.module "templates/blog-list.html", []
