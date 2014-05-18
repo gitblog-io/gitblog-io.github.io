@@ -64,7 +64,7 @@ angular.module "gitblog"
           posts = []
           configFileExists = false
 
-          postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.md$/
+          postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.(?:markdown|md)$/
           # configFileReg = /^_config.yml$/
           for file in tree
             if file.type != 'blob' then continue
