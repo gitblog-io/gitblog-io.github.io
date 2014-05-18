@@ -229,3 +229,11 @@ angular.module "gitblog"
         window.logError "blog do not exist"
         $location.path('/').replace()
 ]
+
+.controller "SignoutController", [
+  "$scope"
+  "storage"
+  ($scope, storage)->
+    storage.clearAll()
+    window.location.replace('/');
+]

@@ -167,3 +167,10 @@ angular.module "templates/about.html", []
         """
       )
   ]
+
+angular.module "templates/blank.html", []
+  .run [
+  "$templateCache"
+  ($templateCache) ->
+    $templateCache.put( "templates/about.html","")
+]

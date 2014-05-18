@@ -44,6 +44,9 @@ angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsav
     }).when('/', {
       templateUrl: 'templates/index.html',
       controller: 'IndexController'
+    }).when('/signout', {
+      templateUrl: 'templates/about.html',
+      controller: 'SignoutController'
     }).otherwise({
       redirectTo: '/'
     });
@@ -380,6 +383,11 @@ angular.module("gitblog").controller("IndexController", [
         return $location.path('/').replace();
       }
     });
+  }
+]).controller("SignoutController", [
+  "$scope", "storage", function($scope, storage) {
+    storage.clearAll();
+    return window.location.replace('/');
   }
 ]);
 

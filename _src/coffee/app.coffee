@@ -52,6 +52,9 @@ angular.module "gitblog", [
       .when '/',
         templateUrl: 'templates/index.html'
         controller: 'IndexController'
+      .when '/signout',
+        templateUrl: 'templates/blank.html'
+        controller: 'SignoutController'
 
       .otherwise
         redirectTo: '/'

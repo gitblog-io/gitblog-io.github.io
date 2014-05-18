@@ -22,7 +22,7 @@ layout: default
   function loginRedirect()
   {
       var tokenReg = /\w{40}/
-      if(localStorage.getItem('token').match(tokenReg)){
+      if(localStorage.getItem('token') != null &&localStorage.getItem('token').match(tokenReg)){
           // if yes, redirect to /app/#!/
           window.location.href="/app/";
       }else{
