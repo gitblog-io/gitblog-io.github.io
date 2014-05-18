@@ -100,6 +100,9 @@ angular.module "templates/index.html", []
     ($templateCache) ->
       $templateCache.put( "templates/index.html",
         """
+        <div class="action text-right">
+          <a ng-href="#!/signout">Sign out</a>
+        </div>
         <div class="page-header text-center">
           <h1>Blogs</h1>
           <small class="text-muted" ng-show="username">of {{username}}</small>
@@ -171,7 +174,7 @@ angular.module "templates/about.html", []
 
 angular.module "templates/blank.html", []
   .run [
-  "$templateCache"
-  ($templateCache) ->
-    $templateCache.put( "templates/about.html","")
+    "$templateCache"
+    ($templateCache) ->
+      $templateCache.put( "templates/blank.html","")
 ]

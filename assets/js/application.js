@@ -45,7 +45,7 @@ angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsav
       templateUrl: 'templates/index.html',
       controller: 'IndexController'
     }).when('/signout', {
-      templateUrl: 'templates/about.html',
+      templateUrl: 'templates/blank.html',
       controller: 'SignoutController'
     }).otherwise({
       redirectTo: '/'
@@ -983,7 +983,7 @@ angular.module("gitblog").factory("utils", [
   }
 ]);
 
-angular.module("gitblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html', 'templates/about.html']);
+angular.module("gitblog.templates", ['templates/editor.html', 'templates/list.html', 'templates/index.html', 'templates/blog-list.html', 'templates/post.html', 'templates/about.html', 'templates/blank.html']);
 
 angular.module("templates/blog-list.html", []).run([
   "$templateCache", function($templateCache) {
@@ -1011,12 +1011,18 @@ angular.module("templates/list.html", []).run([
 
 angular.module("templates/index.html", []).run([
   "$templateCache", function($templateCache) {
-    return $templateCache.put("templates/index.html", "<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}s=140\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\" ng-click=\"createBlog()\">Create One</button>\n</div>");
+    return $templateCache.put("templates/index.html", "<div class=\"action text-right\">\n  <a ng-href=\"#!/signout\">Sign out</a>\n</div>\n<div class=\"page-header text-center\">\n  <h1>Blogs</h1>\n  <small class=\"text-muted\" ng-show=\"username\">of {{username}}</small>\n</div>\n<div class=\"index-wrap\">\n  <div class=\"media list-item\" ng-repeat=\"repo in repos track by repo.name\">\n    <div class=\"pull-left\">\n      <img ng-src=\"{{repo.owner.avatar_url}}s=140\" class=\"media-object avatar avatar-large\">\n    </div>\n    <div class=\"media-body\">\n      <h3 class=\"media-heading\"><a ng-href=\"#!/{{repo.full_name}}\">{{repo.owner.login}}</a> <small>{{repo.name}}</small></h3>\n      <div class=\"text-muted\"><small>{{repo.description}}</small></div>\n      <div class=\"text-muted\">\n        <small>Last updated at <time>{{repo.updated_at}}</time></small>\n      </div>\n    </div>\n  </div>\n</div>\n<div ng-show=\"!loading && !repos.length\" class=\"jumbotron text-center\">\n  <h3>No blogs there.</h3>\n  <button class=\"btn btn-primary btn-lg\" ng-click=\"createBlog()\">Create One</button>\n</div>");
   }
 ]);
 
 angular.module("templates/about.html", []).run([
   "$templateCache", function($templateCache) {
     return $templateCache.put("templates/about.html", "<div class=\"page-header text-center\">\n  <h1>About gitblog</h1>\n  <small class=\"text-muted\">The easiest way to post on Github Pages</small>\n</div>\n<div class=\"text-center\">\n  <h3>Project</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/gitblog-io/gitblog-io.github.io/\"><i class=\"icon-github-alt\"></i> Gitblog</a></p>\n\n  <h3>Author</h3>\n  <p><a class=\"btn btn-primary\" target=\"_blank\" href=\"https://github.com/hyspace\"><i class=\"icon-cat\"></i> hyspace</a></p>\n\n  <h3>Bug report</h3>\n  <p><a target=\"_blank\" href=\"https://github.com/gitblog-io/gitblog-io.github.io/issues\">Issues</a></p>\n\n  <h3>Opensouce projects used in gitblog</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"http://www.angularjs.org/\">Angular.js</a></li>\n    <li><a target=\"_blank\" href=\"http://ace.c9.io/\">Ace editor</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/philschatz/octokit.js\">Octokit.js</a></li>\n    <li><a target=\"_blank\" href=\"http://jquery.com/\">jQuery</a></li>\n    <li><a target=\"_blank\" href=\"http://getbootstrap.com/\">Bootstrap</a></li>\n    <li><a target=\"_blank\" href=\"http://lodash.com/\">lodash</a></li>\n    <li><a target=\"_blank\" href=\"http://nodeca.github.io/js-yaml/\">js-yaml</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/agrublev/angularLocalStorage\">angularLocalStorage</a></li>\n    <li><a target=\"_blank\" href=\"https://github.com/facultymatt/angular-unsavedChanges\">angular-unsavedChanges</a></li>\n  </ul>\n\n  <h3>Other projects</h3>\n  <ul class=\"list-unstyled\">\n    <li><a target=\"_blank\" href=\"https://stackedit.io/\">stackedit</a></li>\n    <li><a target=\"_blank\" href=\"http://prose.io/\">prose</a></li>\n  </ul>\n</div>");
+  }
+]);
+
+angular.module("templates/blank.html", []).run([
+  "$templateCache", function($templateCache) {
+    return $templateCache.put("templates/blank.html", "");
   }
 ]);
