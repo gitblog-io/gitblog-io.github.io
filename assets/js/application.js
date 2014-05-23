@@ -533,9 +533,10 @@ angular.module("gitblog").directive("blogList", [
         editor.setTheme('ace/theme/tomorrow-markdown');
         session = editor.getSession();
         session.setUseWrapMode(true);
+        session.setWrapLimitRange(50, 50);
         session.setUseSoftTabs(true);
         session.setTabSize(2);
-        session.setMode("ace/mode/yaml");
+        session.setMode("ace/mode/markdown");
         ngModel.$formatters.push(function(value) {
           if (angular.isUndefined(value) || value === null || value === "") {
             $element.addClass("placeholder");
@@ -622,7 +623,7 @@ angular.module("gitblog").directive("blogList", [
         }
         window.ace.config.set('basePath', '/assets/js/ace');
         editor = window.ace.edit($element[0]);
-        editor.setFontSize(16);
+        editor.setFontSize(15);
         editor.setOptions({
           maxLines: Infinity
         });
@@ -635,6 +636,7 @@ angular.module("gitblog").directive("blogList", [
         session.setUseSoftTabs(true);
         session.setTabSize(2);
         session.setMode("ace/mode/markdown");
+        session.setWrapLimitRange(78, 78);
         ngModel.$formatters.push(function(value) {
           if (angular.isUndefined(value) || value === null || value === "") {
             $element.addClass("placeholder");
