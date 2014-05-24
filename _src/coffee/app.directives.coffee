@@ -114,10 +114,9 @@ angular.module "gitblog"
 
       session = editor.getSession()
       session.setUseWrapMode true
-      session.setWrapLimitRange 50,50
       session.setUseSoftTabs true
       session.setTabSize 2
-      session.setMode "ace/mode/markdown"
+      session.setMode "ace/mode/yaml"
 
       ngModel.$formatters.push (value) ->
         if angular.isUndefined(value) or value is null or value == ""
@@ -197,12 +196,13 @@ angular.module "gitblog"
     # textarea.hide()
     window.ace.config.set('basePath', '/assets/js/ace')
     editor = window.ace.edit($element[0])
-    editor.setFontSize 15
+    editor.setFontSize 16
     editor.setOptions
       maxLines: Infinity
     editor.setShowPrintMargin false
     editor.setHighlightActiveLine false
     editor.renderer.setShowGutter false
+    editor.renderer.setPadding 0
 #    editor.renderer.setPrimtMarginColumn 60
     editor.setTheme('ace/theme/tomorrow-markdown')
 
@@ -211,7 +211,7 @@ angular.module "gitblog"
     session.setUseSoftTabs true
     session.setTabSize 2
     session.setMode "ace/mode/markdown"
-    session.setWrapLimitRange 78,78
+    session.setWrapLimitRange 74,74
 
     ngModel.$formatters.push (value) ->
       if angular.isUndefined(value) or value is null or value == ""
