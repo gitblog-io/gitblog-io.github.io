@@ -1,6 +1,5 @@
 var BOWER_PATH, COFFEE_FILES, DEST_PATH, FILES, FRAMEWORK_FILES, JS_FILES, LESS_FILES, SRC_PATH, coffee, concat, gulp, less, path, plumber, rename, streamqueue, uglify;
 
-coffee = require("gulp-coffee");
 concat = require("gulp-concat");
 less = require("gulp-less");
 plumber = require("gulp-plumber");
@@ -15,8 +14,8 @@ BOWER_PATH = "bower_components/";
 SRC_PATH = "_src/";
 DEST_PATH = "assets/";
 LESS_FILES = [SRC_PATH + "/less/style.less"];
-COFFEE_FILES = [SRC_PATH + "/coffee/app*.coffee"];
-FRAMEWORK_FILES = [BOWER_PATH + "/jquery/dist/jquery.js", BOWER_PATH + "/js-yaml/js-yaml.js", BOWER_PATH + "/ace-builds/src-noconflict/ace.js", BOWER_PATH + "/angular/angular.js", BOWER_PATH + "/angular-route/angular-route.js", BOWER_PATH + "/angular-cookies/angular-cookies.js", BOWER_PATH + "/angular-animate/angular-animate.js", BOWER_PATH + "/angularLocalStorage/src/angularLocalStorage.js", BOWER_PATH + "/angular-unsavedChanges/dist/unsavedChanges.js", BOWER_PATH + "/octokit/octokit.js", SRC_PATH + "/js/mode-markdown.js", SRC_PATH + "/js/ext-settings_menu.js", SRC_PATH + "/js/theme-tomorrow-markdown.js", SRC_PATH + "/js/filereader.js"];
+COFFEE_FILES = [SRC_PATH + "/js/app.js", SRC_PATH + "/js/app.controllers.js", SRC_PATH + "/js/app.directives.js", SRC_PATH + "/js/app.services.js", SRC_PATH + "/js/app.templates.js"];
+FRAMEWORK_FILES = [BOWER_PATH + "/jquery/dist/jquery.js", BOWER_PATH + "/js-yaml/js-yaml.js", BOWER_PATH + "/ace-builds/src-noconflict/ace.js", BOWER_PATH + "/angular/angular.js", BOWER_PATH + "/angular-route/angular-route.js", BOWER_PATH + "/angular-cookies/angular-cookies.js", BOWER_PATH + "/angular-animate/angular-animate.js", BOWER_PATH + "/angularLocalStorage/src/angularLocalStorage.js", BOWER_PATH + "/angular-unsavedChanges/dist/unsavedChanges.js", BOWER_PATH + "/octokit/octokit.js", SRC_PATH + "/lib/mode-markdown.js", SRC_PATH + "/lib/ext-settings_menu.js", SRC_PATH + "/lib/theme-tomorrow-markdown.js", SRC_PATH + "/lib/filereader.js"];
 JS_FILES = [DEST_PATH + "/js/*.js"];
 
 
@@ -29,14 +28,7 @@ gulp.task("css", function() {
 });
 
 gulp.task("js", function() {
-  var appQueue;
-  appQueue = streamqueue({
-    objectMode: true
-  });
-  appQueue.queue(gulp.src(COFFEE_FILES).pipe(plumber()).pipe(coffee({
-    bare: true
-  })));
-  return appQueue.done().pipe(plumber()).pipe(concat("application.js")).pipe(gulp.dest(DEST_PATH + "/js"));
+  gulp.src(COFFEE_FILES).pipe(concat("application.js")).pipe(gulp.dest(DEST_PATH + "/js"));
 });
 
 gulp.task("minify", function() {
