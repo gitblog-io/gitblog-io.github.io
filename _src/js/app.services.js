@@ -1,4 +1,4 @@
-angular.module("gitblog").factory("utils", [
+app.factory("utils", [
   function() {
     return {
       filterRepos: function(repos, names) {}

@@ -8,8 +8,8 @@
     "url": "git://github.com/gitblog/gitblog-io.github.io.git"
   },
   "scripts": {
-    "start": "rm -rf ./assets && ./node_modules/.bin/gulp --require coffee-script/register",
-    "build": "rm -rf ./assets && ./node_modules/.bin/gulp production --require coffee-script/register"
+    "build": "./node_modules/.bin/gulp production",
+    "start": "./node_modules/.bin/gulp"
   },
   "keywords": [
     "jekyll",

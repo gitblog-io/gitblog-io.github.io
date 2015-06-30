@@ -1,4 +1,4 @@
-angular.module("gitblog").controller("IndexController", [
+app.controller("IndexController", [
   "$scope", "$timeout", "$route", function($scope, $timeout, $route) {
     return $scope.createBlog = function() {
       var newRepo, repo;

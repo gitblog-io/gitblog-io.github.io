@@ -14,7 +14,11 @@ BOWER_PATH = "bower_components/";
 SRC_PATH = "_src/";
 DEST_PATH = "assets/";
 LESS_FILES = [SRC_PATH + "/less/style.less"];
-COFFEE_FILES = [SRC_PATH + "/js/app.js", SRC_PATH + "/js/app.controllers.js", SRC_PATH + "/js/app.directives.js", SRC_PATH + "/js/app.services.js", SRC_PATH + "/js/app.templates.js"];
+COFFEE_FILES = [SRC_PATH + "/js/app.js", 
+                SRC_PATH + "/js/app.controllers.js", 
+                SRC_PATH + "/js/app.directives.js", 
+                SRC_PATH + "/js/app.services.js", 
+                SRC_PATH + "/js/app.templates.js"];
 FRAMEWORK_FILES = [BOWER_PATH + "/jquery/dist/jquery.js", BOWER_PATH + "/js-yaml/js-yaml.js", BOWER_PATH + "/ace-builds/src-noconflict/ace.js", BOWER_PATH + "/angular/angular.js", BOWER_PATH + "/angular-route/angular-route.js", BOWER_PATH + "/angular-cookies/angular-cookies.js", BOWER_PATH + "/angular-animate/angular-animate.js", BOWER_PATH + "/angularLocalStorage/src/angularLocalStorage.js", BOWER_PATH + "/angular-unsavedChanges/dist/unsavedChanges.js", BOWER_PATH + "/octokit/octokit.js", SRC_PATH + "/lib/mode-markdown.js", SRC_PATH + "/lib/ext-settings_menu.js", SRC_PATH + "/lib/theme-tomorrow-markdown.js", SRC_PATH + "/lib/filereader.js"];
 JS_FILES = [DEST_PATH + "/js/*.js"];
 

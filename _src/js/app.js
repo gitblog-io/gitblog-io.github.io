@@ -1,34 +1,42 @@
-$("<div id=\"mask\" data-toggle-menu></div>").appendTo($(document.body));
+(function(){
+  // 一些初始化DOM和绑定事件的操作
+  $("<div id=\"mask\" data-toggle-menu></div>").appendTo($(document.body));
 
-$('[data-toggle-menu]').on('click', function() {
-  $(document.body).toggleClass('menu-open');
-});
+  $('[data-toggle-menu]').on('click', function() {
+    $(document.body).toggleClass('menu-open');
+  });
 
-$(document.body).on("click", "a", function(e) {
-  var dest, el, target;
-  el = $(e.target).closest('a');
-  target = el.attr("target");
-  dest = el.attr("href");
-  if ((!target || target.toLowerCase() !== "_blank") && (dest != null)) {
-    $(document.body).removeClass();
-  }
-});
+  $(document.body).on("click", "a", function(e) {
+    var dest, el, target;
+    el = $(e.target).closest('a');
+    target = el.attr("target");
+    dest = el.attr("href");
+    if ((!target || target.toLowerCase() !== "_blank") && (dest != null)) {
+      $(document.body).removeClass();
+    }
+  });
 
-window.logError = function(errorMsg, url, lineNumber) {
-  if (typeof ga === "function") {
-    ga('send', 'event', "Global", "Exception", url + "(" + lineNumber + "): " + errorMsg);
-  }
-  if ((url == null) && (lineNumber == null)) {
-    console.error(errorMsg);
-    alert(errorMsg);
-  }
-};
+  window.logError = function(errorMsg, url, lineNumber) {
+    if (typeof ga === "function") {
+      ga('send', 'event', "Global", "Exception", url + "(" + lineNumber + "): " + errorMsg);
+    }
+    if ((url == null) && (lineNumber == null)) {
+      console.error(errorMsg);
+      alert(errorMsg);
+    }
+  };
 
-$(window).on('error', function(e) {
-  return window.logError(e.originalEvent.message, e.originalEvent.filename, e.originalEvent.lineno);
-});
+  $(window).on('error', function(e) {
+    return window.logError(e.originalEvent.message, e.originalEvent.filename, e.originalEvent.lineno);
+  });
+})();
 
-angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsavedChanges', 'gitblog.templates']).config([
+
+// app是全局模块，代表整个APP
+var app = angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsavedChanges', 'gitblog.templates'])
+
+// 绑定路由
+app.config([
   '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $locationProvider.hashPrefix('!');
     $routeProvider.when('/about', {
@@ -51,7 +59,9 @@ angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsav
       redirectTo: '/'
     });
   }
-]).run([
+])
+// 初始化
+.run([
   '$rootScope', 'storage', "$location", "$filter", "$q", function($scope, storage, $location, $filter, $q) {
     var gh, jekyllFilter;
     $(document.documentElement).removeClass("nojs").addClass("domready");
@@ -61,27 +71,33 @@ angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsav
     $scope.reponame = storage.get('reponame');
     storage.bind($scope, 'token');
     storage.bind($scope, 'reponame');
+
     if ($scope.token !== "") {
       jekyllFilter = $filter("jekyll");
       $scope._gh = gh = new Octokit({
         token: $scope.token
       });
+
       try {
         gh.setCache(JSON.parse(sessionStorage.getItem('cache')) || {});
       } catch (_error) {
         sessionStorage.removeItem('cache');
       }
+
       $scope.saveCache = function() {
         return sessionStorage.setItem('cache', JSON.stringify($scope._gh.getCache()));
       };
+
       $scope.clearCache = function() {
         return sessionStorage.removeItem('cache');
       };
+
       $scope.reset = function() {
         var orgDefer, user, userDefer;
         $scope.repos = [];
         user = gh.getUser();
         userDefer = $q.defer();
+
         user.getInfo().then(function(info) {
           $scope.$evalAsync(function() {
             return $scope.username = info.login;
@@ -103,6 +119,7 @@ angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsav
         }, function(err) {
           return window.logError("get user repo failed");
         });
+
         orgDefer = $q.defer();
         user.getOrgs().then(function(orgs) {
           var i, index, len, org, orgUser, promise, promises;
@@ -135,6 +152,7 @@ angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsav
         }, function(err) {
           return window.logError("get org repo failed");
         });
+
         $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
         return $scope.blogListReady.then(function() {
           $scope.$evalAsync(function() {
@@ -157,7 +175,9 @@ angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsav
           return window.logError("get blog list failed");
         });
       };
+
       $scope.reset();
+
     } else {
       window.location.replace('/');
     }

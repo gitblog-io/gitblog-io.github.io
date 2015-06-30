@@ -1,4 +1,4 @@
-angular.module("gitblog").directive("blogList", [
+app.directive("blogList", [
   function() {
     return {
       restrict: "A",
