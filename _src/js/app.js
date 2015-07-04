@@ -1,19 +1,20 @@
 (function(){
+
+  var bodyElement = angular.element(document.body),
+      btnMenuElement = angular.element(window.document.getElementById('btn-open-menu'));
+
   // 一些初始化DOM和绑定事件的操作
-  $("<div id=\"mask\" data-toggle-menu></div>").appendTo($(document.body));
+  bodyElement.append("<div id=\"mask\" data-toggle-menu></div>");
 
-  $('[data-toggle-menu]').on('click', function() {
-    $(document.body).toggleClass('menu-open');
-  });
+  btnMenuElement.on('click', function() {
+    bodyElement.toggleClass('menu-open');
 
-  $(document.body).on("click", "a", function(e) {
-    var dest, el, target;
-    el = $(e.target).closest('a');
-    target = el.attr("target");
-    dest = el.attr("href");
-    if ((!target || target.toLowerCase() !== "_blank") && (dest != null)) {
-      $(document.body).removeClass();
-    }
+    var targetElement = e.target;
+    if (targetElement.tagName === 'A') {
+      if ((!targetElement || targetElement.href.toLowerCase() !== "_blank") && (targetElement.href != null)) {
+        bodyElement.removeClass();
+      }
+    };
   });
 
   window.logError = function(errorMsg, url, lineNumber) {
@@ -26,7 +27,7 @@
     }
   };
 
-  $(window).on('error', function(e) {
+  window.addEventListener('error', function(e) {
     return window.logError(e.originalEvent.message, e.originalEvent.filename, e.originalEvent.lineno);
   });
 })();
@@ -64,7 +65,7 @@ app.config([
 .run([
   '$rootScope', 'storage', "$filter", "$q", function($scope, storage, $filter, $q) {
     var gh, jekyllFilter;
-    $(document.documentElement).removeClass("nojs").addClass("domready");
+    angular.element(document.documentElement).removeClass("nojs").addClass("domready");
 
     // 设置$scope的初始状态
     $scope.loading = true;

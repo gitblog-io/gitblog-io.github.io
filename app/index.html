@@ -43,7 +43,7 @@ layout: app
   <div class="text" ng-bind="loadingText">Loading...</div>
 </div>
 <header id="header">
-  <button id="btn-open-menu" data-toggle-menu>_</button>
+  <button id="btn-open-menu">_</button>
 </header>
 <div id="main-wrap">
   <div id="main">
@@ -69,7 +69,6 @@ layout: app
 </aside>
 
 {% if site.safe %}
-<script src="/assets/js/jquery.min.js"></script>
 <script src="/assets/js/js-yaml.min.js"></script>
 <script src="/assets/js/ace.min.js"></script>
 <script src="/assets/js/angular.min.js"></script>
@@ -85,7 +84,6 @@ layout: app
 <script src="/assets/js/filereader.min.js"></script>
 <script src="/assets/js/application.min.js"></script>
 {% else %}
-<script src="/assets/js/jquery.js"></script>
 <script src="/assets/js/js-yaml.js"></script>
 <script src="/assets/js/ace.js"></script>
 <script src="/assets/js/angular.js"></script>

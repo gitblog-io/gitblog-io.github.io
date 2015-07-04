@@ -19,7 +19,6 @@
     "ace-builds": "~1.1.3"
   },
   "devDependencies": {
-    "jquery": "~2.1.0",
     "angular": "1.2.16",
     "angular-route": "1.2.16",
     "js-yaml": "~3.0.2",
