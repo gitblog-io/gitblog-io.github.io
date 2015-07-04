@@ -33,7 +33,7 @@
 
 
 // app是全局模块，代表整个APP
-var app = angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsavedChanges', 'gitblog.templates'])
+var app = angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorage', 'unsavedChanges', 'gitblog.templates']);
 
 // 绑定路由
 app.config([
@@ -62,11 +62,15 @@ app.config([
 ])
 // 初始化
 .run([
-  '$rootScope', 'storage', "$location", "$filter", "$q", function($scope, storage, $location, $filter, $q) {
+  '$rootScope', 'storage', "$filter", "$q", function($scope, storage, $filter, $q) {
     var gh, jekyllFilter;
     $(document.documentElement).removeClass("nojs").addClass("domready");
+
+    // 设置$scope的初始状态
     $scope.loading = true;
     $scope.loadingText = 'Wait...';
+
+    // 读取localStorage
     $scope.token = storage.get('token');
     $scope.reponame = storage.get('reponame');
     storage.bind($scope, 'token');

@@ -1,5 +1,7 @@
 app.controller("IndexController", [
   "$scope", "$timeout", "$route", function($scope, $timeout, $route) {
+
+    // create blog function
     return $scope.createBlog = function() {
       var newRepo, repo;
       $scope.$root.loading = true;
@@ -221,6 +223,7 @@ app.controller("IndexController", [
 ]).controller("SignoutController", [
   "$scope", "storage", function($scope, storage) {
     storage.clearAll();
+    $scope.clearCache();
     return window.location.replace('/');
   }
 ]);
