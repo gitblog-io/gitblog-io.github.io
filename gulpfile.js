@@ -31,6 +31,10 @@ gulp.task("css", function() {
   })).pipe(gulp.dest(DEST_PATH + "/css"));
 });
 
+gulp.task("clean", function(){
+  gulp.src(DEST_PATH + '/js/*.min.js').pipe(clean({}));
+});
+
 gulp.task("js", function() {
   gulp.src(COFFEE_FILES).pipe(concat("application.js")).pipe(gulp.dest(DEST_PATH + "/js"));
 });
@@ -62,6 +66,6 @@ gulp.task("copy", function() {
   // return gulp.src(BOWER_PATH + "/ace-builds/src-min-noconflict/**/*.js").pipe(gulp.dest(DEST_PATH + "/js/ace/"));
 });
 
-gulp.task("default", ["css", "js", "copy", "watch"]);
+gulp.task("default", ["clean","css", "js", "copy", "watch"]);
 
 gulp.task("production", ["minify"]);
