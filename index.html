@@ -7,29 +7,35 @@ layout: default
     <i class="logo-huge">_</i>
     <h1>Gitblog</h1>
     <p>Easiest way to post on Github Pages.</p><br><br><br>
-    <p><a href="javascript:oauth()" class="btn btn-primary btn-lg" role="button"><i class="icon-github-alt"></i> Login with Github</a></p>
+    <p><a id="oauth" class="btn btn-primary btn-lg" role="button"><i class="icon-github-alt"></i> Login with Github</a></p>
   </div>
 </div>
 
 <script>
-  function oauth(){
-    var state = Math.floor((new Date()).getTime()*Math.random()).toString()
-    sessionStorage.setItem('state', state)
-    window.location.href = "https://github.com/login/oauth/authorize?client_id=e01393d04d6b30f08267&scope=public_repo,read:org&state=" + state
-  }
+  (function(window){
 
-  // check localStorage in the homepage
-  function loginRedirect()
-  {
-      var tokenReg = /\w{40}/
-      if(localStorage.getItem('token') != null &&localStorage.getItem('token').match(tokenReg)){
-          // if yes, redirect to /app/#!/
-          window.location.href="/app/";
-      }else{
-          // do nothing
-      }
-  }
+    window.document.getElementById('oauth').addEventListener('click', oauthHandler);
+    loginRedirect();
 
-  loginRedirect();
+    function oauthHandler(){
+      var state = Math.floor((new Date()).getTime()*Math.random()).toString()
+      sessionStorage.setItem('state', state)
+      window.location.href = "https://github.com/login/oauth/authorize?client_id=e01393d04d6b30f08267&scope=public_repo,read:org&state=" + state
+    }
+
+    // check localStorage in the homepage
+    function loginRedirect()
+    {
+        var tokenReg = /\w{40}/,
+            tokenItem = localStorage.getItem('token');
+        if(tokenItem != null && tokenItem.match(tokenReg)){
+            // if yes, redirect to /app/#!/
+            window.location.href="/app/";
+        }else{
+            // do nothing
+        }
+    }
+    
+  })(window);
 
 </script>
