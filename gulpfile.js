@@ -15,7 +15,6 @@ SRC_PATH = "_src/";
 DEST_PATH = "assets/";
 LESS_FILES = [SRC_PATH + "/less/style.less"];
 COFFEE_FILES = [SRC_PATH + "/js/app.js",
-                SRC_PATH + '/js/app.filter.js', 
                 SRC_PATH + "/js/app.controllers.js", 
                 SRC_PATH + "/js/app.directives.js", 
                 SRC_PATH + "/js/app.services.js", 

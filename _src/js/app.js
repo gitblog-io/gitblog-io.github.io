@@ -136,8 +136,6 @@ app.config([
             var i, len, repo;
 
             repos = jekyllFilter(repos);
-            // $scope.$evalAsync(function() {
-            console.log(repos);
             $scope.repos = $scope.repos.concat(repos);
             // });
             userDefer.resolve()
@@ -152,90 +150,20 @@ app.config([
           for (i = 0, len = repoArrays.length; i < len; i++) {
             repos = repoArrays[i];
             repos = jekyllFilter(repos);
-            // for (j = 0, len1 = orgs.length; j < len1; j++) {
-            //   org = orgs[j];
-            //   repo._repo = gh.getRepo(repo.owner.login, repo.name);
-            // }
-            // console.log(orgs);
-            results.push($scope.repos = $scope.repos.concat(repos));
+            $scope.repos = $scope.repos.concat(repos);
           }
           orgDefer.resolve();
-          return results;
         }
-          
-
-        // user.getInfo().then(function(info) {
-        //   $scope.$evalAsync(function() {
-        //     return $scope.username = info.login;
-        //   });
-        //   return user.repos();
-        // }, function(err) {
-        //   return window.logError("get user info failed");
-        // }).then(function(repos) {
-        //   var i, len, repo;
-        //   repos = jekyllFilter(repos);
-        //   for (i = 0, len = repos.length; i < len; i++) {
-        //     repo = repos[i];
-        //     repo._repo = gh.repo(repo.owner.login, repo.name);
-        //   }
-        //   $scope.$evalAsync(function() {
-        //     return $scope.repos = $scope.repos.concat(repos);
-        //   });
-        // }, function(err) {
-        //   return window.logError("get user repo failed");
-        // });
-
-        // orgDefer = $q.defer();
-        // user.orgs.fetch().then(function(orgs) {
-        //   var i, index, len, org, orgUser, promise, promises;
-        //   promises = [];
-        //   for (index = i = 0, len = orgs.length; i < len; index = ++i) {
-        //     org = orgs[index];
-        //     orgUser = gh.org(org.login);
-        //     promise = orgUser.repos();
-        //     promises.push(promise);
-        //   }
-        //   return $q.all(promises);
-        // }, function(err) {
-        //   return window.logError("get org info failed");
-        // }).then(function(resArrays) {
-        //   $scope.$evalAsync(function() {
-        //     var i, j, len, len1, repo, repos, res, results;
-        //     results = [];
-        //     for (i = 0, len = resArrays.length; i < len; i++) {
-        //       res = resArrays[i];
-        //       repos = jekyllFilter(res);
-        //       for (j = 0, len1 = repos.length; j < len1; j++) {
-        //         repo = repos[j];
-        //         repo._repo = gh.getRepo(repo.owner.login, repo.name);
-        //       }
-        //       results.push($scope.repos = $scope.repos.concat(repos));
-        //     }
-        //     return results;
-        //   });
-        //   // return orgDefer.resolve();
-        // }, function(err) {
-        //   return window.logError("get org repo failed");
-        // });
 
         $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
         
         return $scope.blogListReady.then(function() {
-        //   // $scope.$evalAsync(function() {
+
+            console.log($scope.repos);
+            for (var i = $scope.repos.length - 1; i >= 0; i--) {
+              console.log('http://avatars.githubusercontent.com/u/' + $scope.repos[i].owner.id + '?v=3');
+            };
             $scope.loading = false;
-        //   // });
-        //   // $scope.saveCache();
-        //   // return $scope.getRepo = function(username, reponame) {
-        //   //   var i, len, ref, repo;
-        //   //   ref = $scope.repos;
-        //   //   for (i = 0, len = ref.length; i < len; i++) {
-        //   //     repo = ref[i];
-        //   //     if (repo.owner.login === username && repo.name === reponame) {
-        //   //       return repo;
-        //   //     }
-        //   //   }
-        //   //   return null;
-        //   // };
         }, function(err) {
           $scope.loading = false;
           return window.logError("get blog list failed");
