@@ -14,7 +14,7 @@ app.factory("utils", [
       }
       return repos.filter(function(repo) {
         var res;
-        if (res = repo.full_name.match(userPage)) {
+        if (res = repo.fullName.match(userPage)) {
           if (res[1].toLowerCase() === res[2].toLowerCase()) {
             return true;
           }
