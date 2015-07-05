@@ -62,13 +62,14 @@ app.config([
 ])
 // 加载完module的依赖之后，初始化
 .run([
-  '$rootScope', 'storage', "$filter", "$q", function($scope, storage, $filter, $q) {
-    var gh, jekyllFilter;
+  '$rootScope', 'storage', "$filter", "gh", function($scope, storage, $filter, gh) {
+    var jekyllFilter;
     angular.element(document.documentElement).removeClass("nojs").addClass("domready");
 
     // 设置$scope的初始状态
     $scope.loading = true;
     $scope.loadingText = 'Wait...';
+    $scope.repos = [];
 
     // 读取localStorage
     $scope.token = storage.get('token');
@@ -77,100 +78,20 @@ app.config([
     storage.bind($scope, 'reponame');
 
     if ($scope.token !== "") {
-      jekyllFilter = $filter("jekyll");
-      $scope._gh = gh = new Octokat({
-        token: $scope.token
+      // gh是一个service，可以认为是单例，初始化后全局可用
+      gh.init($scope.token);
+
+      // 遍历github上的当前用户的repos
+      $scope.repos = gh.startFetchRepos();
+
+      // 遍历完成之后
+      gh.blogListReady().then(function() {
+        $scope.loading = false;
+        $scope.repos = gh.getRepos();
+      }, function(err) {
+        $scope.loading = false;
+        return window.logError("get blog list failed");
       });
-
-
-      // try {
-      //   gh.setCache(JSON.parse(sessionStorage.getItem('cache')) || {});
-      // } catch (_error) {
-      //   
-      //   sessionStorage.removeItem('cache');
-      // }
-
-      $scope.saveCache = function() {
-        return sessionStorage.setItem('cache', JSON.stringify($scope._gh.getCache()));
-      };
-
-      $scope.clearCache = function() {
-        return sessionStorage.removeItem('cache');
-      };
-
-
-      $scope.reset = function() {
-        var orgDefer = $q.defer(),
-            userDefer = $q.defer(); 
-
-        $scope.repos = [];
-      
-        gh.user.fetch()
-        .then(function(user){ // 异步获取用户信息
-          getUserRepos(user);
-        }, function(err) {
-          return window.logError("get user info failed");
-        });
-
-        gh.user.orgs.fetch()
-        .then(function(orgs){
-          var i, index, len, org, orgUser, promise, promises;
-          promises = [];
-          for (index = i = 0, len = orgs.length; i < len; index = ++i) {
-            org = orgs[index];
-            promise = org.repos.fetch();
-            promises.push(promise);
-          }
-          return $q.all(promises);
-        }, function(err) {
-          return window.logError("get org info failed");
-        })
-        .then(function(repoArrays){
-          getOrgRepos(repoArrays);
-        }, function(err) {
-          return window.logError("get org repo failed");
-        });
-
-        function getUserRepos(user) { // 异步获取该用户的所有repos
-          user.repos.fetch().then(function(repos){
-            var i, len, repo;
-
-            repos = jekyllFilter(repos);
-            $scope.repos = $scope.repos.concat(repos);
-            // });
-            userDefer.resolve()
-          }, function(err) {
-            return window.logError("get user repos failed");
-          });
-        }
-
-        function getOrgRepos(repoArrays) {
-          var i, j, len, len1, repo, repos, res, results;
-          results = [];
-          for (i = 0, len = repoArrays.length; i < len; i++) {
-            repos = repoArrays[i];
-            repos = jekyllFilter(repos);
-            $scope.repos = $scope.repos.concat(repos);
-          }
-          orgDefer.resolve();
-        }
-
-        $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
-        
-        return $scope.blogListReady.then(function() {
-
-            console.log($scope.repos);
-            for (var i = $scope.repos.length - 1; i >= 0; i--) {
-              console.log('http://avatars.githubusercontent.com/u/' + $scope.repos[i].owner.id + '?v=3');
-            };
-            $scope.loading = false;
-        }, function(err) {
-          $scope.loading = false;
-          return window.logError("get blog list failed");
-        });
-      };
-
-      $scope.reset();
 
     } else {
       window.location.replace('/');
