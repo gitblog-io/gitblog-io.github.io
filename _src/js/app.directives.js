@@ -1,11 +1,4 @@
-app.directive("blogList", [
-  function() {
-    return {
-      restrict: "A",
-      templateUrl: "templates/blog-list.html"
-    };
-  }
-]).directive("post", [
+app.directive("post", [
   "$timeout", function($timeout) {
     return {
       restrict: "A",
@@ -18,7 +11,8 @@ app.directive("blogList", [
         }
         ymlReg = /^(?:---\r?\n)((?:.|\r?\n)*?)\r?\n---\r?\n/;
         $scope.advanced = false;
-        ngModel.$formatters.push(function(modelValue) {
+
+        ngModel.$formatters.push(function(modelValue) { //format text going to user (model to view)
           var content, frontMatterRaw;
           if (modelValue != null) {
             frontMatterRaw = "";
@@ -33,6 +27,7 @@ app.directive("blogList", [
           }
           return modelValue;
         });
+
         update = function() {
           var viewValue;
           viewValue = ("---\n" + $scope.frontMatterRaw + "---\n") + $scope.content;
@@ -55,7 +50,7 @@ app.directive("blogList", [
             return promise = $timeout(update, 10);
           }
         });
-        $(window).on("keydown", function(event) {
+        angular.element(window).on("keydown", function(event) {
           if (event.ctrlKey || event.metaKey) {
             switch (String.fromCharCode(event.which).toLowerCase()) {
               case "s":
@@ -82,6 +77,7 @@ app.directive("blogList", [
           return;
         }
         ngModel.$formatters.push(function(modelValue) {
+          // console.log(modelValue);
           var e, frontMatter;
           if (modelValue != null) {
             frontMatter = null;
@@ -135,14 +131,17 @@ app.directive("blogList", [
         editor.setOptions({
           maxLines: Infinity
         });
+
         editor.setShowPrintMargin(false);
         editor.setHighlightActiveLine(false);
         editor.setTheme('ace/theme/tomorrow-markdown');
+
         session = editor.getSession();
         session.setUseWrapMode(true);
         session.setUseSoftTabs(true);
         session.setTabSize(2);
         session.setMode("ace/mode/yaml");
+
         ngModel.$formatters.push(function(value) {
           if (angular.isUndefined(value) || value === null || value === "") {
             $element.addClass("placeholder");
@@ -376,8 +375,12 @@ app.directive("blogList", [
             }
           }
         };
-        $(document.body).fileReaderJS(opts);
-        $element.fileClipboard(opts);
+
+        FileReaderJS.setupInput(document.body, opts);
+        FileReaderJS.setupDrop(document.body, opts);
+        FileReaderJS.setupClipboard(document.body, opts);
+
+
         (function(self) {
           var checkLine, customWorker;
           checkLine = function(currentLine) {

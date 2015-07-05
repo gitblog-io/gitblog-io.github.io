@@ -45,19 +45,15 @@ app.controller("IndexController", [
     username = $routeParams.user;
     reponame = $routeParams.repo;
     return gh.blogListReady().then(function() {
-      var _repo, repo;
+      var repo;
       if (repo = gh.getRepo(username, reponame)) {
         $scope.$root.loading = true;
         $scope.$root.loadingText = "Wait...";
-
-        
         return repo.git.trees('master').fetch({
           recursive: true
         }).then(function(master) {
-          console.log(master);
           var configFileExists, file, i, len, postReg, posts, res;
           var tree = master.tree;
-          // $scope.saveCache();
           posts = [];
           configFileExists = false;
           postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.(?:markdown|md)$/;
@@ -91,28 +87,33 @@ app.controller("IndexController", [
     });
   }
 ]).controller("PostController", [
-  "$scope", "$routeParams", "$location", "$timeout", "uploader", function($scope, $routeParams, $location, $timeout, uploader) {
+  "$scope", "$routeParams", "$location", "$timeout", "uploader", "gh", function($scope, $routeParams, $location, $timeout, uploader, gh) {
     var path, reponame, sha, username;
     username = $routeParams.user;
     reponame = $routeParams.repo;
     path = $routeParams.path;
-    sha = $routeParams.sha;
+    sha = $routeParams.sha; //?
+
     $scope.username = username;
     $scope.reponame = reponame;
     $scope.filepath = path;
-    return $scope.blogListReady.then(function() {
-      var _repo, deleteFunc, newPost, repo, save, searchAndShow, show;
-      if (repo = $scope.getRepo(username, reponame)) {
+
+    gh.blogListReady().then(function() {
+      var deleteFunc, newPost, repo, save, searchAndShow, show;
+
+      if (repo = gh.getRepo(username, reponame)) {
         $scope.$root.loading = true;
         $scope.$root.loadingText = "Wait...";
-        _repo = repo._repo;
-        $scope.uploader = uploader.call($scope, _repo);
+        
+        $scope.uploader = uploader.call($scope, repo);
+
         save = function() {
           var branch, message, promise;
           $scope.$root.loading = true;
           $scope.$root.loadingText = "Saving...";
-          branch = _repo.getBranch("master");
+          branch = repo.getBranch("master");
           message = "Update by gitblog.io at " + (new Date()).toLocaleString();
+
           promise = branch.write(path, $scope.post, message, false);
           promise.then(function(res) {
             return $scope.$evalAsync(function() {
@@ -125,12 +126,13 @@ app.controller("IndexController", [
           });
           return promise;
         };
+
         deleteFunc = function() {
           var branch, message, promise;
           if (window.confirm("Are you sure to delete " + $scope.filepath + "?")) {
             $scope.$root.loading = true;
             $scope.$root.loadingText = "Deleting...";
-            branch = _repo.getBranch("master");
+            branch = repo.getBranch("master");
             message = "Update by gitblog.io at " + (new Date()).toLocaleString();
             promise = branch.remove(path, message);
             promise.then(function(res) {
@@ -147,15 +149,13 @@ app.controller("IndexController", [
             return promise;
           }
         };
+
         show = function() {
-          return _repo.git.getBlob(sha).then(function(post) {
-            $scope.saveCache();
-            return $scope.$evalAsync(function() {
-              $scope.$root.loading = false;
-              $scope.post = post;
-              $scope.save = save;
-              return $scope["delete"] = deleteFunc;
-            });
+          return repo.git.blobs(sha).read().then(function(post) { // 显示文章
+            $scope.$parent.loading = false;
+            $scope.post = post;
+            $scope.save = save;
+            return $scope["delete"] = deleteFunc;
           }, function(err) {
             if (err.status === 404) {
               return searchAndShow();
@@ -165,30 +165,33 @@ app.controller("IndexController", [
             }
           });
         };
+
         searchAndShow = function() {
-          return _repo.git.getTree('master', {
+          return repo.git.trees('master').fetch({
             recursive: true
-          }).then(function(tree) {
-            var blob;
-            $scope.saveCache();
+          }).then(function(repo) {
+            var blob,
+                tree = repo.tree;
             blob = null;
             tree.some(function(file) {
-              if (file.path === path) {
+              if (file.path === path) { // 找到文章
                 blob = file;
                 return true;
               }
               return false;
             });
-            if (blob != null) {
+            if (blob != null) { // 不为空
               sha = blob.sha;
-              return show();
+              return show(); // 显示文章
             } else {
               $scope.$root.loading = false;
               return window.logError("file path not found");
             }
           });
         };
+
         newPost = "---\nlayout: post\ntitle:\ntagline:\ncategory: null\ntags: []\npublished: true\n---\n";
+
         if (sha == null) {
           if (path === "new") {
             $scope["new"] = true;
@@ -229,7 +232,6 @@ app.controller("IndexController", [
 ]).controller("SignoutController", [
   "$scope", "storage", function($scope, storage) {
     storage.clearAll();
-    $scope.clearCache();
     return window.location.replace('/');
   }
 ]);
