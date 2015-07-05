@@ -36,22 +36,28 @@ app.controller("IndexController", [
       });
     };
   }
-]).controller("AboutController", ["$scope", function($scope) {}]).controller("ListController", [
-  "$scope", "$routeParams", "$location", function($scope, $routeParams, $location) {
+]).controller("AboutController", ["$scope", function($scope) {
+  //nothing
+}
+]).controller("ListController", [
+  "$scope", "$routeParams", "$location", "gh", function($scope, $routeParams, $location, gh) {
     var reponame, username;
     username = $routeParams.user;
     reponame = $routeParams.repo;
-    return $scope.blogListReady.then(function() {
+    return gh.blogListReady().then(function() {
       var _repo, repo;
-      if (repo = $scope.getRepo(username, reponame)) {
+      if (repo = gh.getRepo(username, reponame)) {
         $scope.$root.loading = true;
         $scope.$root.loadingText = "Wait...";
-        _repo = repo._repo;
-        return _repo.git.getTree('master', {
+
+        
+        return repo.git.trees('master').fetch({
           recursive: true
-        }).then(function(tree) {
+        }).then(function(master) {
+          console.log(master);
           var configFileExists, file, i, len, postReg, posts, res;
-          $scope.saveCache();
+          var tree = master.tree;
+          // $scope.saveCache();
           posts = [];
           configFileExists = false;
           postReg = /^(_posts)\/(?:[\w\.-]+\/)*(\d{4})-(\d{2})-(\d{2})-(.+?)\.(?:markdown|md)$/;

@@ -39,7 +39,10 @@ var app = angular.module("gitblog", ['ngRoute', 'ngAnimate', 'angularLocalStorag
 app.config([
   '$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $locationProvider.hashPrefix('!');
-    $routeProvider.when('/about', {
+    $routeProvider.when('/', {
+      templateUrl: 'templates/index.html',
+      controller: 'IndexController'
+    }).when('/about', {
       templateUrl: 'templates/about.html',
       controller: 'AboutController'
     }).when('/:user/:repo/:path*', {
@@ -49,9 +52,6 @@ app.config([
     }).when('/:user/:repo', {
       templateUrl: 'templates/list.html',
       controller: 'ListController'
-    }).when('/', {
-      templateUrl: 'templates/index.html',
-      controller: 'IndexController'
     }).when('/signout', {
       templateUrl: 'templates/blank.html',
       controller: 'SignoutController'
