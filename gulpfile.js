@@ -44,7 +44,9 @@ gulp.task("minify", function() {
   .pipe(plumber())
   .pipe(clean({}))
   .pipe(rename(function(path) {
-    path.basename += ".min";
+    if(path.basename.search(".min") == -1){
+      path.basename += ".min";
+    }
   }))
   .pipe(uglify({
     mangle: false
