@@ -1,12 +1,13 @@
 (function(){
 
   var bodyElement = angular.element(document.body),
-      btnMenuElement = angular.element(window.document.getElementById('btn-open-menu'));
+      btnMenuElement = angular.element(document.getElementById('btn-open-menu'));
 
-  // 一些初始化DOM和绑定事件的操作
   bodyElement.append("<div id=\"mask\" data-toggle-menu></div>");
 
-  btnMenuElement.on('click', function() {
+  var maskMenuElement = angular.element(document.getElementById('mask'));
+
+  var menuHandler = function(e) {
     bodyElement.toggleClass('menu-open');
 
     var targetElement = e.target;
@@ -15,7 +16,10 @@
         bodyElement.removeClass();
       }
     };
-  });
+  }
+
+  btnMenuElement.on('click', menuHandler);
+  maskMenuElement.on('click', menuHandler);
 
   window.logError = function(errorMsg, url, lineNumber) {
     if (typeof ga === "function") {
@@ -28,7 +32,7 @@
   };
 
   window.addEventListener('error', function(e) {
-    return window.logError(e.originalEvent.message, e.originalEvent.filename, e.originalEvent.lineno);
+    return window.logError(e.message, e.filename, e.lineno);
   });
 })();
 
@@ -125,40 +129,40 @@ app.config([
           return window.logError("get user repo failed");
         });
 
-        orgDefer = $q.defer();
-        user.getOrgs().then(function(orgs) {
-          var i, index, len, org, orgUser, promise, promises;
-          promises = [];
-          for (index = i = 0, len = orgs.length; i < len; index = ++i) {
-            org = orgs[index];
-            orgUser = gh.getOrg(org.login);
-            promise = orgUser.getRepos();
-            promises.push(promise);
-          }
-          return $q.all(promises);
-        }, function(err) {
-          return window.logError("get org info failed");
-        }).then(function(resArrays) {
-          $scope.$evalAsync(function() {
-            var i, j, len, len1, repo, repos, res, results;
-            results = [];
-            for (i = 0, len = resArrays.length; i < len; i++) {
-              res = resArrays[i];
-              repos = jekyllFilter(res);
-              for (j = 0, len1 = repos.length; j < len1; j++) {
-                repo = repos[j];
-                repo._repo = gh.getRepo(repo.owner.login, repo.name);
-              }
-              results.push($scope.repos = $scope.repos.concat(repos));
-            }
-            return results;
-          });
-          return orgDefer.resolve();
-        }, function(err) {
-          return window.logError("get org repo failed");
-        });
+        // orgDefer = $q.defer();
+        // user.getOrgs().then(function(orgs) {
+        //   var i, index, len, org, orgUser, promise, promises;
+        //   promises = [];
+        //   for (index = i = 0, len = orgs.length; i < len; index = ++i) {
+        //     org = orgs[index];
+        //     orgUser = gh.getOrg(org.login);
+        //     promise = orgUser.getRepos();
+        //     promises.push(promise);
+        //   }
+        //   return $q.all(promises);
+        // }, function(err) {
+        //   return window.logError("get org info failed");
+        // }).then(function(resArrays) {
+        //   $scope.$evalAsync(function() {
+        //     var i, j, len, len1, repo, repos, res, results;
+        //     results = [];
+        //     for (i = 0, len = resArrays.length; i < len; i++) {
+        //       res = resArrays[i];
+        //       repos = jekyllFilter(res);
+        //       for (j = 0, len1 = repos.length; j < len1; j++) {
+        //         repo = repos[j];
+        //         repo._repo = gh.getRepo(repo.owner.login, repo.name);
+        //       }
+        //       results.push($scope.repos = $scope.repos.concat(repos));
+        //     }
+        //     return results;
+        //   });
+        //   return orgDefer.resolve();
+        // }, function(err) {
+        //   return window.logError("get org repo failed");
+        // });
 
-        $scope.blogListReady = $q.all([userDefer.promise, orgDefer.promise]);
+        $scope.blogListReady = $q.all([userDefer.promise/*, orgDefer.promise*/]);
         return $scope.blogListReady.then(function() {
           $scope.$evalAsync(function() {
             return $scope.loading = false;
