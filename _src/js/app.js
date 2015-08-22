@@ -1,11 +1,13 @@
 (function(){
   // 一些初始化DOM和绑定事件的操作
   var bodyElement = angular.element(document.body),
-      btnMenuElement = angular.element(window.document.getElementById('btn-open-menu'));
-  
+      btnMenuElement = angular.element(document.getElementById('btn-open-menu'));
+
   bodyElement.append("<div id=\"mask\" data-toggle-menu></div>");
 
-  btnMenuElement.on('click', function() {
+  var maskMenuElement = angular.element(document.getElementById('mask'));
+
+  var menuHandler = function(e) {
     bodyElement.toggleClass('menu-open');
 
     var targetElement = e.target;
@@ -14,7 +16,10 @@
         bodyElement.removeClass();
       }
     };
-  });
+  }
+
+  btnMenuElement.on('click', menuHandler);
+  maskMenuElement.on('click', menuHandler);
 
   window.logError = function(errorMsg, url, lineNumber) {
     if (typeof ga === "function") {
@@ -27,7 +32,7 @@
   };
 
   window.addEventListener('error', function(e) {
-    return window.logError(e.originalEvent.message, e.originalEvent.filename, e.originalEvent.lineno);
+    return window.logError(e.message, e.filename, e.lineno);
   });
 })();
 
