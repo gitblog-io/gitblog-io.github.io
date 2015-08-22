@@ -35,7 +35,7 @@ app.directive("blogList", [
         });
         update = function() {
           var viewValue;
-          viewValue = ("---\n" + $scope.frontMatterRaw + "---\n") + $scope.content;
+          viewValue = ("---\n" + $scope.frontMatterRaw + "\n---\n") + $scope.content;
           return ngModel.$setViewValue(viewValue);
         };
         promise = null;
@@ -55,7 +55,7 @@ app.directive("blogList", [
             return promise = $timeout(update, 10);
           }
         });
-        $(window).on("keydown", function(event) {
+        angular.element(window).on("keydown", function(event) {
           if (event.ctrlKey || event.metaKey) {
             switch (String.fromCharCode(event.which).toLowerCase()) {
               case "s":
@@ -376,15 +376,15 @@ app.directive("blogList", [
             }
           }
         };
-        $(document.body).fileReaderJS(opts);
-        $element.fileClipboard(opts);
+        FileReaderJS.setupDrop(document.body, opts);
+        FileReaderJS.setupClipboard($element[0], opts);
         (function(self) {
           var checkLine, customWorker;
           checkLine = function(currentLine) {
             var line;
             line = self.lines[currentLine];
             if (line.length !== 0) {
-              if (line[0].type.indexOf("markup.heading.multi") === 0) {
+              if (line[0].type.indexOf("markup.heading.multi") === 0 && currentLine >=1) {
                 self.lines[currentLine - 1].forEach(function(previousLineObject) {
                   previousLineObject.type = "markup.heading";
                 });
